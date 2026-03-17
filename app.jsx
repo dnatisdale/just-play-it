@@ -8,6 +8,8 @@ const clearPlaylistBtn = document.getElementById("clearPlaylistBtn");
 const playPauseBtn = document.getElementById("playPauseBtn");
 const prevBtn = document.getElementById("prevBtn");
 const nextBtn = document.getElementById("nextBtn");
+const shuffleBtn = document.getElementById("shuffleBtn");
+const repeatBtn = document.getElementById("repeatBtn");
 
 const seekBar = document.getElementById("seekBar");
 const currentTimeEl = document.getElementById("currentTime");
@@ -15,11 +17,21 @@ const durationEl = document.getElementById("duration");
 const trackTitleEl = document.getElementById("trackTitle");
 const trackMetaEl = document.getElementById("trackMeta");
 const coverArtEl = document.getElementById("coverArt");
+const playerStatusEl = document.getElementById("playerStatus");
 
 const volumeSlider = document.getElementById("volumeSlider");
 const sleepTimerSelect = document.getElementById("sleepTimerSelect");
 const setSleepTimerBtn = document.getElementById("setSleepTimerBtn");
 const sleepTimerStatus = document.getElementById("sleepTimerStatus");
+
+const playlistNameInput = document.getElementById("playlistNameInput");
+const savePlaylistBtn = document.getElementById("savePlaylistBtn");
+const savedPlaylistsSelect = document.getElementById("savedPlaylistsSelect");
+const loadPlaylistBtn = document.getElementById("loadPlaylistBtn");
+const renamePlaylistBtn = document.getElementById("renamePlaylistBtn");
+const deletePlaylistBtn = document.getElementById("deletePlaylistBtn");
+const savedPlaylistStatus = document.getElementById("savedPlaylistStatus");
+const playlistNameDisplay = document.getElementById("playlistNameDisplay");
 
 const STORAGE_KEYS = {
   playlist: "justPlayItPlaylist",
@@ -27,6 +39,11 @@ const STORAGE_KEYS = {
   currentTime: "justPlayItCurrentTime",
   volume: "justPlayItVolume",
   sleepTimerEnd: "justPlayItSleepTimerEnd",
+  shuffle: "justPlayItShuffle",
+  repeat: "justPlayItRepeat",
+  savedPlaylists: "justPlayItSavedPlaylists",
+  selectedSavedPlaylist: "justPlayItSelectedSavedPlaylist",
+  currentPlaylistName: "justPlayItCurrentPlaylistName",
 };
 
 let playlist = [];
@@ -34,6 +51,10 @@ let currentTrackIndex = -1;
 let pendingRestoreTime = null;
 let sleepTimerInterval = null;
 let sleepTimerTimeout = null;
+let shuffleEnabled = false;
+let repeatMode = "off";
+let savedPlaylists = {};
+let currentPlaylistName = "";
 
 function formatTime(seconds) {
   if (!Number.isFinite(seconds)) return "0:00";
@@ -74,11 +95,21 @@ function escapeHtml(str) {
     .replaceAll("'", "&#039;");
 }
 
+function setPlayerStatus(text) {
+  playerStatusEl.textContent = text;
+}
+
+function updatePlaylistNameDisplay() {
+  playlistNameDisplay.textContent = `Current playlist: ${currentPlaylistName || "Unsaved"}`;
+  localStorage.setItem(STORAGE_KEYS.currentPlaylistName, currentPlaylistName);
+}
+
 function updateNowPlaying(track) {
   if (!track) {
     trackTitleEl.textContent = "Nothing loaded yet";
     trackMetaEl.textContent = "Add a file or paste an audio URL";
     coverArtEl.textContent = "♪";
+    setPlayerStatus("Ready when you are.");
     return;
   }
 
@@ -86,9 +117,21 @@ function updateNowPlaying(track) {
   trackMetaEl.textContent =
     track.sourceType === "file" ? "Device file" : "Streaming from URL";
   coverArtEl.textContent = getTrackEmoji(track);
+
+  if (shuffleEnabled && repeatMode === "one") {
+    setPlayerStatus("Shuffle is on. Repeat one is also on.");
+  } else if (shuffleEnabled) {
+    setPlayerStatus("Shuffle is on.");
+  } else if (repeatMode === "all") {
+    setPlayerStatus("Repeat all is on.");
+  } else if (repeatMode === "one") {
+    setPlayerStatus("Repeating this track.");
+  } else {
+    setPlayerStatus("Normal playback.");
+  }
 }
 
-function savePlaylist() {
+function savePlaylistState() {
   const safePlaylist = playlist.map((track) => ({
     id: track.id,
     title: track.title,
@@ -136,6 +179,79 @@ function loadVolume() {
   volumeSlider.value = String(safeValue);
 }
 
+function loadModes() {
+  shuffleEnabled = localStorage.getItem(STORAGE_KEYS.shuffle) === "true";
+  repeatMode = localStorage.getItem(STORAGE_KEYS.repeat) || "off";
+  updateModeButtons();
+}
+
+function saveModes() {
+  localStorage.setItem(STORAGE_KEYS.shuffle, String(shuffleEnabled));
+  localStorage.setItem(STORAGE_KEYS.repeat, repeatMode);
+}
+
+function updateModeButtons() {
+  shuffleBtn.textContent = `Shuffle: ${shuffleEnabled ? "On" : "Off"}`;
+  shuffleBtn.classList.toggle("active", shuffleEnabled);
+
+  const repeatLabels = {
+    off: "Off",
+    all: "All",
+    one: "One",
+  };
+
+  repeatBtn.textContent = `Repeat: ${repeatLabels[repeatMode] || "Off"}`;
+  repeatBtn.classList.toggle("active", repeatMode !== "off");
+}
+
+function loadSavedPlaylists() {
+  try {
+    savedPlaylists = JSON.parse(
+      localStorage.getItem(STORAGE_KEYS.savedPlaylists) || "{}",
+    );
+    if (!savedPlaylists || typeof savedPlaylists !== "object") {
+      savedPlaylists = {};
+    }
+  } catch {
+    savedPlaylists = {};
+  }
+
+  refreshSavedPlaylistsSelect();
+
+  const selected =
+    localStorage.getItem(STORAGE_KEYS.selectedSavedPlaylist) || "";
+  if (selected && savedPlaylists[selected]) {
+    savedPlaylistsSelect.value = selected;
+    savedPlaylistStatus.textContent = `Selected saved playlist: ${selected}`;
+  }
+}
+
+function persistSavedPlaylists() {
+  localStorage.setItem(
+    STORAGE_KEYS.savedPlaylists,
+    JSON.stringify(savedPlaylists),
+  );
+  refreshSavedPlaylistsSelect();
+}
+
+function refreshSavedPlaylistsSelect() {
+  const previousValue = savedPlaylistsSelect.value;
+  savedPlaylistsSelect.innerHTML = `<option value="">Choose a saved playlist</option>`;
+
+  Object.keys(savedPlaylists)
+    .sort((a, b) => a.localeCompare(b))
+    .forEach((name) => {
+      const option = document.createElement("option");
+      option.value = name;
+      option.textContent = name;
+      savedPlaylistsSelect.appendChild(option);
+    });
+
+  if (previousValue && savedPlaylists[previousValue]) {
+    savedPlaylistsSelect.value = previousValue;
+  }
+}
+
 function loadPlaylist() {
   try {
     const saved = JSON.parse(
@@ -151,6 +267,10 @@ function loadPlaylist() {
         sourceType: "url",
         src: track.src,
       }));
+
+    currentPlaylistName =
+      localStorage.getItem(STORAGE_KEYS.currentPlaylistName) || "";
+    updatePlaylistNameDisplay();
 
     const savedIndex = Number(
       localStorage.getItem(STORAGE_KEYS.currentTrackIndex),
@@ -247,16 +367,18 @@ function loadTrack(index, shouldPlay = false) {
 
   updateNowPlaying(track);
   renderPlaylist();
-  savePlaylist();
+  savePlaylistState();
 
   if (shouldPlay) {
     audio
       .play()
       .then(() => {
         updatePlayPauseButton();
+        setPlayerStatus(`Playing: ${track.title}`);
       })
       .catch((error) => {
         console.error("Playback failed:", error);
+        setPlayerStatus("Playback could not start.");
       });
   } else {
     updatePlayPauseButton();
@@ -272,13 +394,20 @@ function addFileTracks(files) {
   }));
 
   playlist.push(...newTracks);
+  currentPlaylistName = "";
+  updatePlaylistNameDisplay();
 
   if (currentTrackIndex === -1 && playlist.length > 0) {
     currentTrackIndex = 0;
     loadTrack(0, false);
   } else {
     renderPlaylist();
+    savePlaylistState();
   }
+
+  setPlayerStatus(
+    `${newTracks.length} file${newTracks.length === 1 ? "" : "s"} added.`,
+  );
 }
 
 function addUrlTrack(url) {
@@ -300,23 +429,29 @@ function addUrlTrack(url) {
   };
 
   playlist.push(track);
+  currentPlaylistName = "";
+  updatePlaylistNameDisplay();
 
   if (currentTrackIndex === -1) {
     currentTrackIndex = 0;
     loadTrack(0, false);
   } else {
     renderPlaylist();
-    savePlaylist();
+    savePlaylistState();
   }
 
   urlInput.value = "";
+  setPlayerStatus(`Added URL track: ${track.title}`);
 }
 
 function removeTrack(index) {
   if (index < 0 || index >= playlist.length) return;
 
+  const removedTrack = playlist[index];
   const wasCurrent = index === currentTrackIndex;
   playlist.splice(index, 1);
+  currentPlaylistName = "";
+  updatePlaylistNameDisplay();
 
   if (playlist.length === 0) {
     audio.pause();
@@ -327,9 +462,10 @@ function removeTrack(index) {
     durationEl.textContent = "0:00";
     seekBar.value = 0;
     localStorage.removeItem(STORAGE_KEYS.currentTime);
-    savePlaylist();
+    savePlaylistState();
     renderPlaylist();
     updatePlayPauseButton();
+    setPlayerStatus(`Removed: ${removedTrack.title}`);
     return;
   }
 
@@ -343,7 +479,8 @@ function removeTrack(index) {
   }
 
   renderPlaylist();
-  savePlaylist();
+  savePlaylistState();
+  setPlayerStatus(`Removed: ${removedTrack.title}`);
 }
 
 function clearPlaylist() {
@@ -353,6 +490,9 @@ function clearPlaylist() {
 
   playlist = [];
   currentTrackIndex = -1;
+  currentPlaylistName = "";
+  updatePlaylistNameDisplay();
+
   seekBar.value = 0;
   currentTimeEl.textContent = "0:00";
   durationEl.textContent = "0:00";
@@ -363,6 +503,7 @@ function clearPlaylist() {
 
   renderPlaylist();
   updatePlayPauseButton();
+  setPlayerStatus("Playlist cleared.");
 }
 
 function updatePlayPauseButton() {
@@ -381,22 +522,42 @@ function playCurrent() {
     .play()
     .then(() => {
       updatePlayPauseButton();
+      setPlayerStatus(`Playing: ${playlist[currentTrackIndex].title}`);
     })
     .catch((error) => {
       console.error("Playback failed:", error);
+      setPlayerStatus("Playback could not start.");
     });
 }
 
 function pauseCurrent() {
   audio.pause();
   updatePlayPauseButton();
+  setPlayerStatus("Playback paused.");
+}
+
+function getRandomTrackIndex(excludeIndex) {
+  if (playlist.length <= 1) return excludeIndex;
+
+  let randomIndex = excludeIndex;
+  while (randomIndex === excludeIndex) {
+    randomIndex = Math.floor(Math.random() * playlist.length);
+  }
+  return randomIndex;
 }
 
 function playNext() {
   if (playlist.length === 0) return;
 
-  const nextIndex =
-    currentTrackIndex >= playlist.length - 1 ? 0 : currentTrackIndex + 1;
+  let nextIndex;
+
+  if (shuffleEnabled) {
+    nextIndex = getRandomTrackIndex(currentTrackIndex);
+  } else {
+    nextIndex =
+      currentTrackIndex >= playlist.length - 1 ? 0 : currentTrackIndex + 1;
+  }
+
   pendingRestoreTime = null;
   loadTrack(nextIndex, true);
 }
@@ -404,10 +565,176 @@ function playNext() {
 function playPrev() {
   if (playlist.length === 0) return;
 
-  const prevIndex =
-    currentTrackIndex <= 0 ? playlist.length - 1 : currentTrackIndex - 1;
+  let prevIndex;
+
+  if (shuffleEnabled) {
+    prevIndex = getRandomTrackIndex(currentTrackIndex);
+  } else {
+    prevIndex =
+      currentTrackIndex <= 0 ? playlist.length - 1 : currentTrackIndex - 1;
+  }
+
   pendingRestoreTime = null;
   loadTrack(prevIndex, true);
+}
+
+function toggleShuffle() {
+  shuffleEnabled = !shuffleEnabled;
+  saveModes();
+  updateModeButtons();
+  updateNowPlaying(playlist[currentTrackIndex] || null);
+}
+
+function cycleRepeatMode() {
+  if (repeatMode === "off") {
+    repeatMode = "all";
+  } else if (repeatMode === "all") {
+    repeatMode = "one";
+  } else {
+    repeatMode = "off";
+  }
+
+  saveModes();
+  updateModeButtons();
+  updateNowPlaying(playlist[currentTrackIndex] || null);
+}
+
+function saveNamedPlaylist() {
+  const name = playlistNameInput.value.trim();
+
+  if (!name) {
+    savedPlaylistStatus.textContent = "Please enter a playlist name first.";
+    return;
+  }
+
+  const urlTracks = playlist
+    .filter((track) => track.sourceType === "url" && track.src)
+    .map((track) => ({
+      id: track.id,
+      title: track.title,
+      sourceType: track.sourceType,
+      src: track.src,
+    }));
+
+  if (urlTracks.length === 0) {
+    savedPlaylistStatus.textContent = "Only URL tracks can be saved right now.";
+    return;
+  }
+
+  savedPlaylists[name] = {
+    name,
+    tracks: urlTracks,
+    savedAt: new Date().toISOString(),
+  };
+
+  currentPlaylistName = name;
+  updatePlaylistNameDisplay();
+  persistSavedPlaylists();
+  savedPlaylistsSelect.value = name;
+  localStorage.setItem(STORAGE_KEYS.selectedSavedPlaylist, name);
+  savedPlaylistStatus.textContent = `Saved playlist: ${name}`;
+}
+
+function loadNamedPlaylist() {
+  const name = savedPlaylistsSelect.value;
+
+  if (!name || !savedPlaylists[name]) {
+    savedPlaylistStatus.textContent = "Choose a saved playlist first.";
+    return;
+  }
+
+  const saved = savedPlaylists[name];
+  playlist = saved.tracks.map((track) => ({
+    id: track.id || crypto.randomUUID(),
+    title: track.title || "URL Audio",
+    sourceType: "url",
+    src: track.src,
+  }));
+
+  currentTrackIndex = playlist.length > 0 ? 0 : -1;
+  currentPlaylistName = name;
+  updatePlaylistNameDisplay();
+
+  savePlaylistState();
+  localStorage.setItem(STORAGE_KEYS.selectedSavedPlaylist, name);
+  savedPlaylistStatus.textContent = `Loaded playlist: ${name}`;
+
+  if (currentTrackIndex >= 0) {
+    pendingRestoreTime = null;
+    loadTrack(0, false);
+  } else {
+    renderPlaylist();
+    updatePlayPauseButton();
+  }
+
+  setPlayerStatus(`Loaded saved playlist: ${name}`);
+}
+
+function renameNamedPlaylist() {
+  const oldName = savedPlaylistsSelect.value;
+
+  if (!oldName || !savedPlaylists[oldName]) {
+    savedPlaylistStatus.textContent = "Choose a saved playlist to rename.";
+    return;
+  }
+
+  const newName = prompt("Rename playlist:", oldName);
+  if (newName === null) return;
+
+  const cleanName = newName.trim();
+  if (!cleanName) {
+    savedPlaylistStatus.textContent = "Playlist name cannot be empty.";
+    return;
+  }
+
+  if (cleanName !== oldName && savedPlaylists[cleanName]) {
+    savedPlaylistStatus.textContent = "That playlist name already exists.";
+    return;
+  }
+
+  savedPlaylists[cleanName] = {
+    ...savedPlaylists[oldName],
+    name: cleanName,
+  };
+
+  if (cleanName !== oldName) {
+    delete savedPlaylists[oldName];
+  }
+
+  persistSavedPlaylists();
+  savedPlaylistsSelect.value = cleanName;
+  localStorage.setItem(STORAGE_KEYS.selectedSavedPlaylist, cleanName);
+
+  if (currentPlaylistName === oldName) {
+    currentPlaylistName = cleanName;
+    updatePlaylistNameDisplay();
+  }
+
+  savedPlaylistStatus.textContent = `Renamed playlist to: ${cleanName}`;
+}
+
+function deleteNamedPlaylist() {
+  const name = savedPlaylistsSelect.value;
+
+  if (!name || !savedPlaylists[name]) {
+    savedPlaylistStatus.textContent = "Choose a saved playlist to delete.";
+    return;
+  }
+
+  const confirmed = confirm(`Delete saved playlist "${name}"?`);
+  if (!confirmed) return;
+
+  delete savedPlaylists[name];
+  persistSavedPlaylists();
+  savedPlaylistsSelect.value = "";
+  localStorage.removeItem(STORAGE_KEYS.selectedSavedPlaylist);
+
+  if (currentPlaylistName === name) {
+    currentPlaylistName = "";
+    updatePlaylistNameDisplay();
+  }
+
+  savedPlaylistStatus.textContent = `Deleted playlist: ${name}`;
 }
 
 function setSleepTimer(minutes) {
@@ -430,6 +757,7 @@ function setSleepTimer(minutes) {
       updatePlayPauseButton();
       clearSleepTimer();
       sleepTimerStatus.textContent = "Sleep timer finished. Playback paused.";
+      setPlayerStatus("Sleep timer finished.");
     },
     minutes * 60 * 1000,
   );
@@ -499,6 +827,7 @@ function restoreSleepTimer() {
     updatePlayPauseButton();
     clearSleepTimer();
     sleepTimerStatus.textContent = "Sleep timer finished. Playback paused.";
+    setPlayerStatus("Sleep timer finished.");
   }, remainingMs);
 
   sleepTimerInterval = window.setInterval(updateSleepTimerStatus, 1000);
@@ -543,6 +872,24 @@ playPauseBtn.addEventListener("click", () => {
 
 nextBtn.addEventListener("click", playNext);
 prevBtn.addEventListener("click", playPrev);
+shuffleBtn.addEventListener("click", toggleShuffle);
+repeatBtn.addEventListener("click", cycleRepeatMode);
+
+savePlaylistBtn.addEventListener("click", saveNamedPlaylist);
+loadPlaylistBtn.addEventListener("click", loadNamedPlaylist);
+renamePlaylistBtn.addEventListener("click", renameNamedPlaylist);
+deletePlaylistBtn.addEventListener("click", deleteNamedPlaylist);
+
+savedPlaylistsSelect.addEventListener("change", () => {
+  const name = savedPlaylistsSelect.value;
+  if (name) {
+    localStorage.setItem(STORAGE_KEYS.selectedSavedPlaylist, name);
+    savedPlaylistStatus.textContent = `Selected saved playlist: ${name}`;
+  } else {
+    localStorage.removeItem(STORAGE_KEYS.selectedSavedPlaylist);
+    savedPlaylistStatus.textContent = "No saved playlist selected.";
+  }
+});
 
 audio.addEventListener("loadedmetadata", () => {
   durationEl.textContent = formatTime(audio.duration);
@@ -584,19 +931,56 @@ setSleepTimerBtn.addEventListener("click", () => {
   setSleepTimer(minutes);
 });
 
-audio.addEventListener("play", updatePlayPauseButton);
-audio.addEventListener("pause", updatePlayPauseButton);
+audio.addEventListener("play", () => {
+  updatePlayPauseButton();
+  if (playlist[currentTrackIndex]) {
+    setPlayerStatus(`Playing: ${playlist[currentTrackIndex].title}`);
+  }
+});
+
+audio.addEventListener("pause", () => {
+  updatePlayPauseButton();
+  if (audio.currentTime > 0 && !audio.ended) {
+    setPlayerStatus("Playback paused.");
+  }
+});
 
 audio.addEventListener("ended", () => {
   pendingRestoreTime = null;
   localStorage.removeItem(STORAGE_KEYS.currentTime);
-  playNext();
+
+  if (repeatMode === "one") {
+    audio.currentTime = 0;
+    audio.play().catch((error) => {
+      console.error("Replay failed:", error);
+    });
+    return;
+  }
+
+  if (
+    !shuffleEnabled &&
+    repeatMode === "off" &&
+    currentTrackIndex === playlist.length - 1
+  ) {
+    updatePlayPauseButton();
+    setPlayerStatus("Reached the end of the playlist.");
+    return;
+  }
+
+  if (
+    shuffleEnabled ||
+    repeatMode === "all" ||
+    currentTrackIndex < playlist.length - 1
+  ) {
+    playNext();
+  }
 });
 
 window.addEventListener("beforeunload", () => {
-  savePlaylist();
+  savePlaylistState();
   savePlaybackState();
   saveVolume();
+  saveModes();
 });
 
 if ("serviceWorker" in navigator) {
@@ -608,7 +992,10 @@ if ("serviceWorker" in navigator) {
 }
 
 loadVolume();
+loadModes();
+loadSavedPlaylists();
 loadPlaylist();
 restoreSleepTimer();
 renderPlaylist();
 updatePlayPauseButton();
+updateNowPlaying(playlist[currentTrackIndex] || null);
