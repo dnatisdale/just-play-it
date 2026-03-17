@@ -107,7 +107,8 @@ button {
 .sleep-row button,
 .save-row button,
 .load-row button,
-.mode-btn {
+.mode-btn,
+.import-label {
   border: 1px solid var(--border);
   background: var(--panel-2);
   color: var(--text);
@@ -115,6 +116,10 @@ button {
   padding: 10px 16px;
   cursor: pointer;
   min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
 }
 
 .install-btn {
@@ -122,6 +127,10 @@ button {
 }
 
 .hidden {
+  display: none !important;
+}
+
+.hidden-file-input {
   display: none !important;
 }
 
@@ -382,6 +391,14 @@ button {
   background: #1a2030;
 }
 
+.playlist-item.dragging {
+  opacity: 0.45;
+}
+
+.playlist-item.drag-over {
+  outline: 2px dashed rgba(255, 255, 255, 0.28);
+}
+
 .track-thumb {
   width: 56px;
   height: 56px;
@@ -450,6 +467,31 @@ button {
 .empty-state {
   color: var(--muted);
   padding: 14px 2px 4px;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%) translateY(16px);
+  width: min(92vw, 420px);
+  background: rgba(17, 21, 30, 0.98);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px 14px;
+  color: var(--text);
+  box-shadow: var(--shadow);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.22s ease,
+    transform 0.22s ease;
+  z-index: 9999;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
 @media (max-width: 560px) {

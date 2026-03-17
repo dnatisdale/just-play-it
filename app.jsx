@@ -19,6 +19,7 @@ const trackTitleEl = document.getElementById("trackTitle");
 const trackMetaEl = document.getElementById("trackMeta");
 const coverArtEl = document.getElementById("coverArt");
 const playerStatusEl = document.getElementById("playerStatus");
+const storageUsageText = document.getElementById("storageUsageText");
 
 const volumeSlider = document.getElementById("volumeSlider");
 const sleepTimerSelect = document.getElementById("sleepTimerSelect");
@@ -32,8 +33,11 @@ const loadPlaylistBtn = document.getElementById("loadPlaylistBtn");
 const renamePlaylistBtn = document.getElementById("renamePlaylistBtn");
 const deletePlaylistBtn = document.getElementById("deletePlaylistBtn");
 const clearDeviceLibraryBtn = document.getElementById("clearDeviceLibraryBtn");
+const exportPlaylistsBtn = document.getElementById("exportPlaylistsBtn");
+const importPlaylistsInput = document.getElementById("importPlaylistsInput");
 const savedPlaylistStatus = document.getElementById("savedPlaylistStatus");
 const playlistNameDisplay = document.getElementById("playlistNameDisplay");
+const toastEl = document.getElementById("toast");
 
 const STORAGE_KEYS = {
   playlist: "justPlayItPlaylist",
@@ -64,12 +68,29 @@ let savedPlaylists = {};
 let currentPlaylistName = "";
 let deferredInstallPrompt = null;
 let currentObjectUrl = null;
+let toastTimeout = null;
+let draggedTrackIndex = null;
 
 function formatTime(seconds) {
   if (!Number.isFinite(seconds)) return "0:00";
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
   return `${mins}:${secs.toString().padStart(2, "0")}`;
+}
+
+function formatBytes(bytes) {
+  if (!Number.isFinite(bytes) || bytes < 0) return "0 B";
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  let value = bytes;
+  let index = 0;
+
+  while (value >= 1024 && index < units.length - 1) {
+    value /= 1024;
+    index += 1;
+  }
+
+  const decimals = value >= 10 || index === 0 ? 0 : 1;
+  return `${value.toFixed(decimals)} ${units[index]}`;
 }
 
 function getFileNameFromUrl(url) {
@@ -106,6 +127,19 @@ function escapeHtml(str) {
 
 function setPlayerStatus(text) {
   playerStatusEl.textContent = text;
+}
+
+function showToast(message) {
+  toastEl.textContent = message;
+  toastEl.classList.add("show");
+
+  if (toastTimeout) {
+    clearTimeout(toastTimeout);
+  }
+
+  toastTimeout = window.setTimeout(() => {
+    toastEl.classList.remove("show");
+  }, 2400);
 }
 
 function revokeCurrentObjectUrl() {
@@ -271,6 +305,7 @@ function saveTrackBlob(id, file) {
       blob: file,
       title: file.name,
       type: file.type || "audio/*",
+      size: file.size || 0,
       updatedAt: Date.now(),
     });
 
@@ -295,6 +330,22 @@ function getTrackBlob(id) {
   });
 }
 
+function getAllTrackBlobs() {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(TRACK_STORE, "readonly");
+    const store = tx.objectStore(TRACK_STORE);
+    const request = store.getAll();
+
+    request.onsuccess = () => {
+      resolve(Array.isArray(request.result) ? request.result : []);
+    };
+
+    request.onerror = () => {
+      reject(request.error);
+    };
+  });
+}
+
 function clearAllTrackBlobs() {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(TRACK_STORE, "readwrite");
@@ -304,6 +355,29 @@ function clearAllTrackBlobs() {
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
   });
+}
+
+async function updateStorageUsage() {
+  try {
+    const records = db ? await getAllTrackBlobs() : [];
+    const deviceBytes = records.reduce(
+      (sum, item) => sum + (item.size || item.blob?.size || 0),
+      0,
+    );
+
+    if (navigator.storage && navigator.storage.estimate) {
+      const estimate = await navigator.storage.estimate();
+      const quota = estimate.quota || 0;
+      const usage = estimate.usage || 0;
+
+      storageUsageText.textContent = `Stored device audio: ${formatBytes(deviceBytes)}. Browser usage: ${formatBytes(usage)} of ${formatBytes(quota)}.`;
+    } else {
+      storageUsageText.textContent = `Stored device audio: ${formatBytes(deviceBytes)}.`;
+    }
+  } catch (error) {
+    console.error("Could not estimate storage:", error);
+    storageUsageText.textContent = "Storage usage unavailable in this browser.";
+  }
 }
 
 function loadSavedPlaylists() {
@@ -409,9 +483,43 @@ function renderPlaylist() {
   playlist.forEach((track, index) => {
     const li = document.createElement("li");
     li.className = "playlist-item";
+    li.draggable = true;
+    li.dataset.index = String(index);
+
     if (index === currentTrackIndex) {
       li.classList.add("active");
     }
+
+    li.addEventListener("dragstart", () => {
+      draggedTrackIndex = index;
+      li.classList.add("dragging");
+    });
+
+    li.addEventListener("dragend", () => {
+      draggedTrackIndex = null;
+      li.classList.remove("dragging");
+      playlistEl.querySelectorAll(".playlist-item").forEach((item) => {
+        item.classList.remove("drag-over");
+      });
+    });
+
+    li.addEventListener("dragover", (event) => {
+      event.preventDefault();
+      li.classList.add("drag-over");
+    });
+
+    li.addEventListener("dragleave", () => {
+      li.classList.remove("drag-over");
+    });
+
+    li.addEventListener("drop", (event) => {
+      event.preventDefault();
+      li.classList.remove("drag-over");
+      const targetIndex = Number(li.dataset.index);
+      if (!Number.isInteger(targetIndex) || draggedTrackIndex === null) return;
+      if (draggedTrackIndex === targetIndex) return;
+      reorderTrack(draggedTrackIndex, targetIndex);
+    });
 
     const thumb = document.createElement("div");
     thumb.className = "track-thumb";
@@ -494,15 +602,20 @@ function updateCurrentTrackIndexAfterMove(fromIndex, toIndex) {
   }
 }
 
-function moveTrack(index, direction) {
-  const targetIndex = index + direction;
-  if (targetIndex < 0 || targetIndex >= playlist.length) return;
+function reorderTrack(fromIndex, toIndex) {
+  if (
+    fromIndex < 0 ||
+    toIndex < 0 ||
+    fromIndex >= playlist.length ||
+    toIndex >= playlist.length
+  ) {
+    return;
+  }
 
-  const [movedTrack] = playlist.splice(index, 1);
-  playlist.splice(targetIndex, 0, movedTrack);
+  const [movedTrack] = playlist.splice(fromIndex, 1);
+  playlist.splice(toIndex, 0, movedTrack);
 
-  updateCurrentTrackIndexAfterMove(index, targetIndex);
-
+  updateCurrentTrackIndexAfterMove(fromIndex, toIndex);
   currentPlaylistName = "";
   updatePlaylistNameDisplay();
   renderPlaylist();
@@ -512,9 +625,14 @@ function moveTrack(index, direction) {
     updateNowPlaying(playlist[currentTrackIndex]);
   }
 
-  setPlayerStatus(
-    `Moved "${movedTrack.title}" ${direction < 0 ? "up" : "down"}.`,
-  );
+  setPlayerStatus(`Moved "${movedTrack.title}".`);
+  showToast(`Moved "${movedTrack.title}".`);
+}
+
+function moveTrack(index, direction) {
+  const targetIndex = index + direction;
+  if (targetIndex < 0 || targetIndex >= playlist.length) return;
+  reorderTrack(index, targetIndex);
 }
 
 async function resolveTrackSource(track) {
@@ -550,9 +668,7 @@ async function loadTrack(index, shouldPlay = false) {
     savePlaylistState();
     updatePlayPauseButton();
     setPlayerStatus(`Missing stored file: ${track.title}`);
-    alert(
-      `This saved device file is no longer available on this device:\n\n${track.title}`,
-    );
+    showToast(`Missing stored file: ${track.title}`);
     return;
   }
 
@@ -571,6 +687,7 @@ async function loadTrack(index, shouldPlay = false) {
     } catch (error) {
       console.error("Playback failed:", error);
       setPlayerStatus("Playback could not start.");
+      showToast("Playback could not start.");
     }
   } else {
     updatePlayPauseButton();
@@ -604,8 +721,12 @@ async function addFileTracks(files) {
     savePlaylistState();
   }
 
+  await updateStorageUsage();
   setPlayerStatus(
     `${newTracks.length} file${newTracks.length === 1 ? "" : "s"} added and stored.`,
+  );
+  showToast(
+    `${newTracks.length} file${newTracks.length === 1 ? "" : "s"} stored.`,
   );
 }
 
@@ -616,7 +737,7 @@ function addUrlTrack(url) {
   try {
     new URL(trimmed);
   } catch {
-    alert("That does not look like a valid URL.");
+    showToast("That does not look like a valid URL.");
     return;
   }
 
@@ -641,6 +762,7 @@ function addUrlTrack(url) {
 
   urlInput.value = "";
   setPlayerStatus(`Added URL track: ${track.title}`);
+  showToast(`Added URL track: ${track.title}`);
 }
 
 function removeTrack(index) {
@@ -666,6 +788,7 @@ function removeTrack(index) {
     renderPlaylist();
     updatePlayPauseButton();
     setPlayerStatus(`Removed: ${removedTrack.title}`);
+    showToast(`Removed: ${removedTrack.title}`);
     return;
   }
 
@@ -681,6 +804,7 @@ function removeTrack(index) {
   renderPlaylist();
   savePlaylistState();
   setPlayerStatus(`Removed: ${removedTrack.title}`);
+  showToast(`Removed: ${removedTrack.title}`);
 }
 
 function clearPlaylist() {
@@ -705,6 +829,7 @@ function clearPlaylist() {
   renderPlaylist();
   updatePlayPauseButton();
   setPlayerStatus("Playlist cleared.");
+  showToast("Playlist cleared.");
 }
 
 async function clearDeviceLibrary() {
@@ -739,6 +864,7 @@ async function clearDeviceLibrary() {
 
     persistSavedPlaylists();
     savePlaylistState();
+    await updateStorageUsage();
 
     if (currentTrackIndex >= 0) {
       await loadTrack(currentTrackIndex, false);
@@ -752,9 +878,66 @@ async function clearDeviceLibrary() {
 
     savedPlaylistStatus.textContent = "Stored device library cleared.";
     setPlayerStatus("Stored device library cleared.");
+    showToast("Stored device library cleared.");
   } catch (error) {
     console.error("Could not clear device library:", error);
     savedPlaylistStatus.textContent = "Could not clear stored device library.";
+    showToast("Could not clear stored device library.");
+  }
+}
+
+function exportPlaylists() {
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    app: "Just Play It",
+    version: 1,
+    savedPlaylists,
+  };
+
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {
+    type: "application/json",
+  });
+
+  const exportUrl = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = exportUrl;
+  link.download = "just-play-it-playlists.json";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(exportUrl);
+
+  showToast("Playlists exported.");
+}
+
+async function importPlaylistsFromFile(file) {
+  if (!file) return;
+
+  try {
+    const text = await file.text();
+    const parsed = JSON.parse(text);
+
+    if (
+      !parsed ||
+      typeof parsed !== "object" ||
+      !parsed.savedPlaylists ||
+      typeof parsed.savedPlaylists !== "object"
+    ) {
+      throw new Error("Invalid file format");
+    }
+
+    savedPlaylists = {
+      ...savedPlaylists,
+      ...parsed.savedPlaylists,
+    };
+
+    persistSavedPlaylists();
+    savedPlaylistStatus.textContent = "Playlists imported.";
+    showToast("Playlists imported.");
+  } catch (error) {
+    console.error("Import failed:", error);
+    savedPlaylistStatus.textContent = "Could not import playlists.";
+    showToast("Could not import playlists.");
   }
 }
 
@@ -782,6 +965,7 @@ async function playCurrent() {
   } catch (error) {
     console.error("Playback failed:", error);
     setPlayerStatus("Playback could not start.");
+    showToast("Playback could not start.");
   }
 }
 
@@ -838,6 +1022,7 @@ function toggleShuffle() {
   saveModes();
   updateModeButtons();
   updateNowPlaying(playlist[currentTrackIndex] || null);
+  showToast(`Shuffle ${shuffleEnabled ? "on" : "off"}.`);
 }
 
 function cycleRepeatMode() {
@@ -852,6 +1037,7 @@ function cycleRepeatMode() {
   saveModes();
   updateModeButtons();
   updateNowPlaying(playlist[currentTrackIndex] || null);
+  showToast(`Repeat ${repeatMode}.`);
 }
 
 function saveNamedPlaylist() {
@@ -859,6 +1045,7 @@ function saveNamedPlaylist() {
 
   if (!name) {
     savedPlaylistStatus.textContent = "Please enter a playlist name first.";
+    showToast("Enter a playlist name first.");
     return;
   }
 
@@ -869,6 +1056,7 @@ function saveNamedPlaylist() {
   if (normalizedTracks.length === 0) {
     savedPlaylistStatus.textContent =
       "There is nothing to save in this playlist.";
+    showToast("There is nothing to save.");
     return;
   }
 
@@ -885,6 +1073,7 @@ function saveNamedPlaylist() {
   localStorage.setItem(STORAGE_KEYS.selectedSavedPlaylist, name);
   savedPlaylistStatus.textContent = `Saved playlist: ${name}`;
   setPlayerStatus(`Saved playlist "${name}".`);
+  showToast(`Saved playlist "${name}".`);
 }
 
 async function loadNamedPlaylist() {
@@ -892,6 +1081,7 @@ async function loadNamedPlaylist() {
 
   if (!name || !savedPlaylists[name]) {
     savedPlaylistStatus.textContent = "Choose a saved playlist first.";
+    showToast("Choose a saved playlist first.");
     return;
   }
 
@@ -917,6 +1107,7 @@ async function loadNamedPlaylist() {
   }
 
   setPlayerStatus(`Loaded saved playlist: ${name}`);
+  showToast(`Loaded "${name}".`);
 }
 
 function renameNamedPlaylist() {
@@ -924,6 +1115,7 @@ function renameNamedPlaylist() {
 
   if (!oldName || !savedPlaylists[oldName]) {
     savedPlaylistStatus.textContent = "Choose a saved playlist to rename.";
+    showToast("Choose a saved playlist to rename.");
     return;
   }
 
@@ -933,11 +1125,13 @@ function renameNamedPlaylist() {
   const cleanName = newName.trim();
   if (!cleanName) {
     savedPlaylistStatus.textContent = "Playlist name cannot be empty.";
+    showToast("Playlist name cannot be empty.");
     return;
   }
 
   if (cleanName !== oldName && savedPlaylists[cleanName]) {
     savedPlaylistStatus.textContent = "That playlist name already exists.";
+    showToast("That playlist name already exists.");
     return;
   }
 
@@ -961,6 +1155,7 @@ function renameNamedPlaylist() {
 
   savedPlaylistStatus.textContent = `Renamed playlist to: ${cleanName}`;
   setPlayerStatus(`Renamed playlist to "${cleanName}".`);
+  showToast(`Renamed to "${cleanName}".`);
 }
 
 function deleteNamedPlaylist() {
@@ -968,6 +1163,7 @@ function deleteNamedPlaylist() {
 
   if (!name || !savedPlaylists[name]) {
     savedPlaylistStatus.textContent = "Choose a saved playlist to delete.";
+    showToast("Choose a saved playlist to delete.");
     return;
   }
 
@@ -986,6 +1182,7 @@ function deleteNamedPlaylist() {
 
   savedPlaylistStatus.textContent = `Deleted playlist: ${name}`;
   setPlayerStatus(`Deleted playlist "${name}".`);
+  showToast(`Deleted "${name}".`);
 }
 
 function setSleepTimer(minutes) {
@@ -995,6 +1192,7 @@ function setSleepTimer(minutes) {
     sleepTimerStatus.textContent = "No sleep timer set.";
     localStorage.removeItem(STORAGE_KEYS.sleepTimerEnd);
     sleepTimerSelect.value = "0";
+    showToast("Sleep timer off.");
     return;
   }
 
@@ -1009,12 +1207,14 @@ function setSleepTimer(minutes) {
       clearSleepTimer();
       sleepTimerStatus.textContent = "Sleep timer finished. Playback paused.";
       setPlayerStatus("Sleep timer finished.");
+      showToast("Sleep timer finished.");
     },
     minutes * 60 * 1000,
   );
 
   sleepTimerInterval = window.setInterval(updateSleepTimerStatus, 1000);
   updateSleepTimerStatus();
+  showToast(`Sleep timer set for ${minutes} min.`);
 }
 
 function clearSleepTimer() {
@@ -1079,6 +1279,7 @@ function restoreSleepTimer() {
     clearSleepTimer();
     sleepTimerStatus.textContent = "Sleep timer finished. Playback paused.";
     setPlayerStatus("Sleep timer finished.");
+    showToast("Sleep timer finished.");
   }, remainingMs);
 
   sleepTimerInterval = window.setInterval(updateSleepTimerStatus, 1000);
@@ -1240,6 +1441,14 @@ clearDeviceLibraryBtn.addEventListener("click", async () => {
   await clearDeviceLibrary();
 });
 
+exportPlaylistsBtn.addEventListener("click", exportPlaylists);
+
+importPlaylistsInput.addEventListener("change", async (event) => {
+  const file = event.target.files?.[0];
+  await importPlaylistsFromFile(file);
+  importPlaylistsInput.value = "";
+});
+
 savedPlaylistsSelect.addEventListener("change", () => {
   const name = savedPlaylistsSelect.value;
   if (name) {
@@ -1344,6 +1553,7 @@ window.addEventListener("appinstalled", () => {
   deferredInstallPrompt = null;
   installBtn.classList.add("hidden");
   setPlayerStatus("App installed.");
+  showToast("App installed.");
 });
 
 window.addEventListener("beforeunload", () => {
@@ -1367,9 +1577,7 @@ async function initApp() {
     db = await openDatabase();
   } catch (error) {
     console.error("IndexedDB failed:", error);
-    alert(
-      "IndexedDB could not start. Device-file persistence may not work in this browser.",
-    );
+    showToast("IndexedDB could not start.");
   }
 
   loadVolume();
@@ -1381,6 +1589,7 @@ async function initApp() {
   updatePlayPauseButton();
   updateNowPlaying(playlist[currentTrackIndex] || null);
   setupMediaSessionActions();
+  await updateStorageUsage();
 
   if (currentTrackIndex >= 0) {
     await loadTrack(currentTrackIndex, false);

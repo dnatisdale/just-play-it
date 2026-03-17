@@ -139,6 +139,13 @@
                 No sleep timer set.
               </p>
             </div>
+
+            <div class="tool-block">
+              <label>Storage</label>
+              <p id="storageUsageText" class="helper-text helper-tight">
+                Checking storage usage...
+              </p>
+            </div>
           </div>
         </section>
 
@@ -152,7 +159,7 @@
               <label for="fileInput">From device</label>
               <input id="fileInput" type="file" accept="audio/*" multiple />
               <p class="helper-text helper-tight">
-                Device files are now stored on this device for later playback.
+                Device files are stored on this device for later playback.
               </p>
             </div>
 
@@ -213,6 +220,21 @@
               </button>
             </div>
 
+            <div class="saved-actions">
+              <button id="exportPlaylistsBtn" class="ghost-btn" type="button">
+                Export Playlists
+              </button>
+              <label for="importPlaylistsInput" class="ghost-btn import-label"
+                >Import Playlists</label
+              >
+              <input
+                id="importPlaylistsInput"
+                type="file"
+                accept="application/json"
+                class="hidden-file-input"
+              />
+            </div>
+
             <p id="savedPlaylistStatus" class="helper-text">
               No saved playlist selected.
             </p>
@@ -224,6 +246,9 @@
               <p id="playlistNameDisplay" class="playlist-name-display">
                 Current playlist: Unsaved
               </p>
+              <p class="helper-text helper-tight">
+                Tip: drag tracks to reorder them.
+              </p>
             </div>
             <button id="clearPlaylistBtn" class="ghost-btn" type="button">
               Clear
@@ -234,6 +259,8 @@
         </section>
       </main>
     </div>
+
+    <div id="toast" class="toast" aria-live="polite" aria-atomic="true"></div>
 
     <script src="app.js"></script>
   </body>
