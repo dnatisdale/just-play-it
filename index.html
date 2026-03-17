@@ -151,6 +151,9 @@
             <div class="input-block">
               <label for="fileInput">From device</label>
               <input id="fileInput" type="file" accept="audio/*" multiple />
+              <p class="helper-text helper-tight">
+                Device files are now stored on this device for later playback.
+              </p>
             </div>
 
             <div class="input-block">
@@ -200,6 +203,13 @@
                 type="button"
               >
                 Delete
+              </button>
+              <button
+                id="clearDeviceLibraryBtn"
+                class="ghost-btn danger-btn"
+                type="button"
+              >
+                Clear Device Library
               </button>
             </div>
 

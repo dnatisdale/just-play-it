@@ -31,6 +31,7 @@ const savedPlaylistsSelect = document.getElementById("savedPlaylistsSelect");
 const loadPlaylistBtn = document.getElementById("loadPlaylistBtn");
 const renamePlaylistBtn = document.getElementById("renamePlaylistBtn");
 const deletePlaylistBtn = document.getElementById("deletePlaylistBtn");
+const clearDeviceLibraryBtn = document.getElementById("clearDeviceLibraryBtn");
 const savedPlaylistStatus = document.getElementById("savedPlaylistStatus");
 const playlistNameDisplay = document.getElementById("playlistNameDisplay");
 
@@ -47,6 +48,11 @@ const STORAGE_KEYS = {
   currentPlaylistName: "justPlayItCurrentPlaylistName",
 };
 
+const DB_NAME = "justPlayItDB";
+const DB_VERSION = 1;
+const TRACK_STORE = "deviceTracks";
+
+let db = null;
 let playlist = [];
 let currentTrackIndex = -1;
 let pendingRestoreTime = null;
@@ -57,6 +63,7 @@ let repeatMode = "off";
 let savedPlaylists = {};
 let currentPlaylistName = "";
 let deferredInstallPrompt = null;
+let currentObjectUrl = null;
 
 function formatTime(seconds) {
   if (!Number.isFinite(seconds)) return "0:00";
@@ -101,9 +108,40 @@ function setPlayerStatus(text) {
   playerStatusEl.textContent = text;
 }
 
+function revokeCurrentObjectUrl() {
+  if (currentObjectUrl) {
+    URL.revokeObjectURL(currentObjectUrl);
+    currentObjectUrl = null;
+  }
+}
+
 function updatePlaylistNameDisplay() {
   playlistNameDisplay.textContent = `Current playlist: ${currentPlaylistName || "Unsaved"}`;
   localStorage.setItem(STORAGE_KEYS.currentPlaylistName, currentPlaylistName);
+}
+
+function normalizeTrack(track) {
+  if (!track || !track.sourceType || !track.id || !track.title) return null;
+
+  if (track.sourceType === "url") {
+    if (!track.src) return null;
+    return {
+      id: track.id,
+      title: track.title,
+      sourceType: "url",
+      src: track.src,
+    };
+  }
+
+  if (track.sourceType === "file") {
+    return {
+      id: track.id,
+      title: track.title,
+      sourceType: "file",
+    };
+  }
+
+  return null;
 }
 
 function updateNowPlaying(track) {
@@ -118,7 +156,7 @@ function updateNowPlaying(track) {
 
   trackTitleEl.textContent = track.title;
   trackMetaEl.textContent =
-    track.sourceType === "file" ? "Device file" : "Streaming from URL";
+    track.sourceType === "file" ? "Stored device file" : "Streaming from URL";
   coverArtEl.textContent = getTrackEmoji(track);
 
   if (shuffleEnabled && repeatMode === "one") {
@@ -137,12 +175,9 @@ function updateNowPlaying(track) {
 }
 
 function savePlaylistState() {
-  const safePlaylist = playlist.map((track) => ({
-    id: track.id,
-    title: track.title,
-    sourceType: track.sourceType,
-    src: track.sourceType === "url" ? track.src : null,
-  }));
+  const safePlaylist = playlist
+    .map((track) => normalizeTrack(track))
+    .filter(Boolean);
 
   localStorage.setItem(STORAGE_KEYS.playlist, JSON.stringify(safePlaylist));
   localStorage.setItem(
@@ -157,11 +192,7 @@ function savePlaybackState() {
     String(currentTrackIndex),
   );
 
-  if (
-    currentTrackIndex >= 0 &&
-    currentTrackIndex < playlist.length &&
-    playlist[currentTrackIndex]?.sourceType === "url"
-  ) {
+  if (currentTrackIndex >= 0 && currentTrackIndex < playlist.length) {
     localStorage.setItem(
       STORAGE_KEYS.currentTime,
       String(audio.currentTime || 0),
@@ -207,6 +238,72 @@ function updateModeButtons() {
 
   repeatBtn.textContent = `Repeat: ${repeatLabels[repeatMode] || "Off"}`;
   repeatBtn.classList.toggle("active", repeatMode !== "off");
+}
+
+function openDatabase() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+    request.onupgradeneeded = () => {
+      const database = request.result;
+      if (!database.objectStoreNames.contains(TRACK_STORE)) {
+        database.createObjectStore(TRACK_STORE, { keyPath: "id" });
+      }
+    };
+
+    request.onsuccess = () => {
+      resolve(request.result);
+    };
+
+    request.onerror = () => {
+      reject(request.error);
+    };
+  });
+}
+
+function saveTrackBlob(id, file) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(TRACK_STORE, "readwrite");
+    const store = tx.objectStore(TRACK_STORE);
+
+    store.put({
+      id,
+      blob: file,
+      title: file.name,
+      type: file.type || "audio/*",
+      updatedAt: Date.now(),
+    });
+
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+function getTrackBlob(id) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(TRACK_STORE, "readonly");
+    const store = tx.objectStore(TRACK_STORE);
+    const request = store.get(id);
+
+    request.onsuccess = () => {
+      resolve(request.result || null);
+    };
+
+    request.onerror = () => {
+      reject(request.error);
+    };
+  });
+}
+
+function clearAllTrackBlobs() {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(TRACK_STORE, "readwrite");
+    const store = tx.objectStore(TRACK_STORE);
+    store.clear();
+
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
 }
 
 function loadSavedPlaylists() {
@@ -257,21 +354,17 @@ function refreshSavedPlaylistsSelect() {
   }
 }
 
-function loadPlaylist() {
+function loadPlaylistFromStorage() {
   try {
     const saved = JSON.parse(
       localStorage.getItem(STORAGE_KEYS.playlist) || "[]",
     );
-    if (!Array.isArray(saved)) return;
+    if (!Array.isArray(saved)) {
+      playlist = [];
+      return;
+    }
 
-    playlist = saved
-      .filter((track) => track && track.sourceType === "url" && track.src)
-      .map((track) => ({
-        id: track.id || crypto.randomUUID(),
-        title: track.title || "URL Audio",
-        sourceType: "url",
-        src: track.src,
-      }));
+    playlist = saved.map((track) => normalizeTrack(track)).filter(Boolean);
 
     currentPlaylistName =
       localStorage.getItem(STORAGE_KEYS.currentPlaylistName) || "";
@@ -290,10 +383,14 @@ function loadPlaylist() {
       currentTrackIndex = savedIndex;
       pendingRestoreTime =
         Number.isFinite(savedTime) && savedTime > 0 ? savedTime : null;
-      loadTrack(currentTrackIndex, false);
+    } else {
+      currentTrackIndex = playlist.length > 0 ? 0 : -1;
+      pendingRestoreTime = null;
     }
   } catch (error) {
     console.error("Could not load playlist:", error);
+    playlist = [];
+    currentTrackIndex = -1;
   }
 }
 
@@ -325,10 +422,10 @@ function renderPlaylist() {
     infoBtn.className = "track-info-btn";
     infoBtn.innerHTML = `
       <span class="track-name">${escapeHtml(track.title)}</span>
-      <span class="track-source">${track.sourceType === "file" ? "File from device" : "Audio from URL"}</span>
+      <span class="track-source">${track.sourceType === "file" ? "Stored file on device" : "Audio from URL"}</span>
     `;
-    infoBtn.addEventListener("click", () => {
-      loadTrack(index, true);
+    infoBtn.addEventListener("click", async () => {
+      await loadTrack(index, true);
     });
 
     const actions = document.createElement("div");
@@ -356,8 +453,8 @@ function renderPlaylist() {
     playBtn.type = "button";
     playBtn.className = "small-btn";
     playBtn.textContent = "Play";
-    playBtn.addEventListener("click", () => {
-      loadTrack(index, true);
+    playBtn.addEventListener("click", async () => {
+      await loadTrack(index, true);
     });
 
     const removeBtn = document.createElement("button");
@@ -420,13 +517,46 @@ function moveTrack(index, direction) {
   );
 }
 
-function loadTrack(index, shouldPlay = false) {
+async function resolveTrackSource(track) {
+  revokeCurrentObjectUrl();
+
+  if (track.sourceType === "url") {
+    return track.src;
+  }
+
+  if (track.sourceType === "file") {
+    const stored = await getTrackBlob(track.id);
+    if (!stored || !stored.blob) {
+      return null;
+    }
+
+    currentObjectUrl = URL.createObjectURL(stored.blob);
+    return currentObjectUrl;
+  }
+
+  return null;
+}
+
+async function loadTrack(index, shouldPlay = false) {
   if (index < 0 || index >= playlist.length) return;
 
   currentTrackIndex = index;
   const track = playlist[index];
+  const source = await resolveTrackSource(track);
 
-  audio.src = track.src;
+  if (!source) {
+    updateNowPlaying(track);
+    renderPlaylist();
+    savePlaylistState();
+    updatePlayPauseButton();
+    setPlayerStatus(`Missing stored file: ${track.title}`);
+    alert(
+      `This saved device file is no longer available on this device:\n\n${track.title}`,
+    );
+    return;
+  }
+
+  audio.src = source;
   audio.load();
 
   updateNowPlaying(track);
@@ -434,28 +564,33 @@ function loadTrack(index, shouldPlay = false) {
   savePlaylistState();
 
   if (shouldPlay) {
-    audio
-      .play()
-      .then(() => {
-        updatePlayPauseButton();
-        setPlayerStatus(`Playing: ${track.title}`);
-      })
-      .catch((error) => {
-        console.error("Playback failed:", error);
-        setPlayerStatus("Playback could not start.");
-      });
+    try {
+      await audio.play();
+      updatePlayPauseButton();
+      setPlayerStatus(`Playing: ${track.title}`);
+    } catch (error) {
+      console.error("Playback failed:", error);
+      setPlayerStatus("Playback could not start.");
+    }
   } else {
     updatePlayPauseButton();
   }
 }
 
-function addFileTracks(files) {
-  const newTracks = Array.from(files).map((file) => ({
-    id: crypto.randomUUID(),
-    title: file.name,
-    sourceType: "file",
-    src: URL.createObjectURL(file),
-  }));
+async function addFileTracks(files) {
+  const fileArray = Array.from(files);
+  const newTracks = [];
+
+  for (const file of fileArray) {
+    const id = crypto.randomUUID();
+    await saveTrackBlob(id, file);
+
+    newTracks.push({
+      id,
+      title: file.name,
+      sourceType: "file",
+    });
+  }
 
   playlist.push(...newTracks);
   currentPlaylistName = "";
@@ -463,14 +598,14 @@ function addFileTracks(files) {
 
   if (currentTrackIndex === -1 && playlist.length > 0) {
     currentTrackIndex = 0;
-    loadTrack(0, false);
+    await loadTrack(0, false);
   } else {
     renderPlaylist();
     savePlaylistState();
   }
 
   setPlayerStatus(
-    `${newTracks.length} file${newTracks.length === 1 ? "" : "s"} added.`,
+    `${newTracks.length} file${newTracks.length === 1 ? "" : "s"} added and stored.`,
   );
 }
 
@@ -519,6 +654,7 @@ function removeTrack(index) {
 
   if (playlist.length === 0) {
     audio.pause();
+    revokeCurrentObjectUrl();
     audio.removeAttribute("src");
     audio.load();
     currentTrackIndex = -1;
@@ -549,6 +685,7 @@ function removeTrack(index) {
 
 function clearPlaylist() {
   audio.pause();
+  revokeCurrentObjectUrl();
   audio.removeAttribute("src");
   audio.load();
 
@@ -570,28 +707,82 @@ function clearPlaylist() {
   setPlayerStatus("Playlist cleared.");
 }
 
+async function clearDeviceLibrary() {
+  const confirmed = confirm(
+    "Clear all stored device files from this device?\n\nAny playlist entries that depend on those files will stop working.",
+  );
+  if (!confirmed) return;
+
+  try {
+    await clearAllTrackBlobs();
+    revokeCurrentObjectUrl();
+
+    playlist = playlist.filter((track) => track.sourceType !== "file");
+    currentTrackIndex =
+      playlist.length > 0
+        ? Math.min(currentTrackIndex, playlist.length - 1)
+        : -1;
+    currentPlaylistName = "";
+    updatePlaylistNameDisplay();
+
+    Object.keys(savedPlaylists).forEach((name) => {
+      const filteredTracks = (savedPlaylists[name].tracks || []).filter(
+        (track) => track.sourceType !== "file",
+      );
+
+      if (filteredTracks.length === 0) {
+        delete savedPlaylists[name];
+      } else {
+        savedPlaylists[name].tracks = filteredTracks;
+      }
+    });
+
+    persistSavedPlaylists();
+    savePlaylistState();
+
+    if (currentTrackIndex >= 0) {
+      await loadTrack(currentTrackIndex, false);
+    } else {
+      audio.pause();
+      audio.removeAttribute("src");
+      audio.load();
+      renderPlaylist();
+      updatePlayPauseButton();
+    }
+
+    savedPlaylistStatus.textContent = "Stored device library cleared.";
+    setPlayerStatus("Stored device library cleared.");
+  } catch (error) {
+    console.error("Could not clear device library:", error);
+    savedPlaylistStatus.textContent = "Could not clear stored device library.";
+  }
+}
+
 function updatePlayPauseButton() {
   playPauseBtn.textContent = audio.paused ? "▶" : "⏸";
 }
 
-function playCurrent() {
+async function playCurrent() {
   if (playlist.length === 0) return;
 
   if (currentTrackIndex === -1) {
-    loadTrack(0, true);
+    await loadTrack(0, true);
     return;
   }
 
-  audio
-    .play()
-    .then(() => {
-      updatePlayPauseButton();
-      setPlayerStatus(`Playing: ${playlist[currentTrackIndex].title}`);
-    })
-    .catch((error) => {
-      console.error("Playback failed:", error);
-      setPlayerStatus("Playback could not start.");
-    });
+  if (!audio.src) {
+    await loadTrack(currentTrackIndex, true);
+    return;
+  }
+
+  try {
+    await audio.play();
+    updatePlayPauseButton();
+    setPlayerStatus(`Playing: ${playlist[currentTrackIndex].title}`);
+  } catch (error) {
+    console.error("Playback failed:", error);
+    setPlayerStatus("Playback could not start.");
+  }
 }
 
 function pauseCurrent() {
@@ -610,7 +801,7 @@ function getRandomTrackIndex(excludeIndex) {
   return randomIndex;
 }
 
-function playNext() {
+async function playNext() {
   if (playlist.length === 0) return;
 
   let nextIndex;
@@ -623,10 +814,10 @@ function playNext() {
   }
 
   pendingRestoreTime = null;
-  loadTrack(nextIndex, true);
+  await loadTrack(nextIndex, true);
 }
 
-function playPrev() {
+async function playPrev() {
   if (playlist.length === 0) return;
 
   let prevIndex;
@@ -639,7 +830,7 @@ function playPrev() {
   }
 
   pendingRestoreTime = null;
-  loadTrack(prevIndex, true);
+  await loadTrack(prevIndex, true);
 }
 
 function toggleShuffle() {
@@ -671,23 +862,19 @@ function saveNamedPlaylist() {
     return;
   }
 
-  const urlTracks = playlist
-    .filter((track) => track.sourceType === "url" && track.src)
-    .map((track) => ({
-      id: track.id,
-      title: track.title,
-      sourceType: track.sourceType,
-      src: track.src,
-    }));
+  const normalizedTracks = playlist
+    .map((track) => normalizeTrack(track))
+    .filter(Boolean);
 
-  if (urlTracks.length === 0) {
-    savedPlaylistStatus.textContent = "Only URL tracks can be saved right now.";
+  if (normalizedTracks.length === 0) {
+    savedPlaylistStatus.textContent =
+      "There is nothing to save in this playlist.";
     return;
   }
 
   savedPlaylists[name] = {
     name,
-    tracks: urlTracks,
+    tracks: normalizedTracks,
     savedAt: new Date().toISOString(),
   };
 
@@ -700,7 +887,7 @@ function saveNamedPlaylist() {
   setPlayerStatus(`Saved playlist "${name}".`);
 }
 
-function loadNamedPlaylist() {
+async function loadNamedPlaylist() {
   const name = savedPlaylistsSelect.value;
 
   if (!name || !savedPlaylists[name]) {
@@ -709,12 +896,9 @@ function loadNamedPlaylist() {
   }
 
   const saved = savedPlaylists[name];
-  playlist = saved.tracks.map((track) => ({
-    id: track.id || crypto.randomUUID(),
-    title: track.title || "URL Audio",
-    sourceType: "url",
-    src: track.src,
-  }));
+  playlist = (saved.tracks || [])
+    .map((track) => normalizeTrack(track))
+    .filter(Boolean);
 
   currentTrackIndex = playlist.length > 0 ? 0 : -1;
   currentPlaylistName = name;
@@ -726,7 +910,7 @@ function loadNamedPlaylist() {
 
   if (currentTrackIndex >= 0) {
     pendingRestoreTime = null;
-    loadTrack(0, false);
+    await loadTrack(0, false);
   } else {
     renderPlaylist();
     updatePlayPauseButton();
@@ -914,7 +1098,8 @@ function updateMediaSession() {
 
   navigator.mediaSession.metadata = new MediaMetadata({
     title: currentTrack.title,
-    artist: currentTrack.sourceType === "file" ? "Device file" : "URL stream",
+    artist:
+      currentTrack.sourceType === "file" ? "Stored device file" : "URL stream",
     album: currentPlaylistName || "Just Play It",
     artwork: [
       { src: "icons/icon-192.png", sizes: "192x192", type: "image/png" },
@@ -998,10 +1183,10 @@ async function handleInstallClick() {
   installBtn.classList.add("hidden");
 }
 
-fileInput.addEventListener("change", (event) => {
+fileInput.addEventListener("change", async (event) => {
   const files = event.target.files;
   if (!files || files.length === 0) return;
-  addFileTracks(files);
+  await addFileTracks(files);
   fileInput.value = "";
 });
 
@@ -1020,29 +1205,40 @@ clearPlaylistBtn.addEventListener("click", () => {
   clearPlaylist();
 });
 
-playPauseBtn.addEventListener("click", () => {
+playPauseBtn.addEventListener("click", async () => {
   if (!audio.src) {
-    playCurrent();
+    await playCurrent();
     return;
   }
 
   if (audio.paused) {
-    playCurrent();
+    await playCurrent();
   } else {
     pauseCurrent();
   }
 });
 
-nextBtn.addEventListener("click", playNext);
-prevBtn.addEventListener("click", playPrev);
+nextBtn.addEventListener("click", async () => {
+  await playNext();
+});
+
+prevBtn.addEventListener("click", async () => {
+  await playPrev();
+});
+
 shuffleBtn.addEventListener("click", toggleShuffle);
 repeatBtn.addEventListener("click", cycleRepeatMode);
 installBtn.addEventListener("click", handleInstallClick);
 
 savePlaylistBtn.addEventListener("click", saveNamedPlaylist);
-loadPlaylistBtn.addEventListener("click", loadNamedPlaylist);
+loadPlaylistBtn.addEventListener("click", async () => {
+  await loadNamedPlaylist();
+});
 renamePlaylistBtn.addEventListener("click", renameNamedPlaylist);
 deletePlaylistBtn.addEventListener("click", deleteNamedPlaylist);
+clearDeviceLibraryBtn.addEventListener("click", async () => {
+  await clearDeviceLibrary();
+});
 
 savedPlaylistsSelect.addEventListener("change", () => {
   const name = savedPlaylistsSelect.value;
@@ -1111,7 +1307,7 @@ audio.addEventListener("pause", () => {
   }
 });
 
-audio.addEventListener("ended", () => {
+audio.addEventListener("ended", async () => {
   pendingRestoreTime = null;
   localStorage.removeItem(STORAGE_KEYS.currentTime);
 
@@ -1138,7 +1334,7 @@ audio.addEventListener("ended", () => {
     repeatMode === "all" ||
     currentTrackIndex < playlist.length - 1
   ) {
-    playNext();
+    await playNext();
   }
 });
 
@@ -1155,6 +1351,7 @@ window.addEventListener("beforeunload", () => {
   savePlaybackState();
   saveVolume();
   saveModes();
+  revokeCurrentObjectUrl();
 });
 
 if ("serviceWorker" in navigator) {
@@ -1165,12 +1362,29 @@ if ("serviceWorker" in navigator) {
   });
 }
 
-loadVolume();
-loadModes();
-loadSavedPlaylists();
-loadPlaylist();
-restoreSleepTimer();
-renderPlaylist();
-updatePlayPauseButton();
-updateNowPlaying(playlist[currentTrackIndex] || null);
-setupMediaSessionActions();
+async function initApp() {
+  try {
+    db = await openDatabase();
+  } catch (error) {
+    console.error("IndexedDB failed:", error);
+    alert(
+      "IndexedDB could not start. Device-file persistence may not work in this browser.",
+    );
+  }
+
+  loadVolume();
+  loadModes();
+  loadSavedPlaylists();
+  loadPlaylistFromStorage();
+  restoreSleepTimer();
+  renderPlaylist();
+  updatePlayPauseButton();
+  updateNowPlaying(playlist[currentTrackIndex] || null);
+  setupMediaSessionActions();
+
+  if (currentTrackIndex >= 0) {
+    await loadTrack(currentTrackIndex, false);
+  }
+}
+
+initApp();
