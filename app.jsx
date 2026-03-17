@@ -14,9 +14,26 @@ const currentTimeEl = document.getElementById("currentTime");
 const durationEl = document.getElementById("duration");
 const trackTitleEl = document.getElementById("trackTitle");
 const trackMetaEl = document.getElementById("trackMeta");
+const coverArtEl = document.getElementById("coverArt");
+
+const volumeSlider = document.getElementById("volumeSlider");
+const sleepTimerSelect = document.getElementById("sleepTimerSelect");
+const setSleepTimerBtn = document.getElementById("setSleepTimerBtn");
+const sleepTimerStatus = document.getElementById("sleepTimerStatus");
+
+const STORAGE_KEYS = {
+  playlist: "justPlayItPlaylist",
+  currentTrackIndex: "justPlayItCurrentTrackIndex",
+  currentTime: "justPlayItCurrentTime",
+  volume: "justPlayItVolume",
+  sleepTimerEnd: "justPlayItSleepTimerEnd",
+};
 
 let playlist = [];
 let currentTrackIndex = -1;
+let pendingRestoreTime = null;
+let sleepTimerInterval = null;
+let sleepTimerTimeout = null;
 
 function formatTime(seconds) {
   if (!Number.isFinite(seconds)) return "0:00";
@@ -36,6 +53,41 @@ function getFileNameFromUrl(url) {
   }
 }
 
+function getTrackEmoji(track) {
+  if (!track) return "♪";
+  const name = (track.title || "").toLowerCase();
+
+  if (name.includes("podcast")) return "🎙";
+  if (name.includes("sermon")) return "📖";
+  if (name.includes("bible")) return "📘";
+  if (name.includes("song") || name.includes("music")) return "🎵";
+  if (name.includes("lesson")) return "📝";
+  return track.sourceType === "file" ? "🎧" : "🌐";
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function updateNowPlaying(track) {
+  if (!track) {
+    trackTitleEl.textContent = "Nothing loaded yet";
+    trackMetaEl.textContent = "Add a file or paste an audio URL";
+    coverArtEl.textContent = "♪";
+    return;
+  }
+
+  trackTitleEl.textContent = track.title;
+  trackMetaEl.textContent =
+    track.sourceType === "file" ? "Device file" : "Streaming from URL";
+  coverArtEl.textContent = getTrackEmoji(track);
+}
+
 function savePlaylist() {
   const safePlaylist = playlist.map((track) => ({
     id: track.id,
@@ -44,17 +96,50 @@ function savePlaylist() {
     src: track.sourceType === "url" ? track.src : null,
   }));
 
-  localStorage.setItem("justPlayItPlaylist", JSON.stringify(safePlaylist));
+  localStorage.setItem(STORAGE_KEYS.playlist, JSON.stringify(safePlaylist));
   localStorage.setItem(
-    "justPlayItCurrentTrackIndex",
+    STORAGE_KEYS.currentTrackIndex,
     String(currentTrackIndex),
   );
+}
+
+function savePlaybackState() {
+  localStorage.setItem(
+    STORAGE_KEYS.currentTrackIndex,
+    String(currentTrackIndex),
+  );
+
+  if (
+    currentTrackIndex >= 0 &&
+    currentTrackIndex < playlist.length &&
+    playlist[currentTrackIndex]?.sourceType === "url"
+  ) {
+    localStorage.setItem(
+      STORAGE_KEYS.currentTime,
+      String(audio.currentTime || 0),
+    );
+  } else {
+    localStorage.removeItem(STORAGE_KEYS.currentTime);
+  }
+}
+
+function saveVolume() {
+  localStorage.setItem(STORAGE_KEYS.volume, String(audio.volume));
+}
+
+function loadVolume() {
+  const saved = Number(localStorage.getItem(STORAGE_KEYS.volume));
+  const safeValue = Number.isFinite(saved)
+    ? Math.min(1, Math.max(0, saved))
+    : 1;
+  audio.volume = safeValue;
+  volumeSlider.value = String(safeValue);
 }
 
 function loadPlaylist() {
   try {
     const saved = JSON.parse(
-      localStorage.getItem("justPlayItPlaylist") || "[]",
+      localStorage.getItem(STORAGE_KEYS.playlist) || "[]",
     );
     if (!Array.isArray(saved)) return;
 
@@ -68,31 +153,23 @@ function loadPlaylist() {
       }));
 
     const savedIndex = Number(
-      localStorage.getItem("justPlayItCurrentTrackIndex"),
+      localStorage.getItem(STORAGE_KEYS.currentTrackIndex),
     );
+    const savedTime = Number(localStorage.getItem(STORAGE_KEYS.currentTime));
+
     if (
       Number.isInteger(savedIndex) &&
       savedIndex >= 0 &&
       savedIndex < playlist.length
     ) {
       currentTrackIndex = savedIndex;
+      pendingRestoreTime =
+        Number.isFinite(savedTime) && savedTime > 0 ? savedTime : null;
       loadTrack(currentTrackIndex, false);
     }
   } catch (error) {
     console.error("Could not load playlist:", error);
   }
-}
-
-function updateNowPlaying(track) {
-  if (!track) {
-    trackTitleEl.textContent = "Nothing loaded yet";
-    trackMetaEl.textContent = "Add a file or paste an audio URL";
-    return;
-  }
-
-  trackTitleEl.textContent = track.title;
-  trackMetaEl.textContent =
-    track.sourceType === "file" ? "Device file" : "Streaming from URL";
 }
 
 function renderPlaylist() {
@@ -114,12 +191,16 @@ function renderPlaylist() {
       li.classList.add("active");
     }
 
+    const thumb = document.createElement("div");
+    thumb.className = "track-thumb";
+    thumb.textContent = getTrackEmoji(track);
+
     const infoBtn = document.createElement("button");
     infoBtn.type = "button";
     infoBtn.className = "track-info-btn";
     infoBtn.innerHTML = `
       <span class="track-name">${escapeHtml(track.title)}</span>
-      <span class="track-source">${track.sourceType === "file" ? "File" : "URL"}</span>
+      <span class="track-source">${track.sourceType === "file" ? "File from device" : "Audio from URL"}</span>
     `;
     infoBtn.addEventListener("click", () => {
       loadTrack(index, true);
@@ -147,20 +228,12 @@ function renderPlaylist() {
     actions.appendChild(playBtn);
     actions.appendChild(removeBtn);
 
+    li.appendChild(thumb);
     li.appendChild(infoBtn);
     li.appendChild(actions);
 
     playlistEl.appendChild(li);
   });
-}
-
-function escapeHtml(str) {
-  return String(str)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
 }
 
 function loadTrack(index, shouldPlay = false) {
@@ -203,9 +276,9 @@ function addFileTracks(files) {
   if (currentTrackIndex === -1 && playlist.length > 0) {
     currentTrackIndex = 0;
     loadTrack(0, false);
+  } else {
+    renderPlaylist();
   }
-
-  renderPlaylist();
 }
 
 function addUrlTrack(url) {
@@ -253,8 +326,10 @@ function removeTrack(index) {
     currentTimeEl.textContent = "0:00";
     durationEl.textContent = "0:00";
     seekBar.value = 0;
+    localStorage.removeItem(STORAGE_KEYS.currentTime);
     savePlaylist();
     renderPlaylist();
+    updatePlayPauseButton();
     return;
   }
 
@@ -282,10 +357,12 @@ function clearPlaylist() {
   currentTimeEl.textContent = "0:00";
   durationEl.textContent = "0:00";
 
-  localStorage.removeItem("justPlayItPlaylist");
-  localStorage.removeItem("justPlayItCurrentTrackIndex");
+  localStorage.removeItem(STORAGE_KEYS.playlist);
+  localStorage.removeItem(STORAGE_KEYS.currentTrackIndex);
+  localStorage.removeItem(STORAGE_KEYS.currentTime);
 
   renderPlaylist();
+  updatePlayPauseButton();
 }
 
 function updatePlayPauseButton() {
@@ -320,6 +397,7 @@ function playNext() {
 
   const nextIndex =
     currentTrackIndex >= playlist.length - 1 ? 0 : currentTrackIndex + 1;
+  pendingRestoreTime = null;
   loadTrack(nextIndex, true);
 }
 
@@ -328,7 +406,104 @@ function playPrev() {
 
   const prevIndex =
     currentTrackIndex <= 0 ? playlist.length - 1 : currentTrackIndex - 1;
+  pendingRestoreTime = null;
   loadTrack(prevIndex, true);
+}
+
+function setSleepTimer(minutes) {
+  clearSleepTimer();
+
+  if (!minutes || minutes <= 0) {
+    sleepTimerStatus.textContent = "No sleep timer set.";
+    localStorage.removeItem(STORAGE_KEYS.sleepTimerEnd);
+    sleepTimerSelect.value = "0";
+    return;
+  }
+
+  const endTime = Date.now() + minutes * 60 * 1000;
+  localStorage.setItem(STORAGE_KEYS.sleepTimerEnd, String(endTime));
+  sleepTimerSelect.value = String(minutes);
+
+  sleepTimerTimeout = window.setTimeout(
+    () => {
+      audio.pause();
+      updatePlayPauseButton();
+      clearSleepTimer();
+      sleepTimerStatus.textContent = "Sleep timer finished. Playback paused.";
+    },
+    minutes * 60 * 1000,
+  );
+
+  sleepTimerInterval = window.setInterval(updateSleepTimerStatus, 1000);
+  updateSleepTimerStatus();
+}
+
+function clearSleepTimer() {
+  if (sleepTimerTimeout) {
+    clearTimeout(sleepTimerTimeout);
+    sleepTimerTimeout = null;
+  }
+
+  if (sleepTimerInterval) {
+    clearInterval(sleepTimerInterval);
+    sleepTimerInterval = null;
+  }
+
+  localStorage.removeItem(STORAGE_KEYS.sleepTimerEnd);
+}
+
+function updateSleepTimerStatus() {
+  const savedEnd = Number(localStorage.getItem(STORAGE_KEYS.sleepTimerEnd));
+
+  if (!Number.isFinite(savedEnd) || savedEnd <= Date.now()) {
+    if (sleepTimerInterval) {
+      clearInterval(sleepTimerInterval);
+      sleepTimerInterval = null;
+    }
+    if (sleepTimerTimeout) {
+      clearTimeout(sleepTimerTimeout);
+      sleepTimerTimeout = null;
+    }
+    localStorage.removeItem(STORAGE_KEYS.sleepTimerEnd);
+    if (
+      sleepTimerStatus.textContent !== "Sleep timer finished. Playback paused."
+    ) {
+      sleepTimerStatus.textContent = "No sleep timer set.";
+    }
+    sleepTimerSelect.value = "0";
+    return;
+  }
+
+  const remainingMs = savedEnd - Date.now();
+  const totalSeconds = Math.ceil(remainingMs / 1000);
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = totalSeconds % 60;
+  sleepTimerStatus.textContent = `Playback will pause in ${mins}:${secs
+    .toString()
+    .padStart(2, "0")}.`;
+}
+
+function restoreSleepTimer() {
+  const savedEnd = Number(localStorage.getItem(STORAGE_KEYS.sleepTimerEnd));
+  if (!Number.isFinite(savedEnd) || savedEnd <= Date.now()) {
+    localStorage.removeItem(STORAGE_KEYS.sleepTimerEnd);
+    sleepTimerStatus.textContent = "No sleep timer set.";
+    return;
+  }
+
+  const remainingMs = savedEnd - Date.now();
+  const approxMinutes = Math.max(1, Math.round(remainingMs / 60000));
+
+  sleepTimerTimeout = window.setTimeout(() => {
+    audio.pause();
+    updatePlayPauseButton();
+    clearSleepTimer();
+    sleepTimerStatus.textContent = "Sleep timer finished. Playback paused.";
+  }, remainingMs);
+
+  sleepTimerInterval = window.setInterval(updateSleepTimerStatus, 1000);
+  sleepTimerSelect.value = String(approxMinutes);
+  updateSleepTimerStatus();
 }
 
 fileInput.addEventListener("change", (event) => {
@@ -371,6 +546,14 @@ prevBtn.addEventListener("click", playPrev);
 
 audio.addEventListener("loadedmetadata", () => {
   durationEl.textContent = formatTime(audio.duration);
+
+  if (
+    pendingRestoreTime !== null &&
+    Number.isFinite(audio.duration) &&
+    pendingRestoreTime < audio.duration
+  ) {
+    audio.currentTime = pendingRestoreTime;
+  }
 });
 
 audio.addEventListener("timeupdate", () => {
@@ -381,6 +564,8 @@ audio.addEventListener("timeupdate", () => {
   } else {
     seekBar.value = 0;
   }
+
+  savePlaybackState();
 });
 
 seekBar.addEventListener("input", () => {
@@ -389,14 +574,30 @@ seekBar.addEventListener("input", () => {
   audio.currentTime = seekTo;
 });
 
+volumeSlider.addEventListener("input", () => {
+  audio.volume = Number(volumeSlider.value);
+  saveVolume();
+});
+
+setSleepTimerBtn.addEventListener("click", () => {
+  const minutes = Number(sleepTimerSelect.value);
+  setSleepTimer(minutes);
+});
+
 audio.addEventListener("play", updatePlayPauseButton);
 audio.addEventListener("pause", updatePlayPauseButton);
 
 audio.addEventListener("ended", () => {
+  pendingRestoreTime = null;
+  localStorage.removeItem(STORAGE_KEYS.currentTime);
   playNext();
 });
 
-window.addEventListener("beforeunload", savePlaylist);
+window.addEventListener("beforeunload", () => {
+  savePlaylist();
+  savePlaybackState();
+  saveVolume();
+});
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
@@ -406,6 +607,8 @@ if ("serviceWorker" in navigator) {
   });
 }
 
+loadVolume();
 loadPlaylist();
+restoreSleepTimer();
 renderPlaylist();
 updatePlayPauseButton();

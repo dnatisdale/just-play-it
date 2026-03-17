@@ -1,4 +1,4 @@
-const CACHE_NAME = "just-play-it-v1";
+const CACHE_NAME = "just-play-it-v2";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
@@ -22,6 +22,7 @@ self.addEventListener("activate", (event) => {
           if (key !== CACHE_NAME) {
             return caches.delete(key);
           }
+          return null;
         }),
       ),
     ),

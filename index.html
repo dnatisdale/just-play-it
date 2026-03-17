@@ -31,10 +31,17 @@
       <main class="main-layout">
         <section class="player-card">
           <div class="now-playing-label">Now Playing</div>
-          <h2 id="trackTitle" class="track-title">Nothing loaded yet</h2>
-          <p id="trackMeta" class="track-meta">
-            Add a file or paste an audio URL
-          </p>
+
+          <div class="now-playing-wrap">
+            <div class="cover-art" id="coverArt" aria-hidden="true">♪</div>
+
+            <div class="now-playing-text">
+              <h2 id="trackTitle" class="track-title">Nothing loaded yet</h2>
+              <p id="trackMeta" class="track-meta">
+                Add a file or paste an audio URL
+              </p>
+            </div>
+          </div>
 
           <audio id="audio"></audio>
 
@@ -53,11 +60,67 @@
           </div>
 
           <div class="controls">
-            <button id="prevBtn" class="control-btn" type="button">⏮</button>
-            <button id="playPauseBtn" class="control-btn primary" type="button">
+            <button
+              id="prevBtn"
+              class="control-btn"
+              type="button"
+              aria-label="Previous track"
+            >
+              ⏮
+            </button>
+            <button
+              id="playPauseBtn"
+              class="control-btn primary"
+              type="button"
+              aria-label="Play or pause"
+            >
               ▶
             </button>
-            <button id="nextBtn" class="control-btn" type="button">⏭</button>
+            <button
+              id="nextBtn"
+              class="control-btn"
+              type="button"
+              aria-label="Next track"
+            >
+              ⏭
+            </button>
+          </div>
+
+          <div class="player-tools">
+            <div class="tool-block">
+              <label for="volumeSlider">Volume</label>
+              <div class="slider-row">
+                <span class="mini-label">0</span>
+                <input
+                  id="volumeSlider"
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value="1"
+                />
+                <span class="mini-label">100</span>
+              </div>
+            </div>
+
+            <div class="tool-block">
+              <label for="sleepTimerSelect">Sleep timer</label>
+              <div class="sleep-row">
+                <select id="sleepTimerSelect">
+                  <option value="0">Off</option>
+                  <option value="5">5 min</option>
+                  <option value="10">10 min</option>
+                  <option value="15">15 min</option>
+                  <option value="30">30 min</option>
+                  <option value="45">45 min</option>
+                  <option value="60">60 min</option>
+                </select>
+                <button id="setSleepTimerBtn" type="button">Set</button>
+              </div>
+              <p id="sleepTimerStatus" class="helper-text">
+                No sleep timer set.
+              </p>
+            </div>
           </div>
         </section>
 
