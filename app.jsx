@@ -10,6 +10,7 @@ const prevBtn = document.getElementById("prevBtn");
 const nextBtn = document.getElementById("nextBtn");
 const shuffleBtn = document.getElementById("shuffleBtn");
 const repeatBtn = document.getElementById("repeatBtn");
+const installBtn = document.getElementById("installBtn");
 
 const seekBar = document.getElementById("seekBar");
 const currentTimeEl = document.getElementById("currentTime");
@@ -55,6 +56,7 @@ let shuffleEnabled = false;
 let repeatMode = "off";
 let savedPlaylists = {};
 let currentPlaylistName = "";
+let deferredInstallPrompt = null;
 
 function formatTime(seconds) {
   if (!Number.isFinite(seconds)) return "0:00";
@@ -110,6 +112,7 @@ function updateNowPlaying(track) {
     trackMetaEl.textContent = "Add a file or paste an audio URL";
     coverArtEl.textContent = "♪";
     setPlayerStatus("Ready when you are.");
+    updateMediaSession();
     return;
   }
 
@@ -129,6 +132,8 @@ function updateNowPlaying(track) {
   } else {
     setPlayerStatus("Normal playback.");
   }
+
+  updateMediaSession();
 }
 
 function savePlaylistState() {
@@ -329,6 +334,24 @@ function renderPlaylist() {
     const actions = document.createElement("div");
     actions.className = "item-actions";
 
+    const upBtn = document.createElement("button");
+    upBtn.type = "button";
+    upBtn.className = "small-btn";
+    upBtn.textContent = "↑";
+    upBtn.title = "Move up";
+    upBtn.addEventListener("click", () => {
+      moveTrack(index, -1);
+    });
+
+    const downBtn = document.createElement("button");
+    downBtn.type = "button";
+    downBtn.className = "small-btn";
+    downBtn.textContent = "↓";
+    downBtn.title = "Move down";
+    downBtn.addEventListener("click", () => {
+      moveTrack(index, 1);
+    });
+
     const playBtn = document.createElement("button");
     playBtn.type = "button";
     playBtn.className = "small-btn";
@@ -345,6 +368,8 @@ function renderPlaylist() {
       removeTrack(index);
     });
 
+    actions.appendChild(upBtn);
+    actions.appendChild(downBtn);
     actions.appendChild(playBtn);
     actions.appendChild(removeBtn);
 
@@ -354,6 +379,45 @@ function renderPlaylist() {
 
     playlistEl.appendChild(li);
   });
+}
+
+function updateCurrentTrackIndexAfterMove(fromIndex, toIndex) {
+  if (currentTrackIndex === fromIndex) {
+    currentTrackIndex = toIndex;
+    return;
+  }
+
+  if (fromIndex < currentTrackIndex && toIndex >= currentTrackIndex) {
+    currentTrackIndex -= 1;
+    return;
+  }
+
+  if (fromIndex > currentTrackIndex && toIndex <= currentTrackIndex) {
+    currentTrackIndex += 1;
+  }
+}
+
+function moveTrack(index, direction) {
+  const targetIndex = index + direction;
+  if (targetIndex < 0 || targetIndex >= playlist.length) return;
+
+  const [movedTrack] = playlist.splice(index, 1);
+  playlist.splice(targetIndex, 0, movedTrack);
+
+  updateCurrentTrackIndexAfterMove(index, targetIndex);
+
+  currentPlaylistName = "";
+  updatePlaylistNameDisplay();
+  renderPlaylist();
+  savePlaylistState();
+
+  if (currentTrackIndex >= 0 && currentTrackIndex < playlist.length) {
+    updateNowPlaying(playlist[currentTrackIndex]);
+  }
+
+  setPlayerStatus(
+    `Moved "${movedTrack.title}" ${direction < 0 ? "up" : "down"}.`,
+  );
 }
 
 function loadTrack(index, shouldPlay = false) {
@@ -633,6 +697,7 @@ function saveNamedPlaylist() {
   savedPlaylistsSelect.value = name;
   localStorage.setItem(STORAGE_KEYS.selectedSavedPlaylist, name);
   savedPlaylistStatus.textContent = `Saved playlist: ${name}`;
+  setPlayerStatus(`Saved playlist "${name}".`);
 }
 
 function loadNamedPlaylist() {
@@ -711,6 +776,7 @@ function renameNamedPlaylist() {
   }
 
   savedPlaylistStatus.textContent = `Renamed playlist to: ${cleanName}`;
+  setPlayerStatus(`Renamed playlist to "${cleanName}".`);
 }
 
 function deleteNamedPlaylist() {
@@ -735,6 +801,7 @@ function deleteNamedPlaylist() {
   }
 
   savedPlaylistStatus.textContent = `Deleted playlist: ${name}`;
+  setPlayerStatus(`Deleted playlist "${name}".`);
 }
 
 function setSleepTimer(minutes) {
@@ -835,6 +902,102 @@ function restoreSleepTimer() {
   updateSleepTimerStatus();
 }
 
+function updateMediaSession() {
+  if (!("mediaSession" in navigator)) return;
+
+  const currentTrack = playlist[currentTrackIndex];
+
+  if (!currentTrack) {
+    navigator.mediaSession.metadata = null;
+    return;
+  }
+
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title: currentTrack.title,
+    artist: currentTrack.sourceType === "file" ? "Device file" : "URL stream",
+    album: currentPlaylistName || "Just Play It",
+    artwork: [
+      { src: "icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { src: "icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+  });
+
+  navigator.mediaSession.playbackState = audio.paused ? "paused" : "playing";
+}
+
+function setupMediaSessionActions() {
+  if (!("mediaSession" in navigator)) return;
+
+  try {
+    navigator.mediaSession.setActionHandler("play", () => {
+      playCurrent();
+    });
+  } catch {}
+
+  try {
+    navigator.mediaSession.setActionHandler("pause", () => {
+      pauseCurrent();
+    });
+  } catch {}
+
+  try {
+    navigator.mediaSession.setActionHandler("previoustrack", () => {
+      playPrev();
+    });
+  } catch {}
+
+  try {
+    navigator.mediaSession.setActionHandler("nexttrack", () => {
+      playNext();
+    });
+  } catch {}
+
+  try {
+    navigator.mediaSession.setActionHandler("seekbackward", (details) => {
+      const skipTime = details.seekOffset || 10;
+      audio.currentTime = Math.max(0, audio.currentTime - skipTime);
+    });
+  } catch {}
+
+  try {
+    navigator.mediaSession.setActionHandler("seekforward", (details) => {
+      const skipTime = details.seekOffset || 10;
+      const maxTime = Number.isFinite(audio.duration)
+        ? audio.duration
+        : audio.currentTime + skipTime;
+      audio.currentTime = Math.min(maxTime, audio.currentTime + skipTime);
+    });
+  } catch {}
+
+  try {
+    navigator.mediaSession.setActionHandler("seekto", (details) => {
+      if (details.seekTime != null && Number.isFinite(audio.duration)) {
+        audio.currentTime = details.seekTime;
+      }
+    });
+  } catch {}
+}
+
+function handleBeforeInstallPrompt(event) {
+  event.preventDefault();
+  deferredInstallPrompt = event;
+  installBtn.classList.remove("hidden");
+}
+
+async function handleInstallClick() {
+  if (!deferredInstallPrompt) return;
+
+  deferredInstallPrompt.prompt();
+  try {
+    await deferredInstallPrompt.userChoice;
+  } catch (error) {
+    console.error("Install prompt error:", error);
+  }
+
+  deferredInstallPrompt = null;
+  installBtn.classList.add("hidden");
+}
+
 fileInput.addEventListener("change", (event) => {
   const files = event.target.files;
   if (!files || files.length === 0) return;
@@ -874,6 +1037,7 @@ nextBtn.addEventListener("click", playNext);
 prevBtn.addEventListener("click", playPrev);
 shuffleBtn.addEventListener("click", toggleShuffle);
 repeatBtn.addEventListener("click", cycleRepeatMode);
+installBtn.addEventListener("click", handleInstallClick);
 
 savePlaylistBtn.addEventListener("click", saveNamedPlaylist);
 loadPlaylistBtn.addEventListener("click", loadNamedPlaylist);
@@ -933,6 +1097,7 @@ setSleepTimerBtn.addEventListener("click", () => {
 
 audio.addEventListener("play", () => {
   updatePlayPauseButton();
+  updateMediaSession();
   if (playlist[currentTrackIndex]) {
     setPlayerStatus(`Playing: ${playlist[currentTrackIndex].title}`);
   }
@@ -940,6 +1105,7 @@ audio.addEventListener("play", () => {
 
 audio.addEventListener("pause", () => {
   updatePlayPauseButton();
+  updateMediaSession();
   if (audio.currentTime > 0 && !audio.ended) {
     setPlayerStatus("Playback paused.");
   }
@@ -976,6 +1142,14 @@ audio.addEventListener("ended", () => {
   }
 });
 
+window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+
+window.addEventListener("appinstalled", () => {
+  deferredInstallPrompt = null;
+  installBtn.classList.add("hidden");
+  setPlayerStatus("App installed.");
+});
+
 window.addEventListener("beforeunload", () => {
   savePlaylistState();
   savePlaybackState();
@@ -999,3 +1173,4 @@ restoreSleepTimer();
 renderPlaylist();
 updatePlayPauseButton();
 updateNowPlaying(playlist[currentTrackIndex] || null);
+setupMediaSessionActions();

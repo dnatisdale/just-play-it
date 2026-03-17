@@ -22,10 +22,18 @@
   <body>
     <div class="app-shell">
       <header class="topbar">
-        <div>
-          <h1>Just Play It</h1>
-          <p class="subtitle">Simple audio player for files and links</p>
+        <div class="brand-wrap">
+          <div class="brand-badge" aria-hidden="true">▶</div>
+
+          <div class="brand-text">
+            <h1>Just Play It</h1>
+            <p class="subtitle">Simple audio player for files and links</p>
+          </div>
         </div>
+
+        <button id="installBtn" class="install-btn hidden" type="button">
+          Install App
+        </button>
       </header>
 
       <main class="main-layout">

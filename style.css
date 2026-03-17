@@ -51,6 +51,41 @@ button {
 
 .topbar {
   margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.brand-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.brand-badge {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: radial-gradient(
+    circle at top left,
+    #ffffff 0%,
+    #dbe4f3 35%,
+    #98a8c3 100%
+  );
+  color: #111111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.brand-text {
+  min-width: 0;
 }
 
 .topbar h1 {
@@ -63,6 +98,31 @@ button {
   margin: 6px 0 0;
   color: var(--muted);
   font-size: 0.95rem;
+}
+
+.install-btn,
+.control-btn,
+.url-row button,
+.ghost-btn,
+.sleep-row button,
+.save-row button,
+.load-row button,
+.mode-btn {
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 10px 16px;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.install-btn {
+  white-space: nowrap;
+}
+
+.hidden {
+  display: none !important;
 }
 
 .main-layout {
@@ -160,22 +220,6 @@ button {
   justify-content: center;
   gap: 12px;
   margin-top: 18px;
-}
-
-.control-btn,
-.url-row button,
-.ghost-btn,
-.sleep-row button,
-.save-row button,
-.load-row button,
-.mode-btn {
-  border: 1px solid var(--border);
-  background: var(--panel-2);
-  color: var(--text);
-  border-radius: 999px;
-  padding: 10px 16px;
-  cursor: pointer;
-  min-height: 44px;
 }
 
 .control-btn {
@@ -407,6 +451,11 @@ button {
 @media (max-width: 560px) {
   .app-shell {
     padding: 14px 10px 28px;
+  }
+
+  .topbar {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .player-card,
