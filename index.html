@@ -1,1 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#111111" />
+    <meta
+      name="description"
+      content="Just Play It - a simple audio player PWA"
+    />
+    <title>Just Play It</title>
 
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" href="icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="icons/icon-192.png" />
+
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <h1>Just Play It</h1>
+          <p class="subtitle">Simple audio player for files and links</p>
+        </div>
+      </header>
+
+      <main class="main-layout">
+        <section class="player-card">
+          <div class="now-playing-label">Now Playing</div>
+          <h2 id="trackTitle" class="track-title">Nothing loaded yet</h2>
+          <p id="trackMeta" class="track-meta">
+            Add a file or paste an audio URL
+          </p>
+
+          <audio id="audio"></audio>
+
+          <div class="progress-wrap">
+            <span id="currentTime">0:00</span>
+            <input
+              id="seekBar"
+              class="seek-bar"
+              type="range"
+              min="0"
+              max="100"
+              value="0"
+              step="0.1"
+            />
+            <span id="duration">0:00</span>
+          </div>
+
+          <div class="controls">
+            <button id="prevBtn" class="control-btn" type="button">⏮</button>
+            <button id="playPauseBtn" class="control-btn primary" type="button">
+              ▶
+            </button>
+            <button id="nextBtn" class="control-btn" type="button">⏭</button>
+          </div>
+        </section>
+
+        <section class="library-card">
+          <h3>Add audio</h3>
+
+          <div class="add-grid">
+            <div class="input-block">
+              <label for="fileInput">From device</label>
+              <input id="fileInput" type="file" accept="audio/*" multiple />
+            </div>
+
+            <div class="input-block">
+              <label for="urlInput">From URL</label>
+              <div class="url-row">
+                <input
+                  id="urlInput"
+                  type="url"
+                  placeholder="https://example.com/audio.mp3"
+                  autocomplete="off"
+                />
+                <button id="addUrlBtn" type="button">Add</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="playlist-header">
+            <h3>Playlist</h3>
+            <button id="clearPlaylistBtn" class="ghost-btn" type="button">
+              Clear
+            </button>
+          </div>
+
+          <ul id="playlist" class="playlist"></ul>
+        </section>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
