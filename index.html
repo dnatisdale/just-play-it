@@ -246,18 +246,63 @@
               <p id="playlistNameDisplay" class="playlist-name-display">
                 Current playlist: Unsaved
               </p>
-              <p class="helper-text helper-tight">
-                Tip: drag tracks to reorder them.
-              </p>
             </div>
             <button id="clearPlaylistBtn" class="ghost-btn" type="button">
               Clear
             </button>
           </div>
 
+          <div class="playlist-tools">
+            <input
+              id="playlistSearchInput"
+              type="text"
+              placeholder="Search this playlist..."
+              autocomplete="off"
+            />
+            <button id="jumpToCurrentBtn" class="ghost-btn" type="button">
+              Jump to Current
+            </button>
+          </div>
+
           <ul id="playlist" class="playlist"></ul>
         </section>
       </main>
+    </div>
+
+    <div id="miniPlayer" class="mini-player hidden" aria-live="polite">
+      <div class="mini-player-info">
+        <div id="miniPlayerTitle" class="mini-player-title">
+          Nothing loaded yet
+        </div>
+        <div id="miniPlayerMeta" class="mini-player-meta">Ready</div>
+      </div>
+
+      <div class="mini-player-actions">
+        <button
+          id="miniPrevBtn"
+          class="mini-btn"
+          type="button"
+          aria-label="Previous"
+        >
+          ⏮
+        </button>
+        <button
+          id="miniPlayPauseBtn"
+          class="mini-btn primary"
+          type="button"
+          aria-label="Play or pause"
+        >
+          ▶
+        </button>
+        <button
+          id="miniNextBtn"
+          class="mini-btn"
+          type="button"
+          aria-label="Next"
+        >
+          ⏭
+        </button>
+      </div>
     </div>
 
     <div id="toast" class="toast" aria-live="polite" aria-atomic="true"></div>

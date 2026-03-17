@@ -37,6 +37,17 @@ const exportPlaylistsBtn = document.getElementById("exportPlaylistsBtn");
 const importPlaylistsInput = document.getElementById("importPlaylistsInput");
 const savedPlaylistStatus = document.getElementById("savedPlaylistStatus");
 const playlistNameDisplay = document.getElementById("playlistNameDisplay");
+
+const playlistSearchInput = document.getElementById("playlistSearchInput");
+const jumpToCurrentBtn = document.getElementById("jumpToCurrentBtn");
+
+const miniPlayer = document.getElementById("miniPlayer");
+const miniPlayerTitle = document.getElementById("miniPlayerTitle");
+const miniPlayerMeta = document.getElementById("miniPlayerMeta");
+const miniPrevBtn = document.getElementById("miniPrevBtn");
+const miniPlayPauseBtn = document.getElementById("miniPlayPauseBtn");
+const miniNextBtn = document.getElementById("miniNextBtn");
+
 const toastEl = document.getElementById("toast");
 
 const STORAGE_KEYS = {
@@ -70,6 +81,7 @@ let deferredInstallPrompt = null;
 let currentObjectUrl = null;
 let toastTimeout = null;
 let draggedTrackIndex = null;
+let playlistFilter = "";
 
 function formatTime(seconds) {
   if (!Number.isFinite(seconds)) return "0:00";
@@ -178,6 +190,21 @@ function normalizeTrack(track) {
   return null;
 }
 
+function updateMiniPlayer(track) {
+  if (!track) {
+    miniPlayer.classList.add("hidden");
+    miniPlayerTitle.textContent = "Nothing loaded yet";
+    miniPlayerMeta.textContent = "Ready";
+    return;
+  }
+
+  miniPlayer.classList.remove("hidden");
+  miniPlayerTitle.textContent = track.title;
+  miniPlayerMeta.textContent =
+    track.sourceType === "file" ? "Stored device file" : "URL audio";
+  miniPlayPauseBtn.textContent = audio.paused ? "▶" : "⏸";
+}
+
 function updateNowPlaying(track) {
   if (!track) {
     trackTitleEl.textContent = "Nothing loaded yet";
@@ -185,6 +212,7 @@ function updateNowPlaying(track) {
     coverArtEl.textContent = "♪";
     setPlayerStatus("Ready when you are.");
     updateMediaSession();
+    updateMiniPlayer(null);
     return;
   }
 
@@ -206,6 +234,7 @@ function updateNowPlaying(track) {
   }
 
   updateMediaSession();
+  updateMiniPlayer(track);
 }
 
 function savePlaylistState() {
@@ -285,13 +314,8 @@ function openDatabase() {
       }
     };
 
-    request.onsuccess = () => {
-      resolve(request.result);
-    };
-
-    request.onerror = () => {
-      reject(request.error);
-    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
   });
 }
 
@@ -320,13 +344,8 @@ function getTrackBlob(id) {
     const store = tx.objectStore(TRACK_STORE);
     const request = store.get(id);
 
-    request.onsuccess = () => {
-      resolve(request.result || null);
-    };
-
-    request.onerror = () => {
-      reject(request.error);
-    };
+    request.onsuccess = () => resolve(request.result || null);
+    request.onerror = () => reject(request.error);
   });
 }
 
@@ -336,13 +355,9 @@ function getAllTrackBlobs() {
     const store = tx.objectStore(TRACK_STORE);
     const request = store.getAll();
 
-    request.onsuccess = () => {
+    request.onsuccess = () =>
       resolve(Array.isArray(request.result) ? request.result : []);
-    };
-
-    request.onerror = () => {
-      reject(request.error);
-    };
+    request.onerror = () => reject(request.error);
   });
 }
 
@@ -369,7 +384,6 @@ async function updateStorageUsage() {
       const estimate = await navigator.storage.estimate();
       const quota = estimate.quota || 0;
       const usage = estimate.usage || 0;
-
       storageUsageText.textContent = `Stored device audio: ${formatBytes(deviceBytes)}. Browser usage: ${formatBytes(usage)} of ${formatBytes(quota)}.`;
     } else {
       storageUsageText.textContent = `Stored device audio: ${formatBytes(deviceBytes)}.`;
@@ -468,8 +482,20 @@ function loadPlaylistFromStorage() {
   }
 }
 
+function getFilteredEntries() {
+  const filter = playlistFilter.trim().toLowerCase();
+
+  return playlist
+    .map((track, index) => ({ track, index }))
+    .filter(({ track }) => {
+      if (!filter) return true;
+      return track.title.toLowerCase().includes(filter);
+    });
+}
+
 function renderPlaylist() {
   playlistEl.innerHTML = "";
+  const entries = getFilteredEntries();
 
   if (playlist.length === 0) {
     const empty = document.createElement("li");
@@ -480,7 +506,15 @@ function renderPlaylist() {
     return;
   }
 
-  playlist.forEach((track, index) => {
+  if (entries.length === 0) {
+    const empty = document.createElement("li");
+    empty.className = "empty-state";
+    empty.textContent = "No tracks match your search.";
+    playlistEl.appendChild(empty);
+    return;
+  }
+
+  entries.forEach(({ track, index }) => {
     const li = document.createElement("li");
     li.className = "playlist-item";
     li.draggable = true;
@@ -543,19 +577,13 @@ function renderPlaylist() {
     upBtn.type = "button";
     upBtn.className = "small-btn";
     upBtn.textContent = "↑";
-    upBtn.title = "Move up";
-    upBtn.addEventListener("click", () => {
-      moveTrack(index, -1);
-    });
+    upBtn.addEventListener("click", () => moveTrack(index, -1));
 
     const downBtn = document.createElement("button");
     downBtn.type = "button";
     downBtn.className = "small-btn";
     downBtn.textContent = "↓";
-    downBtn.title = "Move down";
-    downBtn.addEventListener("click", () => {
-      moveTrack(index, 1);
-    });
+    downBtn.addEventListener("click", () => moveTrack(index, 1));
 
     const playBtn = document.createElement("button");
     playBtn.type = "button";
@@ -569,9 +597,7 @@ function renderPlaylist() {
     removeBtn.type = "button";
     removeBtn.className = "small-btn remove";
     removeBtn.textContent = "✕";
-    removeBtn.addEventListener("click", () => {
-      removeTrack(index);
-    });
+    removeBtn.addEventListener("click", () => removeTrack(index));
 
     actions.appendChild(upBtn);
     actions.appendChild(downBtn);
@@ -942,7 +968,9 @@ async function importPlaylistsFromFile(file) {
 }
 
 function updatePlayPauseButton() {
-  playPauseBtn.textContent = audio.paused ? "▶" : "⏸";
+  const symbol = audio.paused ? "▶" : "⏸";
+  playPauseBtn.textContent = symbol;
+  miniPlayPauseBtn.textContent = symbol;
 }
 
 async function playCurrent() {
@@ -1235,14 +1263,10 @@ function updateSleepTimerStatus() {
   const savedEnd = Number(localStorage.getItem(STORAGE_KEYS.sleepTimerEnd));
 
   if (!Number.isFinite(savedEnd) || savedEnd <= Date.now()) {
-    if (sleepTimerInterval) {
-      clearInterval(sleepTimerInterval);
-      sleepTimerInterval = null;
-    }
-    if (sleepTimerTimeout) {
-      clearTimeout(sleepTimerTimeout);
-      sleepTimerTimeout = null;
-    }
+    if (sleepTimerInterval) clearInterval(sleepTimerInterval);
+    if (sleepTimerTimeout) clearTimeout(sleepTimerTimeout);
+    sleepTimerInterval = null;
+    sleepTimerTimeout = null;
     localStorage.removeItem(STORAGE_KEYS.sleepTimerEnd);
     if (
       sleepTimerStatus.textContent !== "Sleep timer finished. Playback paused."
@@ -1257,9 +1281,7 @@ function updateSleepTimerStatus() {
   const totalSeconds = Math.ceil(remainingMs / 1000);
   const mins = Math.floor(totalSeconds / 60);
   const secs = totalSeconds % 60;
-  sleepTimerStatus.textContent = `Playback will pause in ${mins}:${secs
-    .toString()
-    .padStart(2, "0")}.`;
+  sleepTimerStatus.textContent = `Playback will pause in ${mins}:${secs.toString().padStart(2, "0")}.`;
 }
 
 function restoreSleepTimer() {
@@ -1315,52 +1337,16 @@ function setupMediaSessionActions() {
   if (!("mediaSession" in navigator)) return;
 
   try {
-    navigator.mediaSession.setActionHandler("play", () => {
-      playCurrent();
-    });
+    navigator.mediaSession.setActionHandler("play", () => playCurrent());
   } catch {}
-
   try {
-    navigator.mediaSession.setActionHandler("pause", () => {
-      pauseCurrent();
-    });
+    navigator.mediaSession.setActionHandler("pause", () => pauseCurrent());
   } catch {}
-
   try {
-    navigator.mediaSession.setActionHandler("previoustrack", () => {
-      playPrev();
-    });
+    navigator.mediaSession.setActionHandler("previoustrack", () => playPrev());
   } catch {}
-
   try {
-    navigator.mediaSession.setActionHandler("nexttrack", () => {
-      playNext();
-    });
-  } catch {}
-
-  try {
-    navigator.mediaSession.setActionHandler("seekbackward", (details) => {
-      const skipTime = details.seekOffset || 10;
-      audio.currentTime = Math.max(0, audio.currentTime - skipTime);
-    });
-  } catch {}
-
-  try {
-    navigator.mediaSession.setActionHandler("seekforward", (details) => {
-      const skipTime = details.seekOffset || 10;
-      const maxTime = Number.isFinite(audio.duration)
-        ? audio.duration
-        : audio.currentTime + skipTime;
-      audio.currentTime = Math.min(maxTime, audio.currentTime + skipTime);
-    });
-  } catch {}
-
-  try {
-    navigator.mediaSession.setActionHandler("seekto", (details) => {
-      if (details.seekTime != null && Number.isFinite(audio.duration)) {
-        audio.currentTime = details.seekTime;
-      }
-    });
+    navigator.mediaSession.setActionHandler("nexttrack", () => playNext());
   } catch {}
 }
 
@@ -1384,6 +1370,23 @@ async function handleInstallClick() {
   installBtn.classList.add("hidden");
 }
 
+function jumpToCurrentTrack() {
+  if (currentTrackIndex < 0) {
+    showToast("No current track.");
+    return;
+  }
+
+  playlistFilter = "";
+  playlistSearchInput.value = "";
+  renderPlaylist();
+
+  const activeItem = playlistEl.querySelector(".playlist-item.active");
+  if (activeItem) {
+    activeItem.scrollIntoView({ behavior: "smooth", block: "center" });
+    showToast("Jumped to current track.");
+  }
+}
+
 fileInput.addEventListener("change", async (event) => {
   const files = event.target.files;
   if (!files || files.length === 0) return;
@@ -1391,9 +1394,7 @@ fileInput.addEventListener("change", async (event) => {
   fileInput.value = "";
 });
 
-addUrlBtn.addEventListener("click", () => {
-  addUrlTrack(urlInput.value);
-});
+addUrlBtn.addEventListener("click", () => addUrlTrack(urlInput.value));
 
 urlInput.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
@@ -1402,16 +1403,10 @@ urlInput.addEventListener("keydown", (event) => {
   }
 });
 
-clearPlaylistBtn.addEventListener("click", () => {
-  clearPlaylist();
-});
+clearPlaylistBtn.addEventListener("click", clearPlaylist);
 
 playPauseBtn.addEventListener("click", async () => {
-  if (!audio.src) {
-    await playCurrent();
-    return;
-  }
-
+  if (!audio.src) return playCurrent();
   if (audio.paused) {
     await playCurrent();
   } else {
@@ -1419,27 +1414,31 @@ playPauseBtn.addEventListener("click", async () => {
   }
 });
 
-nextBtn.addEventListener("click", async () => {
-  await playNext();
+miniPlayPauseBtn.addEventListener("click", async () => {
+  if (!audio.src) return playCurrent();
+  if (audio.paused) {
+    await playCurrent();
+  } else {
+    pauseCurrent();
+  }
 });
 
-prevBtn.addEventListener("click", async () => {
-  await playPrev();
-});
+nextBtn.addEventListener("click", async () => playNext());
+prevBtn.addEventListener("click", async () => playPrev());
+miniNextBtn.addEventListener("click", async () => playNext());
+miniPrevBtn.addEventListener("click", async () => playPrev());
 
 shuffleBtn.addEventListener("click", toggleShuffle);
 repeatBtn.addEventListener("click", cycleRepeatMode);
 installBtn.addEventListener("click", handleInstallClick);
 
 savePlaylistBtn.addEventListener("click", saveNamedPlaylist);
-loadPlaylistBtn.addEventListener("click", async () => {
-  await loadNamedPlaylist();
-});
+loadPlaylistBtn.addEventListener("click", async () => loadNamedPlaylist());
 renamePlaylistBtn.addEventListener("click", renameNamedPlaylist);
 deletePlaylistBtn.addEventListener("click", deleteNamedPlaylist);
-clearDeviceLibraryBtn.addEventListener("click", async () => {
-  await clearDeviceLibrary();
-});
+clearDeviceLibraryBtn.addEventListener("click", async () =>
+  clearDeviceLibrary(),
+);
 
 exportPlaylistsBtn.addEventListener("click", exportPlaylists);
 
@@ -1448,6 +1447,13 @@ importPlaylistsInput.addEventListener("change", async (event) => {
   await importPlaylistsFromFile(file);
   importPlaylistsInput.value = "";
 });
+
+playlistSearchInput.addEventListener("input", () => {
+  playlistFilter = playlistSearchInput.value;
+  renderPlaylist();
+});
+
+jumpToCurrentBtn.addEventListener("click", jumpToCurrentTrack);
 
 savedPlaylistsSelect.addEventListener("change", () => {
   const name = savedPlaylistsSelect.value;
@@ -1503,6 +1509,7 @@ setSleepTimerBtn.addEventListener("click", () => {
 audio.addEventListener("play", () => {
   updatePlayPauseButton();
   updateMediaSession();
+  updateMiniPlayer(playlist[currentTrackIndex] || null);
   if (playlist[currentTrackIndex]) {
     setPlayerStatus(`Playing: ${playlist[currentTrackIndex].title}`);
   }
@@ -1511,6 +1518,7 @@ audio.addEventListener("play", () => {
 audio.addEventListener("pause", () => {
   updatePlayPauseButton();
   updateMediaSession();
+  updateMiniPlayer(playlist[currentTrackIndex] || null);
   if (audio.currentTime > 0 && !audio.ended) {
     setPlayerStatus("Playback paused.");
   }
@@ -1522,9 +1530,7 @@ audio.addEventListener("ended", async () => {
 
   if (repeatMode === "one") {
     audio.currentTime = 0;
-    audio.play().catch((error) => {
-      console.error("Replay failed:", error);
-    });
+    audio.play().catch((error) => console.error("Replay failed:", error));
     return;
   }
 

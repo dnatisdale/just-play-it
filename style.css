@@ -30,6 +30,7 @@ body {
 
 body {
   min-height: 100vh;
+  padding-bottom: 94px;
 }
 
 button,
@@ -108,7 +109,8 @@ button {
 .save-row button,
 .load-row button,
 .mode-btn,
-.import-label {
+.import-label,
+.mini-btn {
   border: 1px solid var(--border);
   background: var(--panel-2);
   color: var(--text);
@@ -236,7 +238,8 @@ button {
   font-size: 1.1rem;
 }
 
-.control-btn.primary {
+.control-btn.primary,
+.mini-btn.primary {
   background: var(--accent);
   color: var(--accent-text);
   font-weight: bold;
@@ -290,7 +293,8 @@ button {
 .sleep-row,
 .url-row,
 .save-row,
-.load-row {
+.load-row,
+.playlist-tools {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 10px;
@@ -300,7 +304,8 @@ button {
 .input-block input[type="file"],
 .url-row input,
 .save-row input,
-.load-row select {
+.load-row select,
+.playlist-tools input {
   width: 100%;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
@@ -365,6 +370,10 @@ button {
   margin: 4px 0 0;
   color: var(--muted);
   font-size: 0.9rem;
+}
+
+.playlist-tools {
+  margin-bottom: 12px;
 }
 
 .playlist {
@@ -469,10 +478,60 @@ button {
   padding: 14px 2px 4px;
 }
 
+.mini-player {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(17, 21, 30, 0.98);
+  border-top: 1px solid var(--border);
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  z-index: 9998;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.22);
+}
+
+.mini-player-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.mini-player-title {
+  font-weight: 700;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mini-player-meta {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mini-player-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.mini-btn {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px 12px;
+}
+
 .toast {
   position: fixed;
   left: 50%;
-  bottom: 18px;
+  bottom: 84px;
   transform: translateX(-50%) translateY(16px);
   width: min(92vw, 420px);
   background: rgba(17, 21, 30, 0.98);
@@ -555,12 +614,23 @@ button {
   .sleep-row,
   .save-row,
   .load-row,
-  .mode-row {
+  .mode-row,
+  .playlist-tools {
     grid-template-columns: 1fr;
   }
 
   .saved-actions {
     flex-direction: column;
+  }
+
+  .mini-player {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .mini-player-actions {
+    width: 100%;
+    justify-content: center;
   }
 }
 
