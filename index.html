@@ -24,6 +24,15 @@
   </head>
   <body>
 
+    <!-- ══ Drag-and-drop full-screen overlay ══ -->
+    <div id="dragOverlay" class="drag-overlay" aria-hidden="true" role="dialog" aria-label="Drop audio files to add them">
+      <div class="drag-overlay-content">
+        <div class="drag-overlay-icon" aria-hidden="true">🎵</div>
+        <div class="drag-overlay-title">Drop to add audio</div>
+        <div class="drag-overlay-sub">MP3, AAC, OGG, WAV, FLAC and more</div>
+      </div>
+    </div>
+
     <!-- ══ Sidebar overlay backdrop ══ -->
     <div id="sidebarOverlay" class="sidebar-overlay" aria-hidden="true"></div>
 
@@ -77,9 +86,13 @@
             <span class="sidebar-row-icon">💾</span>
             <p id="storageUsageText" class="sidebar-storage-text">Checking storage usage…</p>
           </div>
+
+          <!-- Per-file device library list -->
+          <div id="deviceLibraryList" class="device-library-list"></div>
+
           <button id="clearDeviceLibraryBtn" class="sidebar-row-btn danger-row" type="button">
             <span class="sidebar-row-icon">🗑</span>
-            <span class="sidebar-row-text">Clear Device Library</span>
+            <span class="sidebar-row-text">Clear All Device Files</span>
           </button>
         </div>
 
@@ -250,27 +263,47 @@
             <h3>Add audio</h3>
           </div>
 
-          <div class="add-grid">
-            <div class="input-block">
-              <label for="fileInput">From device</label>
-              <!-- Hidden real file input; triggered by cover-art button too -->
-              <input id="fileInput" type="file" accept="audio/*" multiple />
-              <p class="helper-text helper-tight">
-                Device files are stored on this device for offline playback.
-              </p>
+          <!-- ── Drop zone ── -->
+          <div
+            id="dropZone"
+            class="drop-zone"
+            role="button"
+            tabindex="0"
+            aria-label="Drop audio files here, or press Enter to pick files"
+          >
+            <div class="drop-zone-inner" aria-hidden="true">
+              <span class="drop-zone-icon">🎵</span>
+              <span class="drop-zone-text">Drag &amp; drop audio here</span>
+              <span class="drop-zone-sub">MP3, AAC, WAV, FLAC, OGG and more</span>
             </div>
+          </div>
 
-            <div class="input-block">
-              <label for="urlInput">From URL</label>
-              <div class="url-row">
-                <input
-                  id="urlInput"
-                  type="url"
-                  placeholder="https://example.com/audio.mp3"
-                  autocomplete="off"
-                />
-                <button id="addUrlBtn" type="button">Add</button>
-              </div>
+          <!-- ── File pickers row ── -->
+          <div class="add-btn-row">
+            <label for="fileInput" class="add-method-btn">
+              <span aria-hidden="true">📄</span> Pick Files
+            </label>
+            <label for="folderInput" class="add-method-btn">
+              <span aria-hidden="true">📂</span> Pick Folder
+            </label>
+          </div>
+          <input id="fileInput" type="file" accept="audio/*" multiple class="hidden-file-input" />
+          <input id="folderInput" type="file" webkitdirectory accept="audio/*" class="hidden-file-input" />
+          <p class="helper-text helper-tight">
+            Files are stored on this device for offline playback. Folder picker works on desktop and Android.
+          </p>
+
+          <!-- ── URL input ── -->
+          <div class="input-block url-block">
+            <label for="urlInput">From URL</label>
+            <div class="url-row">
+              <input
+                id="urlInput"
+                type="url"
+                placeholder="https://example.com/audio.mp3"
+                autocomplete="off"
+              />
+              <button id="addUrlBtn" type="button">Add</button>
             </div>
           </div>
 
