@@ -961,7 +961,7 @@ async function loadTrack(index, shouldPlay = false) {
   }
 
   audio.src = source;
-  audio.load();
+  // Let the browser handle the load triggered by the change in src.
 
   updateNowPlaying(track);
   renderPlaylist();
@@ -1001,8 +1001,8 @@ async function addFileTracks(files) {
   currentPlaylistName = "";
   updatePlaylistNameDisplay();
 
-  if (currentTrackIndex === -1 && playlist.length > 0) {
-    currentTrackIndex = 0;
+  const wasEmpty = (playlist.length === newTracks.length);
+  if (wasEmpty || currentTrackIndex === -1) {
     await loadTrack(0, true);
   } else {
     renderPlaylist();
