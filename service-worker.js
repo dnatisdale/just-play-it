@@ -1,9 +1,9 @@
-const CACHE_NAME = "just-play-it-v7";
+const CACHE_NAME = "just-play-it-v8";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
-  "./styles.css",
-  "./app.js",
+  "./style.css",
+  "./app.jsx",
   "./manifest.json",
   "./icons/icon-192.png",
   "./icons/icon-512.png",

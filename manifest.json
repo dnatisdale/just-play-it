@@ -3,9 +3,11 @@
   "short_name": "Just Play It",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#0f1115",
-  "theme_color": "#111111",
-  "description": "A simple installable audio player for local files and audio URLs.",
+  "background_color": "#0b0d12",
+  "theme_color": "#0b0d12",
+  "description": "A simple installable audio player for local files and audio URLs. No sign-in required.",
+  "orientation": "any",
+  "categories": ["music", "utilities"],
   "icons": [
     {
       "src": "icons/icon-192.png",

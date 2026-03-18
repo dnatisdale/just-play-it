@@ -6,10 +6,10 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
-    <meta name="theme-color" content="#111111" />
+    <meta name="theme-color" content="#0b0d12" />
     <meta
       name="description"
-      content="Just Play It - a simple audio player PWA"
+      content="Just Play It – a simple, installable audio player PWA for local files and audio URLs. No sign-in required."
     />
     <title>Just Play It</title>
 
@@ -17,7 +17,11 @@
     <link rel="icon" href="icons/icon-192.png" />
     <link rel="apple-touch-icon" href="icons/icon-192.png" />
 
-    <link rel="stylesheet" href="styles.css" />
+    <!-- Preconnect for Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div class="app-shell">
@@ -32,11 +36,12 @@
         </div>
 
         <button id="installBtn" class="install-btn hidden" type="button">
-          Install App
+          ⬇ Install App
         </button>
       </header>
 
       <main class="main-layout">
+        <!-- Player card -->
         <section class="player-card">
           <div class="now-playing-label">Now Playing</div>
 
@@ -64,6 +69,7 @@
               max="100"
               value="0"
               step="0.1"
+              aria-label="Seek"
             />
             <span id="duration">0:00</span>
           </div>
@@ -97,10 +103,10 @@
 
           <div class="mode-row">
             <button id="shuffleBtn" class="mode-btn" type="button">
-              Shuffle: Off
+              🔀 Shuffle: Off
             </button>
             <button id="repeatBtn" class="mode-btn" type="button">
-              Repeat: Off
+              🔁 Repeat: Off
             </button>
           </div>
 
@@ -116,6 +122,7 @@
                   max="1"
                   step="0.01"
                   value="1"
+                  aria-label="Volume"
                 />
                 <span class="mini-label">100</span>
               </div>
@@ -124,7 +131,7 @@
             <div class="tool-block">
               <label for="sleepTimerSelect">Sleep timer</label>
               <div class="sleep-row">
-                <select id="sleepTimerSelect">
+                <select id="sleepTimerSelect" aria-label="Sleep timer duration">
                   <option value="0">Off</option>
                   <option value="5">5 min</option>
                   <option value="10">10 min</option>
@@ -143,12 +150,13 @@
             <div class="tool-block">
               <label>Storage</label>
               <p id="storageUsageText" class="helper-text helper-tight">
-                Checking storage usage...
+                Checking storage usage…
               </p>
             </div>
           </div>
         </section>
 
+        <!-- Library card -->
         <section class="library-card">
           <div class="section-head">
             <h3>Add audio</h3>
@@ -159,7 +167,7 @@
               <label for="fileInput">From device</label>
               <input id="fileInput" type="file" accept="audio/*" multiple />
               <p class="helper-text helper-tight">
-                Device files are stored on this device for later playback.
+                Device files are stored on this device for offline playback.
               </p>
             </div>
 
@@ -194,7 +202,7 @@
             </div>
 
             <div class="load-row">
-              <select id="savedPlaylistsSelect">
+              <select id="savedPlaylistsSelect" aria-label="Saved playlists">
                 <option value="">Choose a saved playlist</option>
               </select>
               <button id="loadPlaylistBtn" type="button">Load</button>
@@ -256,7 +264,7 @@
             <input
               id="playlistSearchInput"
               type="text"
-              placeholder="Search this playlist..."
+              placeholder="Search this playlist…"
               autocomplete="off"
             />
             <button id="jumpToCurrentBtn" class="ghost-btn" type="button">
@@ -264,11 +272,12 @@
             </button>
           </div>
 
-          <ul id="playlist" class="playlist"></ul>
+          <ul id="playlist" class="playlist" aria-label="Playlist"></ul>
         </section>
       </main>
     </div>
 
+    <!-- Mini player (shown when scrolled past main player) -->
     <div id="miniPlayer" class="mini-player hidden" aria-live="polite">
       <div class="mini-player-info">
         <div id="miniPlayerTitle" class="mini-player-title">
@@ -307,6 +316,6 @@
 
     <div id="toast" class="toast" aria-live="polite" aria-atomic="true"></div>
 
-    <script src="app.js"></script>
+    <script src="app.jsx"></script>
   </body>
 </html>
