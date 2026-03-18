@@ -124,9 +124,8 @@
             />
           </div>
 
-          <div class="brand-text">
-            <h1>JUST PLAY IT</h1>
-            <p class="subtitle">Simple audio player for files and links</p>
+          <div class="brand-text" title="Simple audio player for files and links">
+            <h1>JUST PLAY IT.</h1>
           </div>
         </div>
 
@@ -168,11 +167,8 @@
               <span class="cover-art-hint">Load</span>
             </button>
 
-            <div class="now-playing-text">
+            <div class="now-playing-text" title="Tap the record icon or add a file below">
               <h2 id="trackTitle" class="track-title">Nothing loaded yet</h2>
-              <p id="trackMeta" class="track-meta">
-                Tap the record icon or add a file below
-              </p>
               <p id="playerStatus" class="player-status">Ready when you are.</p>
             </div>
           </div>
@@ -202,21 +198,19 @@
 
           <div class="mode-row">
             <button id="repeatBtn" class="mode-btn" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="17,1 21,5 17,9"/><path d="M3,11V9a4,4,0,0,1,4-4h14"/><polyline points="7,23 3,19 7,15"/><path d="M21,13v2a4,4,0,0,1-4,4H3"/></svg> Repeat: Off</button>
-            <div class="sleep-row">
-              <select id="sleepTimerSelect" aria-label="Sleep timer duration">
-                <option value="0">Sleep: Off</option>
-                <option value="5">Sleep: 5 min</option>
-                <option value="10">Sleep: 10 min</option>
-                <option value="15">Sleep: 15 min</option>
-                <option value="30">Sleep: 30 min</option>
-                <option value="45">Sleep: 45 min</option>
-                <option value="60">Sleep: 60 min</option>
-              </select>
-              <button id="setSleepTimerBtn" type="button">Set</button>
-            </div>
+          <div class="sleep-row" title="No sleep timer set.">
+            <select id="sleepTimerSelect" aria-label="Sleep timer duration">
+              <option value="0">Sleep: Off</option>
+              <option value="5">Sleep: 5 min</option>
+              <option value="10">Sleep: 10 min</option>
+              <option value="15">Sleep: 15 min</option>
+              <option value="30">Sleep: 30 min</option>
+              <option value="45">Sleep: 45 min</option>
+              <option value="60">Sleep: 60 min</option>
+            </select>
+            <button id="setSleepTimerBtn" type="button">Set</button>
+            <span id="sleepTimerStatus" class="hidden"></span>
           </div>
-
-          <p id="sleepTimerStatus" class="helper-text sleep-status-text">No sleep timer set.</p>
 
         </section>
 
@@ -236,9 +230,9 @@
               role="button"
               tabindex="0"
               aria-label="Drop audio files here, or press Enter to pick files"
+              title="Supports MP3, AAC, WAV, FLAC, OGG and more"
             >
               <span class="drop-zone-text">Drag &amp; drop audio here</span>
-              <span class="drop-zone-sub">MP3, AAC, WAV, FLAC, OGG and more</span>
             </div>
 
             <!-- File pickers -->
@@ -256,7 +250,7 @@
             <input id="folderInput" type="file" webkitdirectory accept="audio/*" class="hidden-file-input" />
 
             <!-- URL input (same block) -->
-            <div class="url-row">
+            <div class="url-row" title="Drop, pick, or paste — files are stored on-device for offline playback.">
               <input
                 id="urlInput"
                 type="url"
@@ -265,15 +259,13 @@
               />
               <button id="addUrlBtn" type="button">Add</button>
             </div>
-
-            <p class="helper-text helper-tight">Drop, pick, or paste — files are stored on-device for offline playback.</p>
           </div>
 
           <div class="section-head">
             <h3>Saved playlists</h3>
           </div>
 
-          <div class="saved-playlist-box">
+          <div class="saved-playlist-box" id="savedPlaylistBox" title="No saved playlist selected.">
             <div class="save-row">
               <input
                 id="playlistNameInput"
@@ -304,18 +296,11 @@
                 Delete
               </button>
             </div>
-
-            <p id="savedPlaylistStatus" class="helper-text">
-              No saved playlist selected.
-            </p>
           </div>
 
-          <div class="playlist-header">
+          <div class="playlist-header" title="Current playlist: Unsaved">
             <div>
               <h3>Playlist</h3>
-              <p id="playlistNameDisplay" class="playlist-name-display">
-                Current playlist: Unsaved
-              </p>
             </div>
             <button id="clearPlaylistBtn" class="ghost-btn" type="button">
               Clear

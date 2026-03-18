@@ -19,8 +19,8 @@ const durationEl = document.getElementById("duration");
 const trackTitleEl = document.getElementById("trackTitle");
 const trackMetaEl = document.getElementById("trackMeta");
 const coverArtEl = document.getElementById("coverArt");
-const playerStatusEl = document.getElementById("playerStatus");
 const storageUsageText = document.getElementById("storageUsageText");
+const playerCard = document.querySelector(".player-card");
 
 const volumeSlider = document.getElementById("volumeSlider");
 const sleepTimerSelect = document.getElementById("sleepTimerSelect");
@@ -37,10 +37,13 @@ const clearDeviceLibraryBtn = document.getElementById("clearDeviceLibraryBtn");
 const exportPlaylistsBtn = document.getElementById("exportPlaylistsBtn");
 const importPlaylistsInput = document.getElementById("importPlaylistsInput");
 const savedPlaylistStatus = document.getElementById("savedPlaylistStatus");
-const playlistNameDisplay = document.getElementById("playlistNameDisplay");
-
 const playlistSearchInput = document.getElementById("playlistSearchInput");
 const jumpToCurrentBtn = document.getElementById("jumpToCurrentBtn");
+
+// Containers for tooltips (decluttering)
+const savedPlaylistBox = document.getElementById("savedPlaylistBox");
+const playlistHeader = document.getElementById("playlistHeader");
+const sleepRow = document.querySelector(".sleep-row");
 
 const miniPlayer = document.getElementById("miniPlayer");
 const miniPlayerTitle = document.getElementById("miniPlayerTitle");
@@ -231,7 +234,7 @@ function escapeHtml(str) {
 }
 
 function setPlayerStatus(text) {
-  playerStatusEl.textContent = text;
+  if (playerCard) playerCard.title = text;
 }
 
 function showToast(message) {
@@ -1328,7 +1331,7 @@ function saveNamedPlaylist() {
   persistSavedPlaylists();
   savedPlaylistsSelect.value = name;
   localStorage.setItem(STORAGE_KEYS.selectedSavedPlaylist, name);
-  savedPlaylistStatus.textContent = `Saved playlist: ${name}`;
+  if (savedPlaylistBox) savedPlaylistBox.title = `Saved playlist: ${name}`;
   setPlayerStatus(`Saved playlist "${name}".`);
   showToast(`Saved playlist "${name}".`);
 }
@@ -1337,7 +1340,7 @@ async function loadNamedPlaylist() {
   const name = savedPlaylistsSelect.value;
 
   if (!name || !savedPlaylists[name]) {
-    savedPlaylistStatus.textContent = "Choose a saved playlist first.";
+    if (savedPlaylistBox) savedPlaylistBox.title = "Choose a saved playlist first.";
     showToast("Choose a saved playlist first.");
     return;
   }
@@ -1353,7 +1356,7 @@ async function loadNamedPlaylist() {
 
   savePlaylistState();
   localStorage.setItem(STORAGE_KEYS.selectedSavedPlaylist, name);
-  savedPlaylistStatus.textContent = `Loaded playlist: ${name}`;
+  if (savedPlaylistBox) savedPlaylistBox.title = `Loaded playlist: ${name}`;
 
   if (currentTrackIndex >= 0) {
     pendingRestoreTime = null;
@@ -1410,7 +1413,7 @@ function renameNamedPlaylist() {
     updatePlaylistNameDisplay();
   }
 
-  savedPlaylistStatus.textContent = `Renamed playlist to: ${cleanName}`;
+  if (savedPlaylistBox) savedPlaylistBox.title = `Renamed playlist to: ${cleanName}`;
   setPlayerStatus(`Renamed playlist to "${cleanName}".`);
   showToast(`Renamed to "${cleanName}".`);
 }
@@ -1437,7 +1440,7 @@ function deleteNamedPlaylist() {
     updatePlaylistNameDisplay();
   }
 
-  savedPlaylistStatus.textContent = `Deleted playlist: ${name}`;
+  if (savedPlaylistBox) savedPlaylistBox.title = `Deleted playlist: ${name}`;
   setPlayerStatus(`Deleted playlist "${name}".`);
   showToast(`Deleted "${name}".`);
 }
@@ -1497,10 +1500,10 @@ function updateSleepTimerStatus() {
     sleepTimerInterval = null;
     sleepTimerTimeout = null;
     localStorage.removeItem(STORAGE_KEYS.sleepTimerEnd);
-    if (
-      sleepTimerStatus.textContent !== "Sleep timer finished. Playback paused."
-    ) {
-      sleepTimerStatus.textContent = "No sleep timer set.";
+    if (sleepRow) sleepRow.title = "No sleep timer set.";
+    if (sleepTimerStatus) {
+      sleepTimerStatus.textContent = "";
+      sleepTimerStatus.classList.add("hidden");
     }
     sleepTimerSelect.value = "0";
     return;
@@ -1510,7 +1513,12 @@ function updateSleepTimerStatus() {
   const totalSeconds = Math.ceil(remainingMs / 1000);
   const mins = Math.floor(totalSeconds / 60);
   const secs = totalSeconds % 60;
-  sleepTimerStatus.textContent = `Playback will pause in ${mins}:${secs.toString().padStart(2, "0")}.`;
+  const statusText = `Playback will pause in ${mins}:${secs.toString().padStart(2, "0")}.`;
+  if (sleepRow) sleepRow.title = statusText;
+  if (sleepTimerStatus) {
+    sleepTimerStatus.textContent = statusText;
+    sleepTimerStatus.classList.remove("hidden");
+  }
 }
 
 function restoreSleepTimer() {
@@ -1818,13 +1826,12 @@ playlistSearchInput.addEventListener("input", () => {
 jumpToCurrentBtn.addEventListener("click", jumpToCurrentTrack);
 
 savedPlaylistsSelect.addEventListener("change", () => {
-  const name = savedPlaylistsSelect.value;
   if (name) {
     localStorage.setItem(STORAGE_KEYS.selectedSavedPlaylist, name);
-    savedPlaylistStatus.textContent = `Selected saved playlist: ${name}`;
+    if (savedPlaylistBox) savedPlaylistBox.title = `Selected saved playlist: ${name}`;
   } else {
     localStorage.removeItem(STORAGE_KEYS.selectedSavedPlaylist);
-    savedPlaylistStatus.textContent = "No saved playlist selected.";
+    if (savedPlaylistBox) savedPlaylistBox.title = "No saved playlist selected.";
   }
 });
 

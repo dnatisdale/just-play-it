@@ -245,14 +245,12 @@ button {
 .topbar h1 {
   margin: 0;
   font-family: 'Oswald', 'Inter', sans-serif;
-  font-size: 2.2rem;
+  font-size: 2.1rem;
   font-weight: 700;
   line-height: 0.95;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.04em;
   text-transform: uppercase;
-  font-style: italic;
   color: var(--text);
-  transform: skewX(-2deg); /* subtle extra tilt */
 }
 
 .subtitle {
