@@ -64,6 +64,11 @@ const themeLabel = document.getElementById("themeLabel");
 const shuffleBtnLabel = document.getElementById("shuffleBtnLabel");
 const shuffleToggle = document.getElementById("shuffleToggle");
 
+// Badges
+const menuBadge = document.getElementById("menuBadge");
+const savedPlaylistsBadge = document.getElementById("savedPlaylistsBadge");
+const playlistBadge = document.getElementById("playlistBadge");
+
 // Drag & drop / add-audio elements
 const dragOverlay = document.getElementById("dragOverlay");
 const dropZone = document.getElementById("dropZone");
@@ -248,6 +253,33 @@ function showToast(message) {
   toastTimeout = window.setTimeout(() => {
     toastEl.classList.remove("show");
   }, 2400);
+}
+
+async function updateBadgeCounts() {
+  // Playlist count
+  if (playlistBadge) {
+    playlistBadge.textContent = playlist.length;
+    playlistBadge.classList.toggle("hidden", playlist.length === 0);
+  }
+
+  // Saved playlists count
+  if (savedPlaylistsBadge) {
+    const savedCount = Object.keys(savedPlaylists).length;
+    savedPlaylistsBadge.textContent = savedCount;
+    savedPlaylistsBadge.classList.toggle("hidden", savedCount === 0);
+  }
+
+  // Sidebar badge: total library files
+  if (menuBadge) {
+    try {
+      const records = db ? await getAllTrackBlobs() : [];
+      const count = records.length;
+      menuBadge.textContent = count;
+      menuBadge.classList.toggle("hidden", count === 0);
+    } catch {
+      menuBadge.classList.add("hidden");
+    }
+  }
 }
 
 function revokeCurrentObjectUrl() {
@@ -612,6 +644,7 @@ async function deleteStoredTrack(id, title) {
     updateNowPlaying(playlist[currentTrackIndex] || null);
     updatePlayPauseButton();
     await updateStorageUsage();
+    await updateBadgeCounts();
     await renderSidebarLibrary();
 
     showToast(`“${title}” removed.`);
@@ -976,11 +1009,13 @@ async function addFileTracks(files) {
 
   await updateStorageUsage();
   await renderSidebarLibrary();
+  await updateBadgeCounts();
+
   setPlayerStatus(
     `${newTracks.length} file${newTracks.length === 1 ? "" : "s"} added and stored.`,
   );
   showToast(
-    `${newTracks.length} file${newTracks.length === 1 ? "" : "s"} stored.`,
+    `Finished loading ${newTracks.length} file${newTracks.length === 1 ? "" : "s"}.`,
   );
 }
 
@@ -1014,6 +1049,7 @@ function addUrlTrack(url) {
     savePlaylistState();
   }
 
+  updateBadgeCounts();
   urlInput.value = "";
   setPlayerStatus(`Added URL track: ${track.title}`);
   showToast(`Added URL track: ${track.title}`);
@@ -1057,6 +1093,7 @@ function removeTrack(index) {
 
   renderPlaylist();
   savePlaylistState();
+  updateBadgeCounts();
   setPlayerStatus(`Removed: ${removedTrack.title}`);
   showToast(`Removed: ${removedTrack.title}`);
 }
@@ -1082,6 +1119,7 @@ function clearPlaylist() {
 
   renderPlaylist();
   updatePlayPauseButton();
+  updateBadgeCounts();
   setPlayerStatus("Playlist cleared.");
   showToast("Playlist cleared.");
 }
@@ -1413,6 +1451,7 @@ function renameNamedPlaylist() {
   }
 
   if (savedPlaylistBox) savedPlaylistBox.title = `Renamed playlist to: ${cleanName}`;
+  updateBadgeCounts();
   setPlayerStatus(`Renamed playlist to "${cleanName}".`);
   showToast(`Renamed to "${cleanName}".`);
 }
@@ -1969,9 +2008,24 @@ async function initApp() {
   updateNowPlaying(playlist[currentTrackIndex] || null);
   setupMediaSessionActions();
   await updateStorageUsage();
+  await updateBadgeCounts();
 
   if (currentTrackIndex >= 0) {
     await loadTrack(currentTrackIndex, false);
+  } else if (playlist.length === 0) {
+    // If playlist is empty, try to auto-load library files
+    const records = db ? await getAllTrackBlobs() : [];
+    if (records.length > 0) {
+      playlist = records.map(r => ({
+        id: r.id,
+        title: r.title,
+        sourceType: "file"
+      }));
+      currentTrackIndex = 0;
+      await loadTrack(0, false);
+      renderPlaylist();
+      updateBadgeCounts();
+    }
   }
 }
 
