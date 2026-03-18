@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
-    <meta name="theme-color" content="#0b0d12" />
+    <meta name="theme-color" content="#0b0d12" id="themeColorMeta" />
     <meta
       name="description"
       content="Just Play It – a simple, installable audio player PWA for local files and audio URLs. No sign-in required."
@@ -17,7 +17,6 @@
     <link rel="icon" href="icons/icon-192.png" />
     <link rel="apple-touch-icon" href="icons/icon-192.png" />
 
-    <!-- Preconnect for Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
@@ -27,7 +26,14 @@
     <div class="app-shell">
       <header class="topbar">
         <div class="brand-wrap">
-          <div class="brand-badge" aria-hidden="true">▶</div>
+          <!-- Vinyl record logo — spins when playing -->
+          <div class="brand-logo-wrap" id="brandLogoWrap">
+            <img
+              src="icons/Just-Play-It 512.png"
+              class="brand-logo"
+              alt="Just Play It vinyl record logo"
+            />
+          </div>
 
           <div class="brand-text">
             <h1>Just Play It</h1>
@@ -35,23 +41,49 @@
           </div>
         </div>
 
-        <button id="installBtn" class="install-btn hidden" type="button">
-          ⬇ Install App
-        </button>
+        <div class="topbar-actions">
+          <!-- Theme toggle -->
+          <button
+            id="themeToggleBtn"
+            class="theme-toggle"
+            type="button"
+            aria-label="Toggle light/dark mode"
+            title="Toggle light/dark mode"
+          >
+            🌙
+          </button>
+
+          <button id="installBtn" class="install-btn hidden" type="button">
+            ⬇ Install App
+          </button>
+        </div>
       </header>
 
       <main class="main-layout">
-        <!-- Player card -->
+        <!-- ── Player card ── -->
         <section class="player-card">
           <div class="now-playing-label">Now Playing</div>
 
           <div class="now-playing-wrap">
-            <div class="cover-art" id="coverArt" aria-hidden="true">♪</div>
+            <!--
+              Cover art: when nothing is loaded it acts as a "load files" button.
+              When a track is loaded it shows the vinyl image spinning.
+            -->
+            <button
+              id="coverArt"
+              class="cover-art cover-art-load"
+              type="button"
+              aria-label="Load audio files"
+              title="Click to load audio files"
+            >
+              <span class="cover-art-icon" aria-hidden="true">📁</span>
+              <span class="cover-art-hint">Load</span>
+            </button>
 
             <div class="now-playing-text">
               <h2 id="trackTitle" class="track-title">Nothing loaded yet</h2>
               <p id="trackMeta" class="track-meta">
-                Add a file or paste an audio URL
+                Tap the record icon or add a file below
               </p>
               <p id="playerStatus" class="player-status">Ready when you are.</p>
             </div>
@@ -156,7 +188,7 @@
           </div>
         </section>
 
-        <!-- Library card -->
+        <!-- ── Library card ── -->
         <section class="library-card">
           <div class="section-head">
             <h3>Add audio</h3>
@@ -165,6 +197,7 @@
           <div class="add-grid">
             <div class="input-block">
               <label for="fileInput">From device</label>
+              <!-- Hidden real file input; triggered by cover-art button too -->
               <input id="fileInput" type="file" accept="audio/*" multiple />
               <p class="helper-text helper-tight">
                 Device files are stored on this device for offline playback.
@@ -232,7 +265,9 @@
               <button id="exportPlaylistsBtn" class="ghost-btn" type="button">
                 Export Playlists
               </button>
-              <label for="importPlaylistsInput" class="ghost-btn import-label"
+              <label
+                for="importPlaylistsInput"
+                class="ghost-btn import-label"
                 >Import Playlists</label
               >
               <input
@@ -277,13 +312,22 @@
       </main>
     </div>
 
-    <!-- Mini player (shown when scrolled past main player) -->
+    <!-- Mini player -->
     <div id="miniPlayer" class="mini-player hidden" aria-live="polite">
       <div class="mini-player-info">
-        <div id="miniPlayerTitle" class="mini-player-title">
-          Nothing loaded yet
+        <div class="mini-vinyl" id="miniVinyl">
+          <img
+            src="icons/Just-Play-It 512.png"
+            alt=""
+            aria-hidden="true"
+          />
         </div>
-        <div id="miniPlayerMeta" class="mini-player-meta">Ready</div>
+        <div class="mini-text">
+          <div id="miniPlayerTitle" class="mini-player-title">
+            Nothing loaded yet
+          </div>
+          <div id="miniPlayerMeta" class="mini-player-meta">Ready</div>
+        </div>
       </div>
 
       <div class="mini-player-actions">

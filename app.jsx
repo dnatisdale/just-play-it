@@ -11,6 +11,7 @@ const nextBtn = document.getElementById("nextBtn");
 const shuffleBtn = document.getElementById("shuffleBtn");
 const repeatBtn = document.getElementById("repeatBtn");
 const installBtn = document.getElementById("installBtn");
+const themeToggleBtn = document.getElementById("themeToggleBtn");
 
 const seekBar = document.getElementById("seekBar");
 const currentTimeEl = document.getElementById("currentTime");
@@ -47,8 +48,11 @@ const miniPlayerMeta = document.getElementById("miniPlayerMeta");
 const miniPrevBtn = document.getElementById("miniPrevBtn");
 const miniPlayPauseBtn = document.getElementById("miniPlayPauseBtn");
 const miniNextBtn = document.getElementById("miniNextBtn");
+const miniVinylEl = document.getElementById("miniVinyl");
+const brandLogoWrap = document.getElementById("brandLogoWrap");
 
 const toastEl = document.getElementById("toast");
+
 
 const STORAGE_KEYS = {
   playlist: "justPlayItPlaylist",
@@ -61,7 +65,9 @@ const STORAGE_KEYS = {
   savedPlaylists: "justPlayItSavedPlaylists",
   selectedSavedPlaylist: "justPlayItSelectedSavedPlaylist",
   currentPlaylistName: "justPlayItCurrentPlaylistName",
+  theme: "justPlayItTheme",
 };
+
 
 const DB_NAME = "justPlayItDB";
 const DB_VERSION = 1;
@@ -82,6 +88,71 @@ let currentObjectUrl = null;
 let toastTimeout = null;
 let draggedTrackIndex = null;
 let playlistFilter = "";
+
+// ── Theme ──────────────────────────────────────────────
+function getSystemTheme() {
+  return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  const meta = document.getElementById("themeColorMeta");
+  if (meta) {
+    meta.content = theme === "light" ? "#f6f4f1" : "#0b0d12";
+  }
+  if (themeToggleBtn) {
+    themeToggleBtn.textContent = theme === "light" ? "🌙" : "☀️";
+    themeToggleBtn.setAttribute("aria-label",
+      theme === "light" ? "Switch to dark mode" : "Switch to light mode"
+    );
+  }
+}
+
+function initTheme() {
+  const saved = localStorage.getItem(STORAGE_KEYS.theme);
+  const theme = saved || getSystemTheme();
+  applyTheme(theme);
+
+  // Listen for system changes (only if no saved preference)
+  window.matchMedia("(prefers-color-scheme: light)").addEventListener("change", (e) => {
+    if (!localStorage.getItem(STORAGE_KEYS.theme)) {
+      applyTheme(e.matches ? "light" : "dark");
+    }
+  });
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute("data-theme") || getSystemTheme();
+  const next = current === "light" ? "dark" : "light";
+  applyTheme(next);
+  localStorage.setItem(STORAGE_KEYS.theme, next);
+}
+
+// ── Cover art helpers ──────────────────────────────────
+function setCoverArtLoaded(track) {
+  // Replace folder-icon content with the vinyl record image
+  coverArtEl.innerHTML = `<img src="icons/Just-Play-It 512.png" alt="">`;
+  coverArtEl.classList.remove("cover-art-load");
+  coverArtEl.setAttribute("aria-label", track ? track.title : "Now playing");
+  coverArtEl.title = "";
+  coverArtEl.style.cursor = "default";
+}
+
+function setCoverArtEmpty() {
+  coverArtEl.innerHTML = `<span class="cover-art-icon" aria-hidden="true">📁</span><span class="cover-art-hint">Load</span>`;
+  coverArtEl.classList.add("cover-art-load");
+  coverArtEl.classList.remove("spinning");
+  coverArtEl.setAttribute("aria-label", "Load audio files");
+  coverArtEl.title = "Click to load audio files";
+  coverArtEl.style.cursor = "pointer";
+}
+
+function updateSpinning() {
+  const isPlaying = !audio.paused && playlist.length > 0 && currentTrackIndex >= 0;
+  coverArtEl.classList.toggle("spinning", isPlaying);
+  if (brandLogoWrap) brandLogoWrap.classList.toggle("spinning", isPlaying);
+  if (miniVinylEl) miniVinylEl.classList.toggle("spinning", isPlaying);
+}
 
 function formatTime(seconds) {
   if (!Number.isFinite(seconds)) return "0:00";
@@ -208,8 +279,8 @@ function updateMiniPlayer(track) {
 function updateNowPlaying(track) {
   if (!track) {
     trackTitleEl.textContent = "Nothing loaded yet";
-    trackMetaEl.textContent = "Add a file or paste an audio URL";
-    coverArtEl.textContent = "♪";
+    trackMetaEl.textContent = "Tap the record icon or add a file below";
+    setCoverArtEmpty();
     setPlayerStatus("Ready when you are.");
     updateMediaSession();
     updateMiniPlayer(null);
@@ -219,7 +290,7 @@ function updateNowPlaying(track) {
   trackTitleEl.textContent = track.title;
   trackMetaEl.textContent =
     track.sourceType === "file" ? "Stored device file" : "Streaming from URL";
-  coverArtEl.textContent = getTrackEmoji(track);
+  setCoverArtLoaded(track);
 
   if (shuffleEnabled && repeatMode === "one") {
     setPlayerStatus("Shuffle is on. Repeat one is also on.");
@@ -236,6 +307,7 @@ function updateNowPlaying(track) {
   updateMediaSession();
   updateMiniPlayer(track);
 }
+
 
 function savePlaylistState() {
   const safePlaylist = playlist
@@ -971,7 +1043,9 @@ function updatePlayPauseButton() {
   const symbol = audio.paused ? "▶" : "⏸";
   playPauseBtn.textContent = symbol;
   miniPlayPauseBtn.textContent = symbol;
+  updateSpinning();
 }
+
 
 async function playCurrent() {
   if (playlist.length === 0) return;
@@ -1394,6 +1468,14 @@ fileInput.addEventListener("change", async (event) => {
   fileInput.value = "";
 });
 
+// Cover art click → open file picker (only when in "load" state)
+coverArtEl.addEventListener("click", () => {
+  if (coverArtEl.classList.contains("cover-art-load")) {
+    fileInput.click();
+  }
+});
+
+
 addUrlBtn.addEventListener("click", () => addUrlTrack(urlInput.value));
 
 urlInput.addEventListener("keydown", (event) => {
@@ -1431,6 +1513,8 @@ miniPrevBtn.addEventListener("click", async () => playPrev());
 shuffleBtn.addEventListener("click", toggleShuffle);
 repeatBtn.addEventListener("click", cycleRepeatMode);
 installBtn.addEventListener("click", handleInstallClick);
+if (themeToggleBtn) themeToggleBtn.addEventListener("click", toggleTheme);
+
 
 savePlaylistBtn.addEventListener("click", saveNamedPlaylist);
 loadPlaylistBtn.addEventListener("click", async () => loadNamedPlaylist());
@@ -1579,6 +1663,9 @@ if ("serviceWorker" in navigator) {
 }
 
 async function initApp() {
+  // Apply saved/system theme immediately (before any paint)
+  initTheme();
+
   try {
     db = await openDatabase();
   } catch (error) {
