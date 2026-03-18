@@ -235,13 +235,8 @@
               <span class="drop-zone-text">Drag &amp; drop audio here</span>
             </div>
 
-            <!-- File pickers -->
-            <div class="add-btn-row">
-              <label for="fileInput" class="add-method-btn">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13,2H6A2,2,0,0,0,4,4V20a2,2,0,0,0,2,2H18a2,2,0,0,0,2-2V9Z"/><polyline points="13,2 13,9 20,9"/></svg>
-                Pick Files
-              </label>
-              <label for="folderInput" class="add-method-btn">
+            <div class="add-btn-row-single">
+              <label for="folderInput" class="add-method-btn full-width">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22,19a2,2,0,0,1-2,2H4a2,2,0,0,1-2-2V5a2,2,0,0,1,2-2H9l2,3H20a2,2,0,0,1,2,2Z"/></svg>
                 Pick Folder
               </label>
@@ -322,7 +317,7 @@
           <ul id="playlist" class="playlist" aria-label="Playlist"></ul>
         </section>
           <!-- Mini player (inside main for mobile-first integration) -->
-          <div id="miniPlayer" class="mini-player hidden" aria-live="polite">
+          <div id="miniPlayer" class="mini-player" aria-live="polite">
             <div class="mini-player-info">
               <div class="mini-vinyl" id="miniVinyl">
                 <img

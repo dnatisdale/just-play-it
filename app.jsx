@@ -288,17 +288,16 @@ function normalizeTrack(track) {
 
 function updateMiniPlayer(track) {
   if (!track) {
-    miniPlayer.classList.add("hidden");
     miniPlayerTitle.textContent = "Nothing loaded yet";
     miniPlayerMeta.textContent = "Ready";
     return;
   }
 
-  miniPlayer.classList.remove("hidden");
   miniPlayerTitle.textContent = track.title;
   miniPlayerMeta.textContent =
     track.sourceType === "file" ? "Stored device file" : "URL audio";
-  miniPlayPauseBtn.textContent = audio.paused ? "▶" : "⏸";
+  const icon = audio.paused ? ICONS.play : ICONS.pause;
+  if (miniPlayPauseBtn) miniPlayPauseBtn.innerHTML = icon;
 }
 
 function updateNowPlaying(track) {
@@ -969,7 +968,7 @@ async function addFileTracks(files) {
 
   if (currentTrackIndex === -1 && playlist.length > 0) {
     currentTrackIndex = 0;
-    await loadTrack(0, false);
+    await loadTrack(0, true);
   } else {
     renderPlaylist();
     savePlaylistState();
@@ -1009,7 +1008,7 @@ function addUrlTrack(url) {
 
   if (currentTrackIndex === -1) {
     currentTrackIndex = 0;
-    loadTrack(0, false);
+    loadTrack(0, true);
   } else {
     renderPlaylist();
     savePlaylistState();

@@ -432,7 +432,7 @@ button {
 
 .now-playing-label {
   font-family: 'Oswald', sans-serif;
-  font-size: 1rem;
+  font-size: 1.15rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: -0.01em;
@@ -1324,8 +1324,13 @@ input::placeholder {
   transform: translateY(0);
 }
 
-.url-block {
-  margin-top: 14px;
+.full-width {
+  width: 100%;
+  justify-content: center;
+}
+
+.add-btn-row-single {
+  margin-top: 10px;
 }
 
 /* ═══════════════════════════════════════════
