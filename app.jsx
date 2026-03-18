@@ -51,6 +51,16 @@ const miniNextBtn = document.getElementById("miniNextBtn");
 const miniVinylEl = document.getElementById("miniVinyl");
 const brandLogoWrap = document.getElementById("brandLogoWrap");
 
+// Sidebar elements
+const sidebar = document.getElementById("sidebar");
+const sidebarOverlay = document.getElementById("sidebarOverlay");
+const menuBtn = document.getElementById("menuBtn");
+const closeSidebarBtn = document.getElementById("closeSidebarBtn");
+const themeIcon = document.getElementById("themeIcon");
+const themeLabel = document.getElementById("themeLabel");
+const shuffleBtnLabel = document.getElementById("shuffleBtnLabel");
+const shuffleToggle = document.getElementById("shuffleToggle");
+
 const toastEl = document.getElementById("toast");
 
 
@@ -100,12 +110,9 @@ function applyTheme(theme) {
   if (meta) {
     meta.content = theme === "light" ? "#f6f4f1" : "#0b0d12";
   }
-  if (themeToggleBtn) {
-    themeToggleBtn.textContent = theme === "light" ? "🌙" : "☀️";
-    themeToggleBtn.setAttribute("aria-label",
-      theme === "light" ? "Switch to dark mode" : "Switch to light mode"
-    );
-  }
+  // Update sidebar theme button
+  if (themeIcon) themeIcon.textContent = theme === "light" ? "☀️" : "🌙";
+  if (themeLabel) themeLabel.textContent = theme === "light" ? "Light mode" : "Dark mode";
 }
 
 function initTheme() {
@@ -362,16 +369,18 @@ function saveModes() {
 }
 
 function updateModeButtons() {
-  shuffleBtn.textContent = `Shuffle: ${shuffleEnabled ? "On" : "Off"}`;
-  shuffleBtn.classList.toggle("active", shuffleEnabled);
+  // Shuffle — sidebar button
+  if (shuffleBtnLabel) shuffleBtnLabel.textContent = `Shuffle: ${shuffleEnabled ? "On" : "Off"}`;
+  if (shuffleBtn) shuffleBtn.classList.toggle("active", shuffleEnabled);
 
+  // Repeat — main page button
   const repeatLabels = {
     off: "Off",
     all: "All",
     one: "One",
   };
 
-  repeatBtn.textContent = `Repeat: ${repeatLabels[repeatMode] || "Off"}`;
+  repeatBtn.textContent = `🔁 Repeat: ${repeatLabels[repeatMode] || "Off"}`;
   repeatBtn.classList.toggle("active", repeatMode !== "off");
 }
 
@@ -1514,6 +1523,38 @@ shuffleBtn.addEventListener("click", toggleShuffle);
 repeatBtn.addEventListener("click", cycleRepeatMode);
 installBtn.addEventListener("click", handleInstallClick);
 if (themeToggleBtn) themeToggleBtn.addEventListener("click", toggleTheme);
+
+// ── Sidebar ──────────────────────────────────────────────
+function openSidebar() {
+  sidebar.classList.add("is-open");
+  sidebar.setAttribute("aria-hidden", "false");
+  sidebarOverlay.classList.add("is-open");
+  menuBtn.classList.add("is-open");
+  menuBtn.setAttribute("aria-expanded", "true");
+  document.body.style.overflow = "hidden";
+  // Refresh storage info every time sidebar opens
+  updateStorageUsage();
+}
+
+function closeSidebar() {
+  sidebar.classList.remove("is-open");
+  sidebar.setAttribute("aria-hidden", "true");
+  sidebarOverlay.classList.remove("is-open");
+  menuBtn.classList.remove("is-open");
+  menuBtn.setAttribute("aria-expanded", "false");
+  document.body.style.overflow = "";
+}
+
+menuBtn.addEventListener("click", openSidebar);
+closeSidebarBtn.addEventListener("click", closeSidebar);
+sidebarOverlay.addEventListener("click", closeSidebar);
+
+// Close sidebar on Escape
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && sidebar.classList.contains("is-open")) {
+    closeSidebar();
+  }
+});
 
 
 savePlaylistBtn.addEventListener("click", saveNamedPlaylist);

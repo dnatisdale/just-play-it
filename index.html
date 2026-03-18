@@ -23,6 +23,96 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+
+    <!-- ══ Sidebar overlay backdrop ══ -->
+    <div id="sidebarOverlay" class="sidebar-overlay" aria-hidden="true"></div>
+
+    <!-- ══ Sidebar ══ -->
+    <aside id="sidebar" class="sidebar" aria-label="Settings menu" aria-hidden="true">
+      <div class="sidebar-header">
+        <span class="sidebar-title">Settings</span>
+        <button id="closeSidebarBtn" class="sidebar-close" type="button" aria-label="Close settings">✕</button>
+      </div>
+
+      <div class="sidebar-body">
+
+        <!-- Theme -->
+        <div class="sidebar-section">
+          <div class="sidebar-section-label">Appearance</div>
+          <button id="themeToggleBtn" class="sidebar-row-btn theme-toggle-row" type="button" aria-label="Toggle light/dark mode">
+            <span class="sidebar-row-icon" id="themeIcon">🌙</span>
+            <span class="sidebar-row-text" id="themeLabel">Dark mode</span>
+            <span class="sidebar-row-arrow">›</span>
+          </button>
+        </div>
+
+        <!-- Playback -->
+        <div class="sidebar-section">
+          <div class="sidebar-section-label">Playback</div>
+          <button id="shuffleBtn" class="sidebar-row-btn" type="button">
+            <span class="sidebar-row-icon">🔀</span>
+            <span class="sidebar-row-text" id="shuffleBtnLabel">Shuffle: Off</span>
+            <span class="sidebar-row-toggle" id="shuffleToggle" aria-hidden="true"></span>
+          </button>
+          <div class="sidebar-row-item">
+            <span class="sidebar-row-icon">🔊</span>
+            <label class="sidebar-row-text" for="volumeSlider">Volume</label>
+            <input
+              id="volumeSlider"
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value="1"
+              aria-label="Volume"
+              class="sidebar-volume-slider"
+            />
+          </div>
+        </div>
+
+        <!-- Storage -->
+        <div class="sidebar-section">
+          <div class="sidebar-section-label">Storage</div>
+          <div class="sidebar-row-item sidebar-storage-row">
+            <span class="sidebar-row-icon">💾</span>
+            <p id="storageUsageText" class="sidebar-storage-text">Checking storage usage…</p>
+          </div>
+          <button id="clearDeviceLibraryBtn" class="sidebar-row-btn danger-row" type="button">
+            <span class="sidebar-row-icon">🗑</span>
+            <span class="sidebar-row-text">Clear Device Library</span>
+          </button>
+        </div>
+
+        <!-- Playlists -->
+        <div class="sidebar-section">
+          <div class="sidebar-section-label">Playlists</div>
+          <button id="exportPlaylistsBtn" class="sidebar-row-btn" type="button">
+            <span class="sidebar-row-icon">📤</span>
+            <span class="sidebar-row-text">Export Playlists</span>
+          </button>
+          <label for="importPlaylistsInput" class="sidebar-row-btn" role="button" tabindex="0">
+            <span class="sidebar-row-icon">📥</span>
+            <span class="sidebar-row-text">Import Playlists</span>
+          </label>
+          <input
+            id="importPlaylistsInput"
+            type="file"
+            accept="application/json"
+            class="hidden-file-input"
+          />
+        </div>
+
+        <!-- Install -->
+        <div class="sidebar-section">
+          <button id="installBtn" class="sidebar-row-btn install-row hidden" type="button">
+            <span class="sidebar-row-icon">⬇</span>
+            <span class="sidebar-row-text">Install App</span>
+          </button>
+        </div>
+
+      </div>
+    </aside>
+
     <div class="app-shell">
       <header class="topbar">
         <div class="brand-wrap">
@@ -42,19 +132,18 @@
         </div>
 
         <div class="topbar-actions">
-          <!-- Theme toggle -->
+          <!-- Hamburger menu button -->
           <button
-            id="themeToggleBtn"
-            class="theme-toggle"
+            id="menuBtn"
+            class="menu-btn"
             type="button"
-            aria-label="Toggle light/dark mode"
-            title="Toggle light/dark mode"
+            aria-label="Open settings"
+            aria-expanded="false"
+            aria-controls="sidebar"
           >
-            🌙
-          </button>
-
-          <button id="installBtn" class="install-btn hidden" type="button">
-            ⬇ Install App
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
           </button>
         </div>
       </header>
@@ -134,58 +223,25 @@
           </div>
 
           <div class="mode-row">
-            <button id="shuffleBtn" class="mode-btn" type="button">
-              🔀 Shuffle: Off
-            </button>
             <button id="repeatBtn" class="mode-btn" type="button">
               🔁 Repeat: Off
             </button>
-          </div>
-
-          <div class="player-tools">
-            <div class="tool-block">
-              <label for="volumeSlider">Volume</label>
-              <div class="slider-row">
-                <span class="mini-label">0</span>
-                <input
-                  id="volumeSlider"
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.01"
-                  value="1"
-                  aria-label="Volume"
-                />
-                <span class="mini-label">100</span>
-              </div>
-            </div>
-
-            <div class="tool-block">
-              <label for="sleepTimerSelect">Sleep timer</label>
-              <div class="sleep-row">
-                <select id="sleepTimerSelect" aria-label="Sleep timer duration">
-                  <option value="0">Off</option>
-                  <option value="5">5 min</option>
-                  <option value="10">10 min</option>
-                  <option value="15">15 min</option>
-                  <option value="30">30 min</option>
-                  <option value="45">45 min</option>
-                  <option value="60">60 min</option>
-                </select>
-                <button id="setSleepTimerBtn" type="button">Set</button>
-              </div>
-              <p id="sleepTimerStatus" class="helper-text">
-                No sleep timer set.
-              </p>
-            </div>
-
-            <div class="tool-block">
-              <label>Storage</label>
-              <p id="storageUsageText" class="helper-text helper-tight">
-                Checking storage usage…
-              </p>
+            <div class="sleep-row">
+              <select id="sleepTimerSelect" aria-label="Sleep timer duration">
+                <option value="0">Sleep: Off</option>
+                <option value="5">Sleep: 5 min</option>
+                <option value="10">Sleep: 10 min</option>
+                <option value="15">Sleep: 15 min</option>
+                <option value="30">Sleep: 30 min</option>
+                <option value="45">Sleep: 45 min</option>
+                <option value="60">Sleep: 60 min</option>
+              </select>
+              <button id="setSleepTimerBtn" type="button">Set</button>
             </div>
           </div>
+
+          <p id="sleepTimerStatus" class="helper-text sleep-status-text">No sleep timer set.</p>
+
         </section>
 
         <!-- ── Library card ── -->
@@ -252,30 +308,6 @@
               >
                 Delete
               </button>
-              <button
-                id="clearDeviceLibraryBtn"
-                class="ghost-btn danger-btn"
-                type="button"
-              >
-                Clear Device Library
-              </button>
-            </div>
-
-            <div class="saved-actions">
-              <button id="exportPlaylistsBtn" class="ghost-btn" type="button">
-                Export Playlists
-              </button>
-              <label
-                for="importPlaylistsInput"
-                class="ghost-btn import-label"
-                >Import Playlists</label
-              >
-              <input
-                id="importPlaylistsInput"
-                type="file"
-                accept="application/json"
-                class="hidden-file-input"
-              />
             </div>
 
             <p id="savedPlaylistStatus" class="helper-text">
