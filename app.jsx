@@ -69,6 +69,16 @@ const deviceLibraryList = document.getElementById("deviceLibraryList");
 
 const toastEl = document.getElementById("toast");
 
+// ── SVG icon library (line art) ─────────────────────────────────────────────
+const ICONS = {
+  play:    `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5,3 19,12 5,21"/></svg>`,
+  pause:   `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="5" y="4" width="4" height="16" rx="1"/><rect x="15" y="4" width="4" height="16" rx="1"/></svg>`,
+  sun:     `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`,
+  moon:    `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21,12.79A9,9,0,1,1,11.21,3,7,7,0,0,0,21,12.79Z"/></svg>`,
+  repeat:  `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="17,1 21,5 17,9"/><path d="M3,11V9a4,4,0,0,1,4-4h14"/><polyline points="7,23 3,19 7,15"/><path d="M21,13v2a4,4,0,0,1-4,4H3"/></svg>`,
+  trash:   `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14a2,2,0,0,1-2,2H8a2,2,0,0,1-2-2L5,6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/><path d="M9,6V4a1,1,0,0,1,1-1h4a1,1,0,0,1,1,1V6"/></svg>`,
+};
+
 
 const STORAGE_KEYS = {
   playlist: "justPlayItPlaylist",
@@ -116,17 +126,16 @@ function applyTheme(theme) {
   if (meta) {
     meta.content = theme === "light" ? "#f6f4f1" : "#0b0d12";
   }
-  // Update sidebar theme button
-  if (themeIcon) themeIcon.textContent = theme === "light" ? "☀️" : "🌙";
+  if (themeIcon) themeIcon.innerHTML = theme === "light" ? ICONS.sun : ICONS.moon;
   if (themeLabel) themeLabel.textContent = theme === "light" ? "Light mode" : "Dark mode";
 }
 
 function initTheme() {
   const saved = localStorage.getItem(STORAGE_KEYS.theme);
-  const theme = saved || getSystemTheme();
+  const theme = saved || "light"; // default to light mode
   applyTheme(theme);
 
-  // Listen for system changes (only if no saved preference)
+  // Keep synced if user clears their saved preference and system changes
   window.matchMedia("(prefers-color-scheme: light)").addEventListener("change", (e) => {
     if (!localStorage.getItem(STORAGE_KEYS.theme)) {
       applyTheme(e.matches ? "light" : "dark");
@@ -144,7 +153,7 @@ function toggleTheme() {
 // ── Cover art helpers ──────────────────────────────────
 function setCoverArtLoaded(track) {
   // Replace folder-icon content with the vinyl record image
-  coverArtEl.innerHTML = `<img src="icons/Just-Play-It 512.png" alt="">`;
+  coverArtEl.innerHTML = `<img src="icons/icon-512.png" alt="">`;
   coverArtEl.classList.remove("cover-art-load");
   coverArtEl.setAttribute("aria-label", track ? track.title : "Now playing");
   coverArtEl.title = "";
@@ -152,7 +161,7 @@ function setCoverArtLoaded(track) {
 }
 
 function setCoverArtEmpty() {
-  coverArtEl.innerHTML = `<span class="cover-art-icon" aria-hidden="true">📁</span><span class="cover-art-hint">Load</span>`;
+  coverArtEl.innerHTML = `<span class="cover-art-hint">Load</span>`;
   coverArtEl.classList.add("cover-art-load");
   coverArtEl.classList.remove("spinning");
   coverArtEl.setAttribute("aria-label", "Load audio files");
@@ -355,12 +364,11 @@ function saveVolume() {
 }
 
 function loadVolume() {
+  // Volume is controlled by the device hardware — keep audio at full and restore
+  // only if a saved value exists (legacy support); slider no longer in the DOM.
   const saved = Number(localStorage.getItem(STORAGE_KEYS.volume));
-  const safeValue = Number.isFinite(saved)
-    ? Math.min(1, Math.max(0, saved))
-    : 1;
-  audio.volume = safeValue;
-  volumeSlider.value = String(safeValue);
+  audio.volume = Number.isFinite(saved) && saved > 0 ? Math.min(1, saved) : 1;
+  if (volumeSlider) volumeSlider.value = String(audio.volume);
 }
 
 function loadModes() {
@@ -379,14 +387,9 @@ function updateModeButtons() {
   if (shuffleBtnLabel) shuffleBtnLabel.textContent = `Shuffle: ${shuffleEnabled ? "On" : "Off"}`;
   if (shuffleBtn) shuffleBtn.classList.toggle("active", shuffleEnabled);
 
-  // Repeat — main page button
-  const repeatLabels = {
-    off: "Off",
-    all: "All",
-    one: "One",
-  };
-
-  repeatBtn.textContent = `🔁 Repeat: ${repeatLabels[repeatMode] || "Off"}`;
+  // Repeat — main page button (SVG icon + text)
+  const repeatLabels = { off: "Off", all: "All", one: "One" };
+  repeatBtn.innerHTML = `${ICONS.repeat} <span>Repeat: ${repeatLabels[repeatMode] || "Off"}</span>`;
   repeatBtn.classList.toggle("active", repeatMode !== "off");
 }
 
@@ -533,18 +536,16 @@ async function renderSidebarLibrary() {
     const deleteBtn = document.createElement("button");
     deleteBtn.type = "button";
     deleteBtn.className = "library-delete-btn";
-    deleteBtn.textContent = "🗑";
+    deleteBtn.innerHTML = ICONS.trash;
     deleteBtn.setAttribute("aria-label", `Delete ${escapeHtml(name)}`);
 
     let confirmTimeout = null;
 
     deleteBtn.addEventListener("click", () => {
       if (deleteBtn.classList.contains("confirming")) {
-        // Second click — confirmed, delete it
         clearTimeout(confirmTimeout);
         deleteStoredTrack(record.id, name);
       } else {
-        // First click — ask for confirmation
         deleteBtn.classList.add("confirming");
         deleteBtn.textContent = "Sure?";
         deleteBtn.setAttribute("aria-label", `Confirm delete ${escapeHtml(name)}`);
@@ -552,7 +553,7 @@ async function renderSidebarLibrary() {
         confirmTimeout = setTimeout(() => {
           if (deleteBtn.classList.contains("confirming")) {
             deleteBtn.classList.remove("confirming");
-            deleteBtn.textContent = "🗑";
+            deleteBtn.innerHTML = ICONS.trash;
             deleteBtn.setAttribute("aria-label", `Delete ${escapeHtml(name)}`);
           }
         }, 3000);
@@ -1194,9 +1195,9 @@ async function importPlaylistsFromFile(file) {
 }
 
 function updatePlayPauseButton() {
-  const symbol = audio.paused ? "▶" : "⏸";
-  playPauseBtn.textContent = symbol;
-  miniPlayPauseBtn.textContent = symbol;
+  const icon = audio.paused ? ICONS.play : ICONS.pause;
+  playPauseBtn.innerHTML = icon;
+  miniPlayPauseBtn.innerHTML = icon;
   updateSpinning();
 }
 
@@ -1857,10 +1858,12 @@ seekBar.addEventListener("input", () => {
   audio.currentTime = seekTo;
 });
 
-volumeSlider.addEventListener("input", () => {
-  audio.volume = Number(volumeSlider.value);
-  saveVolume();
-});
+if (volumeSlider) {
+  volumeSlider.addEventListener("input", () => {
+    audio.volume = Number(volumeSlider.value);
+    saveVolume();
+  });
+}
 
 setSleepTimerBtn.addEventListener("click", () => {
   const minutes = Number(sleepTimerSelect.value);

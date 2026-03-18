@@ -1215,10 +1215,14 @@ input::placeholder {
 .drop-zone {
   border: 2px dashed var(--border-strong);
   border-radius: var(--radius-sm);
-  padding: 22px 16px;
+  padding: 20px 16px;
   text-align: center;
   cursor: pointer;
   margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
   transition: border-color var(--transition), background var(--transition),
     transform var(--transition);
 }
@@ -1263,11 +1267,25 @@ input::placeholder {
    ADD METHOD BUTTONS
 ═══════════════════════════════════════════ */
 
+.add-audio-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
 .add-btn-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+}
+
+.add-audio-block .url-row {
+  margin-top: 2px;
+}
+
+.add-audio-block .helper-text {
+  margin-top: 8px;
 }
 
 .add-method-btn {
