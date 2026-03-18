@@ -245,10 +245,10 @@ button {
 .topbar h1 {
   margin: 0;
   font-family: 'Oswald', 'Inter', sans-serif;
-  font-size: 2.1rem;
+  font-size: 3.65rem;
   font-weight: 700;
-  line-height: 0.95;
-  letter-spacing: -0.04em;
+  line-height: 0.82;
+  letter-spacing: -0.05em;
   text-transform: uppercase;
   color: var(--text);
 }
@@ -409,7 +409,7 @@ button {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 22px;
+  padding: 16px;
   box-shadow: var(--shadow);
   backdrop-filter: blur(20px);
   position: relative;
@@ -431,12 +431,13 @@ button {
 ═══════════════════════════════════════════ */
 
 .now-playing-label {
-  font-size: 0.72rem;
+  font-family: 'Oswald', sans-serif;
+  font-size: 1rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--accent);
-  margin-bottom: 14px;
+  letter-spacing: -0.01em;
+  color: #000;
+  margin: 0 0 10px;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -447,8 +448,8 @@ button {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 8px var(--accent-glow);
+  background: #000;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
   animation: pulse-dot 2s ease-in-out infinite;
 }
 
@@ -813,16 +814,19 @@ input::placeholder {
 ═══════════════════════════════════════════ */
 
 .section-head {
-  margin-bottom: 14px;
+  margin-bottom: 8px;
 }
 
 .section-head h3,
 .playlist-header h3,
 .library-card h3 {
   margin: 0;
-  font-size: 1.05rem;
+  font-family: 'Oswald', sans-serif;
+  font-size: 1.15rem;
   font-weight: 700;
-  letter-spacing: -0.01em;
+  color: #000;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
 }
 
 .add-grid {
@@ -1040,18 +1044,16 @@ input::placeholder {
 ═══════════════════════════════════════════ */
 
 .mini-player {
-  position: fixed;
-  left: 0; right: 0; bottom: 0;
-  background: var(--panel-3);
-  border-top: 1px solid var(--border);
-  backdrop-filter: blur(28px) saturate(160%);
-  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  margin-top: 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  z-index: 9998;
-  box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.25), 0 -1px 0 var(--accent-subtle-border);
+  box-shadow: var(--shadow-sm);
   transition: background 0.3s ease, border-color 0.3s ease;
 }
 
@@ -1752,7 +1754,7 @@ input::placeholder {
   }
 
   .mini-player {
-    padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+    padding: 12px;
   }
 }
 
