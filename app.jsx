@@ -61,6 +61,12 @@ const themeLabel = document.getElementById("themeLabel");
 const shuffleBtnLabel = document.getElementById("shuffleBtnLabel");
 const shuffleToggle = document.getElementById("shuffleToggle");
 
+// Drag & drop / add-audio elements
+const dragOverlay = document.getElementById("dragOverlay");
+const dropZone = document.getElementById("dropZone");
+const folderInput = document.getElementById("folderInput");
+const deviceLibraryList = document.getElementById("deviceLibraryList");
+
 const toastEl = document.getElementById("toast");
 
 
@@ -453,6 +459,17 @@ function clearAllTrackBlobs() {
   });
 }
 
+// Delete a single stored track blob by ID
+function deleteTrackBlob(id) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(TRACK_STORE, "readwrite");
+    const store = tx.objectStore(TRACK_STORE);
+    store.delete(id);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
 async function updateStorageUsage() {
   try {
     const records = db ? await getAllTrackBlobs() : [];
@@ -472,6 +489,132 @@ async function updateStorageUsage() {
   } catch (error) {
     console.error("Could not estimate storage:", error);
     storageUsageText.textContent = "Storage usage unavailable in this browser.";
+  }
+}
+
+// ── Device Library: render per-file list in sidebar ──
+async function renderSidebarLibrary() {
+  if (!deviceLibraryList) return;
+
+  if (!db) {
+    deviceLibraryList.innerHTML = `<p class="library-empty-state">Storage unavailable.</p>`;
+    return;
+  }
+
+  let records;
+  try {
+    records = await getAllTrackBlobs();
+  } catch {
+    records = [];
+  }
+
+  if (records.length === 0) {
+    deviceLibraryList.innerHTML = `<p class="library-empty-state">No device files stored yet.</p>`;
+    return;
+  }
+
+  deviceLibraryList.innerHTML = "";
+
+  records.forEach((record) => {
+    const size = formatBytes(record.size || record.blob?.size || 0);
+    const name = record.title || record.id;
+
+    const item = document.createElement("div");
+    item.className = "library-item";
+    item.dataset.id = record.id;
+
+    const info = document.createElement("div");
+    info.className = "library-item-info";
+    info.innerHTML = `
+      <span class="library-item-name" title="${escapeHtml(name)}">${escapeHtml(name)}</span>
+      <span class="library-item-size">${size}</span>
+    `;
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.type = "button";
+    deleteBtn.className = "library-delete-btn";
+    deleteBtn.textContent = "🗑";
+    deleteBtn.setAttribute("aria-label", `Delete ${escapeHtml(name)}`);
+
+    let confirmTimeout = null;
+
+    deleteBtn.addEventListener("click", () => {
+      if (deleteBtn.classList.contains("confirming")) {
+        // Second click — confirmed, delete it
+        clearTimeout(confirmTimeout);
+        deleteStoredTrack(record.id, name);
+      } else {
+        // First click — ask for confirmation
+        deleteBtn.classList.add("confirming");
+        deleteBtn.textContent = "Sure?";
+        deleteBtn.setAttribute("aria-label", `Confirm delete ${escapeHtml(name)}`);
+
+        confirmTimeout = setTimeout(() => {
+          if (deleteBtn.classList.contains("confirming")) {
+            deleteBtn.classList.remove("confirming");
+            deleteBtn.textContent = "🗑";
+            deleteBtn.setAttribute("aria-label", `Delete ${escapeHtml(name)}`);
+          }
+        }, 3000);
+      }
+    });
+
+    item.appendChild(info);
+    item.appendChild(deleteBtn);
+    deviceLibraryList.appendChild(item);
+  });
+}
+
+// ── Delete a single stored device track and clean up playlists ──
+async function deleteStoredTrack(id, title) {
+  try {
+    await deleteTrackBlob(id);
+    revokeCurrentObjectUrl();
+
+    // If the currently playing track is the deleted one, stop playback
+    const currentTrack = playlist[currentTrackIndex];
+    if (currentTrack && currentTrack.id === id) {
+      audio.pause();
+      audio.removeAttribute("src");
+      audio.load();
+    }
+
+    // Remove from current playlist
+    const wasCurrentIndex = currentTrackIndex;
+    playlist = playlist.filter((t) => t.id !== id);
+
+    if (playlist.length === 0) {
+      currentTrackIndex = -1;
+    } else if (wasCurrentIndex >= playlist.length) {
+      currentTrackIndex = playlist.length - 1;
+    } else if (currentTrack && currentTrack.id === id) {
+      currentTrackIndex = Math.max(0, wasCurrentIndex - 1);
+    }
+
+    // Remove from all saved playlists (delete entire playlist if it becomes empty)
+    Object.keys(savedPlaylists).forEach((name) => {
+      const filtered = (savedPlaylists[name].tracks || []).filter(
+        (t) => t.id !== id,
+      );
+      if (filtered.length === 0) {
+        delete savedPlaylists[name];
+      } else {
+        savedPlaylists[name].tracks = filtered;
+      }
+    });
+
+    persistSavedPlaylists();
+    savePlaylistState();
+    renderPlaylist();
+    updateNowPlaying(playlist[currentTrackIndex] || null);
+    updatePlayPauseButton();
+    await updateStorageUsage();
+    await renderSidebarLibrary();
+
+    showToast(`“${title}” removed.`);
+  } catch (error) {
+    console.error("Could not delete track:", error);
+    showToast("Could not delete file. Try again.");
   }
 }
 
@@ -829,6 +972,7 @@ async function addFileTracks(files) {
   }
 
   await updateStorageUsage();
+  await renderSidebarLibrary();
   setPlayerStatus(
     `${newTracks.length} file${newTracks.length === 1 ? "" : "s"} added and stored.`,
   );
@@ -972,6 +1116,7 @@ async function clearDeviceLibrary() {
     persistSavedPlaylists();
     savePlaylistState();
     await updateStorageUsage();
+    await renderSidebarLibrary();
 
     if (currentTrackIndex >= 0) {
       await loadTrack(currentTrackIndex, false);
@@ -1532,8 +1677,9 @@ function openSidebar() {
   menuBtn.classList.add("is-open");
   menuBtn.setAttribute("aria-expanded", "true");
   document.body.style.overflow = "hidden";
-  // Refresh storage info every time sidebar opens
+  // Refresh both storage text and per-file list every time the sidebar opens
   updateStorageUsage();
+  renderSidebarLibrary();
 }
 
 function closeSidebar() {
@@ -1555,6 +1701,96 @@ document.addEventListener("keydown", (e) => {
     closeSidebar();
   }
 });
+
+// ── Drag & drop ──────────────────────────────────────────────
+const AUDIO_EXTS = /\.(mp3|m4a|aac|ogg|oga|wav|flac|opus|weba|webm|caf)$/i;
+
+function isAudioFile(file) {
+  return file.type.startsWith("audio/") || AUDIO_EXTS.test(file.name);
+}
+
+let dragDepth = 0;
+
+function isFileDrag(event) {
+  return (
+    event.dataTransfer &&
+    Array.from(event.dataTransfer.types).includes("Files")
+  );
+}
+
+document.addEventListener("dragenter", (event) => {
+  if (!isFileDrag(event)) return;
+  dragDepth++;
+  if (dragDepth === 1) {
+    dragOverlay.classList.add("active");
+    dragOverlay.setAttribute("aria-hidden", "false");
+  }
+});
+
+document.addEventListener("dragleave", (event) => {
+  if (!isFileDrag(event) && dragDepth <= 0) return;
+  dragDepth--;
+  if (dragDepth <= 0) {
+    dragDepth = 0;
+    dragOverlay.classList.remove("active");
+    dragOverlay.setAttribute("aria-hidden", "true");
+  }
+});
+
+document.addEventListener("dragover", (event) => {
+  if (!isFileDrag(event)) return;
+  event.preventDefault();
+  event.dataTransfer.dropEffect = "copy";
+});
+
+document.addEventListener("drop", async (event) => {
+  event.preventDefault();
+  dragDepth = 0;
+  dragOverlay.classList.remove("active");
+  dragOverlay.setAttribute("aria-hidden", "true");
+  if (dropZone) dropZone.classList.remove("drag-hover");
+
+  const files = Array.from(event.dataTransfer.files).filter(isAudioFile);
+  if (files.length === 0) {
+    showToast("No audio files found in the drop.");
+    return;
+  }
+  await addFileTracks(files);
+});
+
+// Drop zone interactive behaviours
+if (dropZone) {
+  dropZone.addEventListener("click", () => fileInput.click());
+  dropZone.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      fileInput.click();
+    }
+  });
+  dropZone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropZone.classList.add("drag-hover");
+  });
+  dropZone.addEventListener("dragleave", () =>
+    dropZone.classList.remove("drag-hover"),
+  );
+  dropZone.addEventListener("drop", () =>
+    dropZone.classList.remove("drag-hover"),
+  );
+}
+
+// ── Folder picker ────────────────────────────────────────
+if (folderInput) {
+  folderInput.addEventListener("change", async (event) => {
+    const files = Array.from(event.target.files).filter(isAudioFile);
+    if (files.length === 0) {
+      showToast("No audio files found in that folder.");
+    } else {
+      await addFileTracks(files);
+    }
+    folderInput.value = "";
+  });
+}
 
 
 savePlaylistBtn.addEventListener("click", saveNamedPlaylist);
