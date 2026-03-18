@@ -1844,3 +1844,20 @@ h3 .counter-badge {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--muted);
 }
+
+/* Deletion states */
+.danger-row {
+  color: #be1e37;
+}
+
+.danger-row.confirming {
+  background: #be1e37 !important;
+  color: #fff !important;
+  border-color: #be1e37 !important;
+  box-shadow: 0 4px 15px rgba(190, 30, 55, 0.4);
+}
+
+.danger-row.confirming .sidebar-row-icon,
+.danger-row.confirming .sidebar-row-text {
+  color: #fff !important;
+}

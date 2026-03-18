@@ -258,13 +258,14 @@ function showToast(message) {
 async function updateBadgeCounts() {
   // Playlist count
   if (playlistBadge) {
-    playlistBadge.textContent = playlist.length;
-    playlistBadge.classList.toggle("hidden", playlist.length === 0);
+    const listCount = Array.isArray(playlist) ? playlist.length : 0;
+    playlistBadge.textContent = listCount;
+    playlistBadge.classList.toggle("hidden", listCount === 0);
   }
 
   // Saved playlists count
   if (savedPlaylistsBadge) {
-    const savedCount = Object.keys(savedPlaylists).length;
+    const savedCount = Object.keys(savedPlaylists || {}).length;
     savedPlaylistsBadge.textContent = savedCount;
     savedPlaylistsBadge.classList.toggle("hidden", savedCount === 0);
   }
@@ -276,7 +277,8 @@ async function updateBadgeCounts() {
       const count = records.length;
       menuBadge.textContent = count;
       menuBadge.classList.toggle("hidden", count === 0);
-    } catch {
+    } catch (err) {
+      console.error("Badge update error:", err);
       menuBadge.classList.add("hidden");
     }
   }
@@ -1844,9 +1846,22 @@ savePlaylistBtn.addEventListener("click", saveNamedPlaylist);
 loadPlaylistBtn.addEventListener("click", async () => loadNamedPlaylist());
 renamePlaylistBtn.addEventListener("click", renameNamedPlaylist);
 deletePlaylistBtn.addEventListener("click", deleteNamedPlaylist);
-clearDeviceLibraryBtn.addEventListener("click", async () =>
-  clearDeviceLibrary(),
-);
+let clearConfirmTimeout = null;
+clearDeviceLibraryBtn.addEventListener("click", async () => {
+  if (clearDeviceLibraryBtn.classList.contains("confirming")) {
+    clearTimeout(clearConfirmTimeout);
+    clearDeviceLibraryBtn.classList.remove("confirming");
+    clearDeviceLibraryBtn.innerHTML = `<span class="sidebar-row-icon">${ICONS.trash}</span> <span class="sidebar-row-text">Clear All Device Files</span>`;
+    await clearDeviceLibrary();
+  } else {
+    clearDeviceLibraryBtn.classList.add("confirming");
+    clearDeviceLibraryBtn.innerHTML = `<span class="sidebar-row-text" style="color:#fff; font-weight:bold;">Sure? This deletes everything.</span>`;
+    clearConfirmTimeout = setTimeout(() => {
+      clearDeviceLibraryBtn.classList.remove("confirming");
+      clearDeviceLibraryBtn.innerHTML = `<span class="sidebar-row-icon">${ICONS.trash}</span> <span class="sidebar-row-text">Clear All Device Files</span>`;
+    }, 4000);
+  }
+});
 
 exportPlaylistsBtn.addEventListener("click", exportPlaylists);
 
