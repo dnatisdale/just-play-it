@@ -8,6 +8,8 @@ const clearPlaylistBtn = document.getElementById("clearPlaylistBtn");
 const playPauseBtn = document.getElementById("playPauseBtn");
 const prevBtn = document.getElementById("prevBtn");
 const nextBtn = document.getElementById("nextBtn");
+const skipBackBtn = document.getElementById("skipBackBtn");
+const skipForwardBtn = document.getElementById("skipForwardBtn");
 const shuffleBtn = document.getElementById("shuffleBtn");
 const repeatBtn = document.getElementById("repeatBtn");
 const installBtn = document.getElementById("installBtn");
@@ -1362,6 +1364,12 @@ function cycleRepeatMode() {
   showToast(`Repeat ${repeatMode}.`);
 }
 
+function skipSeconds(seconds) {
+  if (!audio.src || !Number.isFinite(audio.duration)) return;
+  audio.currentTime = Math.max(0, Math.min(audio.duration, audio.currentTime + seconds));
+  showToast(`${seconds > 0 ? "Forward" : "Back"} ${Math.abs(seconds)}s`);
+}
+
 function saveNamedPlaylist() {
   const name = playlistNameInput.value.trim();
 
@@ -1733,6 +1741,8 @@ miniPlayPauseBtn.addEventListener("click", async () => {
 
 nextBtn.addEventListener("click", async () => playNext());
 prevBtn.addEventListener("click", async () => playPrev());
+skipBackBtn.addEventListener("click", () => skipSeconds(-30));
+skipForwardBtn.addEventListener("click", () => skipSeconds(30));
 miniNextBtn.addEventListener("click", async () => playNext());
 miniPrevBtn.addEventListener("click", async () => playPrev());
 
