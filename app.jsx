@@ -138,7 +138,7 @@ function applyTheme(theme) {
 
 function initTheme() {
   const saved = localStorage.getItem(STORAGE_KEYS.theme);
-  const theme = saved || "light"; // default to light mode
+  const theme = saved || "dark"; // default to dark mode
   applyTheme(theme);
 
   // Keep synced if user clears their saved preference and system changes
