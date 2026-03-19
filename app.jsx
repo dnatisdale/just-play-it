@@ -1058,7 +1058,14 @@ function addUrlTrack(url) {
   if (!trimmed) return;
 
   try {
-    new URL(trimmed);
+    const parsedUrl = new URL(trimmed);
+    const hostname = parsedUrl.hostname.toLowerCase();
+    
+    // Check for YouTube links
+    if (hostname.includes("youtube.com") || hostname.includes("youtu.be")) {
+      showToast("YouTube URLs are not direct audio files and are not supported.", 4000);
+      return;
+    }
   } catch {
     showToast("That does not look like a valid URL.");
     return;
