@@ -2307,8 +2307,6 @@ async function initApp() {
 
   // Header text/badge jumps
   const nowPlayingPlaylistInfo = document.getElementById("nowPlayingPlaylistInfo");
-  const savedPlaylistsHeader = document.getElementById("savedPlaylistsHeader");
-  const currentPlaylistHeader = document.getElementById("currentPlaylistHeader");
   
   if (nowPlayingPlaylistInfo) {
     nowPlayingPlaylistInfo.addEventListener("click", (e) => {
@@ -2316,14 +2314,14 @@ async function initApp() {
       jumpToSavedPlaylists();
     });
   }
-  if (savedPlaylistsHeader) {
-    savedPlaylistsHeader.addEventListener("click", (e) => {
+  if (savedPlaylistsBadge) {
+    savedPlaylistsBadge.addEventListener("click", (e) => {
       e.stopPropagation();
       jumpToSavedPlaylists();
     });
   }
-  if (currentPlaylistHeader) {
-    currentPlaylistHeader.addEventListener("click", (e) => {
+  if (playlistBadge) {
+    playlistBadge.addEventListener("click", (e) => {
       e.stopPropagation();
       playlistEl.scrollIntoView({ behavior: "smooth", block: "center" });
     });
