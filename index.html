@@ -120,12 +120,31 @@
             accept="application/json"
             class="hidden-file-input"
           />
+        <!-- App QR Code -->
+        <div class="sidebar-section qr-section">
+          <div class="sidebar-section-label">Scan to Share</div>
+          <div id="qrWrapper" class="qr-wrapper" title="Click to enlarge QR code">
+            <img id="qrImage" class="qr-image" src="" alt="App QR Code" />
+            <div class="qr-logo-overlay">
+              <img src="icons/icon-512.png" alt="" />
+            </div>
+          </div>
+          <p class="qr-hint">Scan with another device to open the player.</p>
         </div>
 
       </div>
-
-      </div>
     </aside>
+
+    <!-- ══ QR Fullscreen Overlay ══ -->
+    <div id="qrFullscreen" class="qr-fullscreen" aria-hidden="true">
+      <div class="qr-fullscreen-content">
+        <img id="qrImageFull" src="" alt="" />
+        <div class="qr-logo-overlay-large">
+          <img src="icons/icon-512.png" alt="" />
+        </div>
+        <button id="closeQrBtn" class="qr-close" type="button">✕ Close</button>
+      </div>
+    </div>
 
     <div class="app-shell">
       <header class="topbar">

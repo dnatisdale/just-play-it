@@ -2101,6 +2101,44 @@ if ("serviceWorker" in navigator) {
   });
 }
 
+function updateQrCode() {
+  const qrImage = document.getElementById("qrImage");
+  const qrImageFull = document.getElementById("qrImageFull");
+  if (!qrImage || !qrImageFull) return;
+
+  const currentUrl = window.location.origin + window.location.pathname;
+  // Use a high-quality QR API (qrserver.com is fast and reliable)
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(currentUrl)}`;
+  
+  qrImage.src = qrUrl;
+  qrImageFull.src = qrUrl;
+}
+
+const qrWrapper = document.getElementById("qrWrapper");
+const qrFullscreen = document.getElementById("qrFullscreen");
+const closeQrBtn = document.getElementById("closeQrBtn");
+
+if (qrWrapper && qrFullscreen) {
+  qrWrapper.addEventListener("click", () => {
+    qrFullscreen.classList.add("is-open");
+    qrFullscreen.setAttribute("aria-hidden", "false");
+  });
+}
+
+if (closeQrBtn && qrFullscreen) {
+  closeQrBtn.addEventListener("click", () => {
+    qrFullscreen.classList.remove("is-open");
+    qrFullscreen.setAttribute("aria-hidden", "true");
+  });
+
+  qrFullscreen.addEventListener("click", (e) => {
+    if (e.target === qrFullscreen) {
+      qrFullscreen.classList.remove("is-open");
+      qrFullscreen.setAttribute("aria-hidden", "true");
+    }
+  });
+}
+
 async function initApp() {
   // Apply saved/system theme immediately (before any paint)
   initTheme();
@@ -2123,6 +2161,7 @@ async function initApp() {
   setupMediaSessionActions();
   await updateStorageUsage();
   await updateBadgeCounts();
+  updateQrCode();
 
   if (currentTrackIndex >= 0) {
     await loadTrack(currentTrackIndex, false);

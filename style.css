@@ -2086,3 +2086,151 @@ h3 .counter-badge {
 .danger-row.confirming .sidebar-row-text {
   color: #fff !important;
 }
+/* ═══════════════════════════════════════════
+   QR CODE
+═══════════════════════════════════════════ */
+
+.qr-section {
+  text-align: center;
+  margin-top: 24px;
+}
+
+.qr-wrapper {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  margin: 0 auto;
+  padding: 8px;
+  background: #fff;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.qr-wrapper:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.qr-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: pixelated; /* Sharp QR */
+}
+
+.qr-logo-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 32px;
+  height: 32px;
+  background: #fff;
+  border-radius: 50%;
+  padding: 3px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qr-logo-overlay img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+.qr-hint {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--muted);
+  margin-top: 10px;
+  padding: 0 16px;
+  line-height: 1.4;
+}
+
+/* Fullscreen QR */
+.qr-fullscreen {
+  position: fixed;
+  inset: 0;
+  background: rgba(11, 13, 18, 0.95);
+  backdrop-filter: blur(24px);
+  z-index: 20000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.qr-fullscreen.is-open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.qr-fullscreen-content {
+  position: relative;
+  background: #fff;
+  padding: 20px;
+  border-radius: 24px;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6);
+  transform: scale(0.9);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.qr-fullscreen.is-open .qr-fullscreen-content {
+  transform: scale(1);
+}
+
+.qr-fullscreen-content img[id="qrImageFull"] {
+  width: min(85vw, 360px);
+  height: auto;
+  display: block;
+}
+
+.qr-logo-overlay-large {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 80px;
+  background: #fff;
+  border-radius: 50%;
+  padding: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qr-logo-overlay-large img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+.qr-close {
+  position: absolute;
+  top: -64px;
+  right: 0;
+  background: var(--glass);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 10px 20px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.qr-close:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
