@@ -1764,10 +1764,11 @@ installBtn.addEventListener("click", handleInstallClick);
 if (themeToggleBtn) themeToggleBtn.addEventListener("click", toggleTheme);
 
 async function handleShare() {
+  const shareUrl = window.location.origin + window.location.pathname;
   const shareData = {
     title: "Just Play It",
-    text: "A simple, installable audio player for your local files.",
-    url: window.location.origin + window.location.pathname,
+    text: `JUST PLAY IT. – A simple, installable audio player for your local files: ${shareUrl}`,
+    url: shareUrl,
   };
 
   try {
