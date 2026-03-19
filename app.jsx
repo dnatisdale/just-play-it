@@ -2048,6 +2048,24 @@ audio.addEventListener("ended", async () => {
   }
 });
 
+function handleBeforeInstallPrompt(e) {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  if (installBtn) {
+    installBtn.classList.remove("hidden");
+  }
+}
+
+async function handleInstallClick() {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  const { outcome } = await deferredInstallPrompt.userChoice;
+  if (outcome === "accepted") {
+    deferredInstallPrompt = null;
+    if (installBtn) installBtn.classList.add("hidden");
+  }
+}
+
 window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
 
 window.addEventListener("appinstalled", () => {
