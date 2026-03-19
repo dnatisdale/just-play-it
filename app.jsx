@@ -58,6 +58,8 @@ const themeLabel = document.getElementById("themeLabel");
 const shuffleBtnLabel = document.getElementById("shuffleBtnLabel");
 const shuffleToggle = document.getElementById("shuffleToggle");
 const shareAppBtn = document.getElementById("shareAppBtn");
+const copyQrBtn = document.getElementById("copyQrBtn");
+const downloadQrBtn = document.getElementById("downloadQrBtn");
 
 // Badges
 const menuBadge = document.getElementById("menuBadge");
@@ -2200,6 +2202,58 @@ if (closeQrBtn && qrFullscreen) {
   });
 }
 
+if (copyQrBtn) {
+  copyQrBtn.addEventListener("click", async () => {
+    try {
+      const qrImage = document.getElementById("qrImage");
+      // Use fetch to get the image as a blob
+      const response = await fetch(qrImage.src);
+      const blob = await response.blob();
+      
+      // Some browsers require ClipboardItem to be used with write()
+      const item = new ClipboardItem({ [blob.type]: blob });
+      await navigator.clipboard.write([item]);
+      
+      showToast("QR code image copied.");
+    } catch (err) {
+      console.error("QR image copy failed:", err);
+      // Fallback: copy the URL text
+      const currentUrl = window.location.origin + window.location.pathname;
+      try {
+        await navigator.clipboard.writeText(currentUrl);
+        showToast("Could not copy image. App URL copied instead.");
+      } catch (clipErr) {
+        showToast("Could not copy QR code.");
+      }
+    }
+  });
+}
+
+if (downloadQrBtn) {
+  downloadQrBtn.addEventListener("click", async () => {
+    try {
+      const qrImage = document.getElementById("qrImage");
+      const response = await fetch(qrImage.src);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = "just-play-it-qr.png";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      
+      // Clean up the object URL later
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+      showToast("QR code downloading...");
+    } catch (err) {
+      console.error("QR download failed:", err);
+      showToast("Could not download QR code.");
+    }
+  });
+}
+
 async function initApp() {
   // Apply saved/system theme immediately (before any paint)
   initTheme();
@@ -2273,10 +2327,10 @@ async function initApp() {
   // Hide splash screen after initialization
   const splash = document.getElementById("splashScreen");
   if (splash) {
-    // Small delay to ensure the UI has settled
+    // Delay to let the fancy bouncy animation finish
     setTimeout(() => {
       splash.classList.add("fade-out");
-    }, 1200);
+    }, 4000);
   }
 }
 
