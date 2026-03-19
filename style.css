@@ -143,6 +143,7 @@ body {
   background: var(--bg);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden; /* Prevent horizontal scroll on body */
   transition: background 0.3s ease, color 0.3s ease;
 }
 
@@ -244,11 +245,11 @@ button {
 
 .topbar h1 {
   margin: 0;
-  font-family: 'Oswald', 'Inter', sans-serif;
-  font-size: 3.65rem;
-  font-weight: 700;
-  line-height: 0.82;
-  letter-spacing: -0.05em;
+  font-family: "Big Shoulders Display", "Oswald", "Futura Extra Black Condensed BT", sans-serif;
+  font-size: 4.8rem; /* Scaled up for the condensed font */
+  font-weight: 900;
+  line-height: 0.8;
+  letter-spacing: -0.02em;
   text-transform: uppercase;
   color: var(--text);
 }
@@ -432,16 +433,16 @@ button {
 ═══════════════════════════════════════════ */
 
 .now-playing-label {
-  font-family: 'Oswald', sans-serif;
+  font-family: "Big Shoulders Display", "Oswald", sans-serif;
   font-size: 1.15rem;
-  font-weight: 700;
+  font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: -0.01em;
-  color: #000;
+  letter-spacing: 0.05em;
+  color: var(--text);
   margin: 0 0 10px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .now-playing-label::before {
@@ -822,12 +823,12 @@ input::placeholder {
 .playlist-header h3,
 .library-card h3 {
   margin: 0;
-  font-family: 'Oswald', sans-serif;
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #000;
+  font-family: "Big Shoulders Display", "Oswald", sans-serif;
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: var(--text);
   text-transform: uppercase;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.02em;
 }
 
 .add-grid {
@@ -1748,7 +1749,18 @@ h3 .counter-badge {
   }
 
   .topbar h1 {
-    font-size: 1.5rem;
+    font-size: 1.8rem; /* Optimized for Big Shoulders Display */
+    letter-spacing: 0;
+  }
+
+  /* Shrink logo on small mobile */
+  .brand-logo-wrap {
+    width: 44px;
+    height: 44px;
+  }
+
+  .brand-wrap {
+    gap: 10px;
   }
 
   .now-playing-wrap {
@@ -1810,6 +1822,37 @@ h3 .counter-badge {
 
   .mini-player {
     padding: 12px;
+  }
+}
+
+/* Extra small screens (e.g. S21 portrait 360px) */
+@media (max-width: 380px) {
+  .topbar h1 {
+    font-size: 1.45rem;
+  }
+
+  .brand-logo-wrap {
+    width: 38px;
+    height: 38px;
+  }
+
+  .app-shell {
+    padding: 10px 8px 30px;
+  }
+
+  .player-card,
+  .library-card {
+    padding: 12px;
+  }
+
+  .now-playing-wrap {
+    grid-template-columns: 64px 1fr;
+    gap: 10px;
+  }
+
+  .cover-art {
+    width: 64px;
+    height: 64px;
   }
 }
 

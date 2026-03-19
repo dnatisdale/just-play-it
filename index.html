@@ -20,6 +20,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
+    <!-- Font library: Oswald (primary) and Big Shoulders Display (extra black condensed alternative) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Oswald:wght@700&family=Big+Shoulders+Display:wght@900&display=swap" rel="stylesheet" />
+
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
@@ -262,6 +265,7 @@
           </div>
 
           <div class="saved-playlist-box" id="savedPlaylistBox" title="No saved playlist selected.">
+            <div id="savedPlaylistStatus" class="playlist-status-sub hidden">No playlist selected</div>
             <div class="save-row">
               <input
                 id="playlistNameInput"
@@ -297,6 +301,7 @@
           <div class="playlist-header" title="Current playlist: Unsaved">
             <div>
               <h3>PLAYLIST. <span class="counter-badge" id="playlistBadge">0</span></h3>
+              <p id="playlistNameDisplay" class="playlist-name-display">Unsaved</p>
             </div>
             <button id="clearPlaylistBtn" class="ghost-btn" type="button">
               Clear
