@@ -243,19 +243,34 @@ button {
   min-width: 0;
 }
 
-.topbar h1 {
-  margin: 0;
-  font-family: "Futura Extra Black Condensed BT", "Saira Extra Condensed", "Big Shoulders Display", sans-serif;
-  font-size: 5rem;
-  font-weight: 900;
-  line-height: 0.72;
-  letter-spacing: -0.005em; /* Just a tiny bit of space between letters */
-  text-transform: uppercase;
-  color: var(--text);
-  position: relative;
-  /* Slight stroke for that heavy look */
-  -webkit-text-stroke: 1px var(--text);
-  paint-order: stroke fill;
+.brand-logo-text {
+  height: 42px; /* Balanced with the 58px vinyl icon height */
+  width: auto;
+  display: block;
+  object-fit: contain;
+  filter: brightness(0); /* Ensure solid black in light mode */
+}
+
+[data-theme="dark"] .brand-logo-text {
+  filter: brightness(0) invert(1); /* Flip to pure white for dark mode */
+}
+
+@media (max-width: 560px) {
+  .brand-logo-text {
+    height: 32px;
+  }
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .subtitle {
@@ -1828,9 +1843,8 @@ h3 .counter-badge {
     padding: 16px;
   }
 
-  .topbar h1 {
-    font-size: 3.8rem; /* Matches 44px logo height */
-    letter-spacing: -0.01em;
+  .brand-logo-text {
+    height: 34px;
   }
 
   /* Shrink logo on small mobile */
@@ -1840,7 +1854,7 @@ h3 .counter-badge {
   }
 
   .brand-wrap {
-    gap: 10px;
+    gap: 8px;
   }
 
   .now-playing-wrap {
@@ -1907,8 +1921,8 @@ h3 .counter-badge {
 
 /* Extra small screens (e.g. S21 portrait 360px) */
 @media (max-width: 380px) {
-  .topbar h1 {
-    font-size: 3.3rem; /* Matches 38px logo height */
+  .brand-logo-text {
+    height: 30px;
   }
 
   .brand-logo-wrap {
