@@ -1,12 +1,22 @@
-const CACHE_NAME = "just-play-it-v23";
+const CACHE_NAME = "just-play-it-v24";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
   "./style.css",
   "./app.jsx",
   "./manifest.json",
+  "./builtin-playlists.json",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
+  "./audio/jonahs-songs/Song 1 Run to Tarshish.mp3",
+  "./audio/jonahs-songs/Song 2 Who Is This God.mp3",
+  "./audio/jonahs-songs/Song 3 A God Who Relents.mp3",
+  "./audio/jonahs-songs/Song 4 Who Knows.mp3",
+  "./audio/jonahs-songs/The Jonah Songs.mp3",
+  "./audio/remember-the-lord/Remember the Lord Part 1.mp3",
+  "./audio/remember-the-lord/Remember the Lord Part 2.mp3",
+  "./audio/remember-the-lord/Remember the Lord Part 3.mp3",
+  "./audio/remember-the-lord/Remember the Lord Part 4.mp3"
 ];
 
 self.addEventListener("install", (event) => {

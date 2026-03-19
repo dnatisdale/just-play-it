@@ -637,13 +637,31 @@ async function deleteStoredTrack(id, title) {
   }
 }
 
-function loadSavedPlaylists() {
+async function loadSavedPlaylists() {
   try {
+    // 1. Load user playlists from storage
     savedPlaylists = JSON.parse(
       localStorage.getItem(STORAGE_KEYS.savedPlaylists) || "{}",
     );
     if (!savedPlaylists || typeof savedPlaylists !== "object") {
       savedPlaylists = {};
+    }
+
+    // 2. Load builtin playlists from fetch
+    try {
+      const resp = await fetch("./builtin-playlists.json");
+      if (resp.ok) {
+        const builtins = await resp.json();
+        // Merge builtins into savedPlaylists, tagging them as builtin
+        Object.keys(builtins).forEach(name => {
+          savedPlaylists[name] = {
+            ...builtins[name],
+            isBuiltin: true
+          };
+        });
+      }
+    } catch (e) {
+      console.warn("Could not load builtin-playlists.json", e);
     }
   } catch {
     savedPlaylists = {};
@@ -655,7 +673,7 @@ function loadSavedPlaylists() {
     localStorage.getItem(STORAGE_KEYS.selectedSavedPlaylist) || "";
   if (selected && savedPlaylists[selected]) {
     savedPlaylistsSelect.value = selected;
-    savedPlaylistStatus.textContent = `Selected saved playlist: ${selected}`;
+    savedPlaylistStatus.textContent = `Selected${savedPlaylists[selected].isBuiltin ? " builtin" : " saved"} playlist: ${selected}`;
   }
 }
 
@@ -672,11 +690,18 @@ function refreshSavedPlaylistsSelect() {
   savedPlaylistsSelect.innerHTML = `<option value="">Choose a saved playlist</option>`;
 
   Object.keys(savedPlaylists)
-    .sort((a, b) => a.localeCompare(b))
+    .sort((a, b) => {
+      // Put builtins at the top
+      const aBuiltin = savedPlaylists[a].isBuiltin;
+      const bBuiltin = savedPlaylists[b].isBuiltin;
+      if (aBuiltin && !bBuiltin) return -1;
+      if (!aBuiltin && bBuiltin) return 1;
+      return a.localeCompare(b);
+    })
     .forEach((name) => {
       const option = document.createElement("option");
       option.value = name;
-      option.textContent = name;
+      option.textContent = (savedPlaylists[name].isBuiltin ? "🛡 " : "") + name;
       savedPlaylistsSelect.appendChild(option);
     });
 
@@ -1416,6 +1441,11 @@ function renameNamedPlaylist() {
     return;
   }
 
+  if (savedPlaylists[oldName].isBuiltin) {
+    showToast("Built-in playlists cannot be renamed.");
+    return;
+  }
+
   const newName = prompt("Rename playlist:", oldName);
   if (newName === null) return;
 
@@ -1462,6 +1492,11 @@ function deleteNamedPlaylist() {
   if (!name || !savedPlaylists[name]) {
     savedPlaylistStatus.textContent = "Choose a saved playlist to delete.";
     showToast("Choose a saved playlist to delete.");
+    return;
+  }
+
+  if (savedPlaylists[name].isBuiltin) {
+    showToast("Built-in playlists cannot be deleted.");
     return;
   }
 

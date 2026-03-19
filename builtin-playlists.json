@@ -1,0 +1,23 @@
+{
+  "Jonah's Songs": {
+    "name": "Jonah's Songs",
+    "isBuiltin": true,
+    "tracks": [
+      { "id": "builtin-jonah-1", "title": "Song 1 Run to Tarshish", "sourceType": "url", "src": "audio/jonahs-songs/Song 1 Run to Tarshish.mp3" },
+      { "id": "builtin-jonah-2", "title": "Song 2 Who Is This God", "sourceType": "url", "src": "audio/jonahs-songs/Song 2 Who Is This God.mp3" },
+      { "id": "builtin-jonah-3", "title": "Song 3 A God Who Relents", "sourceType": "url", "src": "audio/jonahs-songs/Song 3 A God Who Relents.mp3" },
+      { "id": "builtin-jonah-4", "title": "Song 4 Who Knows", "sourceType": "url", "src": "audio/jonahs-songs/Song 4 Who Knows.mp3" },
+      { "id": "builtin-jonah-5", "title": "The Jonah Songs", "sourceType": "url", "src": "audio/jonahs-songs/The Jonah Songs.mp3" }
+    ]
+  },
+  "Remember the Lord": {
+    "name": "Remember the Lord – Deut 8",
+    "isBuiltin": true,
+    "tracks": [
+      { "id": "builtin-rtl-1", "title": "Remember the Lord Part 1", "sourceType": "url", "src": "audio/remember-the-lord/Remember the Lord Part 1.mp3" },
+      { "id": "builtin-rtl-2", "title": "Remember the Lord Part 2", "sourceType": "url", "src": "audio/remember-the-lord/Remember the Lord Part 2.mp3" },
+      { "id": "builtin-rtl-3", "title": "Remember the Lord Part 3", "sourceType": "url", "src": "audio/remember-the-lord/Remember the Lord Part 3.mp3" },
+      { "id": "builtin-rtl-4", "title": "Remember the Lord Part 4", "sourceType": "url", "src": "audio/remember-the-lord/Remember the Lord Part 4.mp3" }
+    ]
+  }
+}
