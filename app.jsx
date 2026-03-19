@@ -1066,6 +1066,31 @@ function addUrlTrack(url) {
       showToast("YouTube URLs are not direct audio files and are not supported.", 4000);
       return;
     }
+
+    // Check against known audio extensions or stream-like paths
+    const validExtensions = ['.mp3', '.m4a', '.aac', '.ogg', '.oga', '.wav', '.flac', '.opus', '.weba', '.webm', '.caf', '.m3u8'];
+    const lowerPath = parsedUrl.pathname.toLowerCase();
+    
+    let seemsLikeAudio = false;
+    if (lowerPath.endsWith("/stream") || lowerPath.includes("/stream/") || lowerPath.endsWith("/listen")) {
+      seemsLikeAudio = true;
+    } else {
+      for (const ext of validExtensions) {
+        if (lowerPath.endsWith(ext)) {
+          seemsLikeAudio = true;
+          break;
+        }
+      }
+    }
+
+    if (!seemsLikeAudio) {
+      const allowedText = validExtensions.join(", ");
+      const isSure = confirm(`Allowable audio extensions are: ${allowedText}.\n\nIt might be a webpage instead of an audio file. Are you sure this is a direct audio stream? Add anyway?`);
+      if (!isSure) {
+        return;
+      }
+    }
+
   } catch {
     showToast("That does not look like a valid URL.");
     return;
