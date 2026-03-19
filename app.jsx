@@ -3,7 +3,6 @@ const fileInput = document.getElementById("fileInput");
 const urlInput = document.getElementById("urlInput");
 const addUrlBtn = document.getElementById("addUrlBtn");
 const playlistEl = document.getElementById("playlist");
-const clearPlaylistBtn = document.getElementById("clearPlaylistBtn");
 
 const playPauseBtn = document.getElementById("playPauseBtn");
 const prevBtn = document.getElementById("prevBtn");
@@ -39,7 +38,6 @@ const clearDeviceLibraryBtn = document.getElementById("clearDeviceLibraryBtn");
 const exportPlaylistsBtn = document.getElementById("exportPlaylistsBtn");
 const importPlaylistsInput = document.getElementById("importPlaylistsInput");
 const savedPlaylistStatus = document.getElementById("savedPlaylistStatus");
-const playlistSearchInput = document.getElementById("playlistSearchInput");
 const jumpToCurrentBtn = document.getElementById("jumpToCurrentBtn");
 const playlistNameDisplay = document.getElementById("playlistNameDisplay");
 const toggleEditBtn = document.getElementById("toggleEditBtn");
@@ -122,7 +120,6 @@ let deferredInstallPrompt = null;
 let currentObjectUrl = null;
 let toastTimeout = null;
 let draggedTrackIndex = null;
-let playlistFilter = "";
 let isEditMode = false;
 
 // ── Theme ──────────────────────────────────────────────
@@ -768,20 +765,9 @@ function loadPlaylistFromStorage() {
   }
 }
 
-function getFilteredEntries() {
-  const filter = playlistFilter.trim().toLowerCase();
-
-  return playlist
-    .map((track, index) => ({ track, index }))
-    .filter(({ track }) => {
-      if (!filter) return true;
-      return track.title.toLowerCase().includes(filter);
-    });
-}
-
 function renderPlaylist() {
   playlistEl.innerHTML = "";
-  const entries = getFilteredEntries();
+  const entries = playlist.map((track, index) => ({ track, index }));
 
   if (playlist.length === 0) {
     const empty = document.createElement("li");
@@ -1714,10 +1700,6 @@ function jumpToCurrentTrack() {
     return;
   }
 
-  playlistFilter = "";
-  playlistSearchInput.value = "";
-  renderPlaylist();
-
   const activeItem = playlistEl.querySelector(".playlist-item.active");
   if (activeItem) {
     activeItem.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -1748,8 +1730,6 @@ urlInput.addEventListener("keydown", (event) => {
     addUrlTrack(urlInput.value);
   }
 });
-
-clearPlaylistBtn.addEventListener("click", clearPlaylist);
 
 playPauseBtn.addEventListener("click", async () => {
   if (!audio.src) return playCurrent();
@@ -1958,11 +1938,6 @@ importPlaylistsInput.addEventListener("change", async (event) => {
   const file = event.target.files?.[0];
   await importPlaylistsFromFile(file);
   importPlaylistsInput.value = "";
-});
-
-playlistSearchInput.addEventListener("input", () => {
-  playlistFilter = playlistSearchInput.value;
-  renderPlaylist();
 });
 
 jumpToCurrentBtn.addEventListener("click", jumpToCurrentTrack);
