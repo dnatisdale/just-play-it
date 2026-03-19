@@ -522,9 +522,9 @@ async function updateStorageUsage() {
       const estimate = await navigator.storage.estimate();
       const quota = estimate.quota || 0;
       const usage = estimate.usage || 0;
-      storageUsageText.textContent = `Stored device audio: ${formatBytes(deviceBytes)}. Browser usage: ${formatBytes(usage)} of ${formatBytes(quota)}.`;
+      storageUsageText.textContent = `Offline storage: ${formatBytes(deviceBytes)}. Browser usage: ${formatBytes(usage)} of ${formatBytes(quota)}.`;
     } else {
-      storageUsageText.textContent = `Stored device audio: ${formatBytes(deviceBytes)}.`;
+      storageUsageText.textContent = `Offline storage: ${formatBytes(deviceBytes)}.`;
     }
   } catch (error) {
     console.error("Could not estimate storage:", error);
@@ -549,7 +549,7 @@ async function renderSidebarLibrary() {
   }
 
   if (records.length === 0) {
-    deviceLibraryList.innerHTML = `<p class="library-empty-state">No device files stored yet.</p>`;
+    deviceLibraryList.innerHTML = `<p class="library-empty-state">No offline tracks stored yet.</p>`;
     return;
   }
 
@@ -1600,7 +1600,7 @@ function updateMediaSession() {
   navigator.mediaSession.metadata = new MediaMetadata({
     title: currentTrack.title,
     artist:
-      currentTrack.sourceType === "file" ? "Stored device file" : "URL stream",
+      currentTrack.sourceType === "file" ? "Saved offline audio" : "URL stream",
     album: currentPlaylistName || "Just Play It",
     artwork: [
       { src: "icons/icon-192.png", sizes: "192x192", type: "image/png" },
@@ -1852,14 +1852,14 @@ clearDeviceLibraryBtn.addEventListener("click", async () => {
   if (clearDeviceLibraryBtn.classList.contains("confirming")) {
     clearTimeout(clearConfirmTimeout);
     clearDeviceLibraryBtn.classList.remove("confirming");
-    clearDeviceLibraryBtn.innerHTML = `<span class="sidebar-row-icon">${ICONS.trash}</span> <span class="sidebar-row-text">Clear All Device Files</span>`;
+    clearDeviceLibraryBtn.innerHTML = `<span class="sidebar-row-icon">${ICONS.trash}</span> <span class="sidebar-row-text">Remove All Saved Music</span>`;
     await clearDeviceLibrary();
   } else {
     clearDeviceLibraryBtn.classList.add("confirming");
-    clearDeviceLibraryBtn.innerHTML = `<span class="sidebar-row-text" style="color:#fff; font-weight:bold;">Sure? This deletes everything.</span>`;
+    clearDeviceLibraryBtn.innerHTML = `<span class="sidebar-row-text" style="color:#fff; font-weight:bold;">Sure? Delete all stored tracks?</span>`;
     clearConfirmTimeout = setTimeout(() => {
       clearDeviceLibraryBtn.classList.remove("confirming");
-      clearDeviceLibraryBtn.innerHTML = `<span class="sidebar-row-icon">${ICONS.trash}</span> <span class="sidebar-row-text">Clear All Device Files</span>`;
+      clearDeviceLibraryBtn.innerHTML = `<span class="sidebar-row-icon">${ICONS.trash}</span> <span class="sidebar-row-text">Remove All Saved Music</span>`;
     }, 4000);
   }
 });
