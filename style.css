@@ -249,7 +249,7 @@ button {
   font-size: 5rem;
   font-weight: 900;
   line-height: 0.72;
-  letter-spacing: -0.055em; /* Heavy, compact look like Nike */
+  letter-spacing: -0.005em; /* Just a tiny bit of space between letters */
   text-transform: uppercase;
   color: var(--text);
   position: relative;
@@ -284,10 +284,10 @@ button {
 }
 
 h1 .dot {
-  width: 0.28em; /* Bold, heavy hallmark dot */
-  height: 0.28em;
-  margin-bottom: -0.05em; /* Lowered to touch the baseline heavily */
-  margin-left: -0.05em; /* Tight against the 'T' */
+  width: 0.22em; /* Smaller hallmark dot */
+  height: 0.22em;
+  margin-bottom: 0.02em; /* Elevated and aligned near the baseline */
+  margin-left: 0.06em; /* Added space away from the text */
 }
 
 /* ═══════════════════════════════════════════
