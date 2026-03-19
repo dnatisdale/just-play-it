@@ -509,7 +509,6 @@ h1 .dot {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 16px;
-  box-shadow: var(--shadow);
   backdrop-filter: blur(20px);
   position: relative;
   overflow: hidden;
@@ -536,10 +535,62 @@ h1 .dot {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--text);
-  margin: 0 0 10px;
+  margin: 0;
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.now-playing-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.now-playing-playlist-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--glass);
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  backdrop-filter: blur(8px);
+  transition: opacity 0.3s ease;
+}
+
+#nowPlayingPlaylistName {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.now-playing-playlist-info .counter-badge {
+  position: relative;
+  top: auto;
+  right: auto;
+  margin: 0;
+  border: none;
+  display: inline-flex;
+}
+
+.badge-red {
+  background: #dc2626 !important; /* A clear, modern red */
+  color: #fff !important;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3) !important;
+}
+
+[data-theme="light"] #nowPlayingPlaylistName {
+  color: var(--text-2);
 }
 
 .now-playing-label::before {
@@ -1184,7 +1235,6 @@ input::placeholder {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(20px);
   z-index: 9000;
   transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease, background 0.3s ease;
@@ -1290,7 +1340,6 @@ input::placeholder {
   border-radius: 14px;
   padding: 12px 18px;
   color: var(--text);
-  box-shadow: var(--shadow-lg);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.22s ease, transform 0.22s ease;
@@ -1661,7 +1710,6 @@ h3 .counter-badge {
   width: min(340px, 90vw);
   background: var(--panel);
   border-left: 1px solid var(--border);
-  box-shadow: -8px 0 48px rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(32px) saturate(160%);
   z-index: 10001;
   display: flex;

@@ -66,6 +66,9 @@ const shareAppBtn = document.getElementById("shareAppBtn");
 const menuBadge = document.getElementById("menuBadge");
 const savedPlaylistsBadge = document.getElementById("savedPlaylistsBadge");
 const playlistBadge = document.getElementById("playlistBadge");
+const nowPlayingPlaylistName = document.getElementById("nowPlayingPlaylistName");
+const nowPlayingPlaylistBadge = document.getElementById("nowPlayingPlaylistBadge");
+const nowPlayingPlaylistInfo = document.getElementById("nowPlayingPlaylistInfo");
 
 // Drag & drop / add-audio elements
 const dragOverlay = document.getElementById("dragOverlay");
@@ -216,15 +219,7 @@ function getFileNameFromUrl(url) {
 }
 
 function getTrackEmoji(track) {
-  if (!track) return "♪";
-  const name = (track.title || "").toLowerCase();
-
-  if (name.includes("podcast")) return "🎙";
-  if (name.includes("sermon")) return "📖";
-  if (name.includes("bible")) return "📘";
-  if (name.includes("song") || name.includes("music")) return "🎵";
-  if (name.includes("lesson")) return "📝";
-  return track.sourceType === "file" ? "🎧" : "🌐";
+  return "";
 }
 
 function escapeHtml(str) {
@@ -262,11 +257,19 @@ function showToast(message, duration = 2400) {
 
 async function updateBadgeCounts() {
   // Playlist count
-  if (playlistBadge) {
-    const listCount = Array.isArray(playlist) ? playlist.length : 0;
-    playlistBadge.textContent = listCount;
-    playlistBadge.classList.toggle("hidden", listCount === 0);
-  }
+    if (playlistBadge) {
+      const listCount = Array.isArray(playlist) ? playlist.length : 0;
+      playlistBadge.textContent = listCount;
+      playlistBadge.classList.toggle("hidden", listCount === 0);
+      
+      if (nowPlayingPlaylistBadge) {
+        nowPlayingPlaylistBadge.textContent = listCount;
+        nowPlayingPlaylistBadge.classList.toggle("hidden", listCount === 0);
+      }
+      if (nowPlayingPlaylistInfo) {
+        nowPlayingPlaylistInfo.classList.toggle("hidden", listCount === 0);
+      }
+    }
 
   // Saved playlists count
   if (savedPlaylistsBadge) {
@@ -297,7 +300,11 @@ function revokeCurrentObjectUrl() {
 }
 
 function updatePlaylistNameDisplay() {
-  playlistNameDisplay.textContent = `Current playlist: ${currentPlaylistName || "Unsaved"}`;
+  const name = currentPlaylistName || "Unsaved";
+  playlistNameDisplay.textContent = `Current playlist: ${name}`;
+  if (nowPlayingPlaylistName) {
+    nowPlayingPlaylistName.textContent = name;
+  }
   localStorage.setItem(STORAGE_KEYS.currentPlaylistName, currentPlaylistName);
 }
 
@@ -712,7 +719,7 @@ function refreshSavedPlaylistsSelect() {
     .forEach((name) => {
       const option = document.createElement("option");
       option.value = name;
-      option.textContent = (savedPlaylists[name].isBuiltin ? "🛡 " : "") + name;
+      option.textContent = name;
       savedPlaylistsSelect.appendChild(option);
     });
 
@@ -1765,14 +1772,14 @@ if (themeToggleBtn) themeToggleBtn.addEventListener("click", toggleTheme);
 
 async function handleShare() {
   const shareUrl = window.location.origin + window.location.pathname;
-  const shareText = `JUST PLAY IT. 💿
+  const shareText = `JUST PLAY IT.
 A simple audio player for all your tracks.
 Click on the record to download and start!
 
 Check it out here: ${shareUrl}`;
 
   const shareData = {
-    title: "JUST PLAY IT. 💿",
+    title: "JUST PLAY IT.",
     text: shareText,
     url: shareUrl,
   };
