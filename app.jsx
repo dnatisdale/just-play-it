@@ -239,7 +239,7 @@ function escapeHtml(str) {
 function getTrackSourceLabel(track) {
   if (!track) return "";
   if (track.sourceType === "file") return "Stored on device";
-  if (track.id && String(track.id).startsWith("builtin-")) return "Player Starter";
+  if (track.id && String(track.id).startsWith("builtin-")) return ""; // Hidden as requested
   return "Audio from URL";
 }
 
@@ -337,7 +337,9 @@ function updateNowPlaying(track) {
   }
 
   trackTitleEl.textContent = track.title;
-  trackMetaEl.textContent = getTrackSourceLabel(track);
+  const label = getTrackSourceLabel(track);
+  trackMetaEl.textContent = label;
+  trackMetaEl.classList.toggle("hidden", !label);
   setCoverArtLoaded(track);
 
   if (shuffleEnabled && repeatMode === "one") {
@@ -835,9 +837,10 @@ function renderPlaylist() {
     const infoBtn = document.createElement("button");
     infoBtn.type = "button";
     infoBtn.className = "track-info-btn";
+    const label = getTrackSourceLabel(track);
     infoBtn.innerHTML = `
       <span class="track-name">${escapeHtml(track.title)}</span>
-      <span class="track-source">${getTrackSourceLabel(track)}</span>
+      ${label ? `<span class="track-source">${label}</span>` : ""}
     `;
     infoBtn.addEventListener("click", async () => {
       await loadTrack(index, true);
