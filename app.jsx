@@ -322,7 +322,7 @@ function updateNowPlaying(track) {
     setCoverArtEmpty();
     setPlayerStatus("Ready when you are.");
     updateMediaSession();
-    updateMiniPlayer(null);
+
     return;
   }
 
@@ -344,7 +344,7 @@ function updateNowPlaying(track) {
   }
 
   updateMediaSession();
-  updateMiniPlayer(track);
+
 }
 
 
@@ -1957,7 +1957,7 @@ setSleepTimerBtn.addEventListener("click", () => {
 audio.addEventListener("play", () => {
   updatePlayPauseButton();
   updateMediaSession();
-  updateMiniPlayer(playlist[currentTrackIndex] || null);
+
   if (playlist[currentTrackIndex]) {
     setPlayerStatus(`Playing: ${playlist[currentTrackIndex].title}`);
   }
@@ -1966,7 +1966,7 @@ audio.addEventListener("play", () => {
 audio.addEventListener("pause", () => {
   updatePlayPauseButton();
   updateMediaSession();
-  updateMiniPlayer(playlist[currentTrackIndex] || null);
+
   if (audio.currentTime > 0 && !audio.ended) {
     setPlayerStatus("Playback paused.");
   }
@@ -2049,7 +2049,7 @@ async function initApp() {
 
   loadVolume();
   loadModes();
-  loadSavedPlaylists();
+  await loadSavedPlaylists();
   loadPlaylistFromStorage();
   restoreSleepTimer();
   renderPlaylist();

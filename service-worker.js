@@ -1,4 +1,4 @@
-const CACHE_NAME = "just-play-it-v24";
+const CACHE_NAME = "just-play-it-v25";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
@@ -42,17 +42,40 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
+const CORE_FILES = ["index.html", "style.css", "app.jsx", "manifest.json", "builtin-playlists.json", "/"];
+
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
 
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      return (
-        cachedResponse ||
-        fetch(event.request).catch(() => caches.match("./index.html"))
-      );
-    }),
-  );
+  const url = new URL(event.request.url);
+  const isCoreFile = CORE_FILES.some(f => url.pathname.endsWith(f) || url.pathname === "/");
+
+  if (isCoreFile) {
+    // Network First strategy for core files: get the latest from the web if possible
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          const cacheCopy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cacheCopy));
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+  } else {
+    // Cache First for everything else (like music files)
+    event.respondWith(
+      caches.match(event.request).then((cachedResponse) => {
+        return (
+          cachedResponse ||
+          fetch(event.request).then((response) => {
+            const cacheCopy = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cacheCopy));
+            return response;
+          })
+        );
+      })
+    );
+  }
 });
 
 self.addEventListener("message", (event) => {
