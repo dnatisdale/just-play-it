@@ -229,10 +229,20 @@ button {
   transform-origin: center;
 }
 
-/* Spinning animation when audio is playing */
+/* Spinning animation for the vinyl cover art (spins while playing) */
 @keyframes vinyl-spin {
   from { transform: scale(1.08) rotate(0deg); }
   to   { transform: scale(1.08) rotate(360deg); }
+}
+
+/* One-time startup spin for the topbar brand logo */
+@keyframes logo-spin-once {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.brand-logo {
+  animation: logo-spin-once 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s 1 forwards;
 }
 
 .brand-logo-wrap.spinning .brand-logo {

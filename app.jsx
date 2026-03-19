@@ -176,8 +176,7 @@ function setCoverArtEmpty() {
 function updateSpinning() {
   const isPlaying = !audio.paused && playlist.length > 0 && currentTrackIndex >= 0;
   coverArtEl.classList.toggle("spinning", isPlaying);
-  if (brandLogoWrap) brandLogoWrap.classList.toggle("spinning", isPlaying);
-  if (miniVinylEl) miniVinylEl.classList.toggle("spinning", isPlaying);
+  // Brand logo in topbar does NOT spin with playback — it only does one startup spin via CSS
 }
 
 function formatTime(seconds) {
@@ -962,8 +961,17 @@ async function loadTrack(index, shouldPlay = false) {
 async function addFileTracks(files) {
   const fileArray = Array.from(files);
   const newTracks = [];
+  const skipped = [];
+
+  // Build a set of existing titles to prevent duplicates
+  const existingTitles = new Set(playlist.map((t) => t.title));
 
   for (const file of fileArray) {
+    if (existingTitles.has(file.name)) {
+      skipped.push(file.name);
+      continue; // Skip already-added file
+    }
+
     const id = crypto.randomUUID();
     await saveTrackBlob(id, file);
 
@@ -972,7 +980,15 @@ async function addFileTracks(files) {
       title: file.name,
       sourceType: "file",
     });
+
+    existingTitles.add(file.name); // Prevent duplicates within the same batch
   }
+
+  if (skipped.length > 0) {
+    showToast(`Skipped ${skipped.length} duplicate${skipped.length === 1 ? "" : "s"}.`);
+  }
+
+  if (newTracks.length === 0) return;
 
   playlist.push(...newTracks);
   currentPlaylistName = "";
@@ -994,7 +1010,7 @@ async function addFileTracks(files) {
     `${newTracks.length} file${newTracks.length === 1 ? "" : "s"} added and stored.`,
   );
   showToast(
-    `Finished loading ${newTracks.length} file${newTracks.length === 1 ? "" : "s"}.`,
+    `Loaded ${newTracks.length} file${newTracks.length === 1 ? "" : "s"}.`,
   );
 }
 
