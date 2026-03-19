@@ -2074,6 +2074,14 @@ async function initApp() {
       await loadTrack(0, false);
       renderPlaylist();
       updateBadgeCounts();
+    } else {
+      // If library is also empty, load "Remember the Lord" as a sample starter
+      const starterName = "Remember the Lord";
+      if (savedPlaylists[starterName]) {
+        savedPlaylistsSelect.value = starterName;
+        localStorage.setItem(STORAGE_KEYS.selectedSavedPlaylist, starterName);
+        await loadNamedPlaylist();
+      }
     }
   }
 }
