@@ -260,10 +260,10 @@ async function updateBadgeCounts() {
       
       if (nowPlayingPlaylistBadge) {
         nowPlayingPlaylistBadge.textContent = listCount;
-        nowPlayingPlaylistBadge.classList.toggle("hidden", listCount === 0);
+        nowPlayingPlaylistBadge.classList.remove("hidden");
       }
       if (nowPlayingPlaylistInfo) {
-        nowPlayingPlaylistInfo.classList.toggle("hidden", listCount === 0);
+        nowPlayingPlaylistInfo.classList.remove("hidden");
       }
     }
 
@@ -296,7 +296,7 @@ function revokeCurrentObjectUrl() {
 }
 
 function updatePlaylistNameDisplay() {
-  const name = currentPlaylistName || "Playlist";
+  const name = currentPlaylistName || "CURRENT PLAYLIST";
   if (nowPlayingPlaylistName) {
     nowPlayingPlaylistName.textContent = name;
   }
