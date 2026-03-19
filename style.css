@@ -757,19 +757,19 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .control-btn.secondary {
-  min-width: 44px;
-  min-height: 44px;
+  min-width: 52px;
+  min-height: 52px;
   padding: 0;
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
 .skip-label {
   position: absolute;
-  font-size: 0.58rem;
+  font-size: 0.72rem;
   font-weight: 800;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) translateY(2px);
+  transform: translate(-50%, -50%) translateY(3px);
   pointer-events: none;
 }
 
