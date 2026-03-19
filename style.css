@@ -1190,6 +1190,14 @@ input::placeholder {
     color var(--transition), transform var(--transition);
 }
 
+.small-btn.drag-handle {
+  cursor: grab;
+}
+
+.small-btn.drag-handle:active {
+  cursor: grabbing;
+}
+
 .small-btn:hover {
   background: var(--glass-border);
   border-color: var(--border-strong);

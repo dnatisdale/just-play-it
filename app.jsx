@@ -840,19 +840,15 @@ function renderPlaylist() {
     const actions = document.createElement("div");
     actions.className = "item-actions";
 
-    const upBtn = document.createElement("button");
-    upBtn.type = "button";
-    upBtn.className = "small-btn";
-    upBtn.textContent = "↑";
-    upBtn.title = "Move up";
-    upBtn.addEventListener("click", (e) => { e.stopPropagation(); moveTrack(index, -1); });
-
-    const downBtn = document.createElement("button");
-    downBtn.type = "button";
-    downBtn.className = "small-btn";
-    downBtn.textContent = "↓";
-    downBtn.title = "Move down";
-    downBtn.addEventListener("click", (e) => { e.stopPropagation(); moveTrack(index, 1); });
+    const dragHandle = document.createElement("button");
+    dragHandle.type = "button";
+    dragHandle.className = "small-btn drag-handle";
+    dragHandle.innerHTML = `
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>`;
+    dragHandle.title = "Drag to reorder";
+    // We don't need a click listener as the parent li is draggable=true
 
     const playBtn = document.createElement("button");
     playBtn.type = "button";
@@ -871,8 +867,7 @@ function renderPlaylist() {
     removeBtn.addEventListener("click", (e) => { e.stopPropagation(); removeTrack(index); });
 
     if (isEditMode) {
-      actions.appendChild(upBtn);
-      actions.appendChild(downBtn);
+      actions.appendChild(dragHandle);
       actions.appendChild(removeBtn);
     } else {
       actions.appendChild(playBtn);
@@ -931,9 +926,7 @@ function reorderTrack(fromIndex, toIndex) {
 }
 
 function moveTrack(index, direction) {
-  const targetIndex = index + direction;
-  if (targetIndex < 0 || targetIndex >= playlist.length) return;
-  reorderTrack(index, targetIndex);
+  // Function logic removed as manual arrow sorting is retired for drag & drop
 }
 
 async function resolveTrackSource(track) {
