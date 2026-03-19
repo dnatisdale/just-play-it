@@ -246,10 +246,10 @@ button {
 .topbar h1 {
   margin: 0;
   font-family: "Futura Extra Black Condensed BT", "Saira Extra Condensed", "Big Shoulders Display", sans-serif;
-  font-size: 5rem; /* Matches 58px logo height at 0.72 line-height */
+  font-size: 5rem;
   font-weight: 900;
   line-height: 0.72;
-  letter-spacing: -0.015em; /* Increased for readability */
+  letter-spacing: -0.055em; /* Heavy, compact look like Nike */
   text-transform: uppercase;
   color: var(--text);
   position: relative;
@@ -284,10 +284,10 @@ button {
 }
 
 h1 .dot {
-  width: 0.22em; /* Scaled down for the header hallmark */
-  height: 0.22em;
-  margin-bottom: 0.04em;
-  margin-left: 0.02em;
+  width: 0.28em; /* Bold, heavy hallmark dot */
+  height: 0.28em;
+  margin-bottom: -0.05em; /* Lowered to touch the baseline heavily */
+  margin-left: -0.05em; /* Tight against the 'T' */
 }
 
 /* ═══════════════════════════════════════════
@@ -1118,17 +1118,38 @@ input::placeholder {
 ═══════════════════════════════════════════ */
 
 .mini-player {
+  position: fixed;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
   background: var(--panel-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 12px;
-  margin-top: 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: 20px;
+  padding: 10px 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  box-shadow: var(--shadow-sm);
-  transition: background 0.3s ease, border-color 0.3s ease;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(20px);
+  z-index: 9000;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease, background 0.3s ease;
+}
+
+.mini-player.hidden {
+  display: none;
+}
+
+/* On mobile, if PWA is standalone, we might want to adjust for bottom safe area */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .mini-player {
+    bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+}
+
+.mini-player:hover {
+  background: var(--panel-3);
+  transform: translateY(-2px);
 }
 
 .mini-player-info {

@@ -243,7 +243,7 @@ function setPlayerStatus(text) {
   if (playerCard) playerCard.title = text;
 }
 
-function showToast(message) {
+function showToast(message, duration = 2400) {
   toastEl.textContent = message;
   toastEl.classList.add("show");
 
@@ -253,7 +253,7 @@ function showToast(message) {
 
   toastTimeout = window.setTimeout(() => {
     toastEl.classList.remove("show");
-  }, 2400);
+  }, duration);
 }
 
 async function updateBadgeCounts() {
@@ -322,18 +322,40 @@ function normalizeTrack(track) {
 }
 
 function updateMiniPlayer(track) {
-  if (!track) {
-    miniPlayerTitle.textContent = "Nothing loaded yet";
-    miniPlayerMeta.textContent = "Ready";
+  if (!track || currentTrackIndex === -1) {
+    miniPlayer.classList.add("hidden");
     return;
+  }
+
+  // Determine if main player is in view
+  const playerCard = document.querySelector(".player-card");
+  if (playerCard) {
+    const rect = playerCard.getBoundingClientRect();
+    // If the bottom of the player card is above the top of the viewport (or close to it)
+    const isMainPlayerVisible = rect.bottom > 100;
+
+    if (isMainPlayerVisible) {
+      miniPlayer.classList.add("hidden");
+    } else {
+      miniPlayer.classList.remove("hidden");
+    }
+  } else {
+    miniPlayer.classList.remove("hidden");
   }
 
   miniPlayerTitle.textContent = track.title;
   miniPlayerMeta.textContent =
-    track.sourceType === "file" ? "Stored device file" : "URL audio";
+    track.sourceType === "file" ? "Stored device file" : "Streaming from URL";
   const icon = audio.paused ? ICONS.play : ICONS.pause;
   if (miniPlayPauseBtn) miniPlayPauseBtn.innerHTML = icon;
 }
+
+// Add scroll listener to update mini player visibility
+window.addEventListener("scroll", () => {
+  if (currentTrackIndex >= 0 && playlist[currentTrackIndex]) {
+    updateMiniPlayer(playlist[currentTrackIndex]);
+  }
+}, { passive: true });
 
 function updateNowPlaying(track) {
   if (!track) {
@@ -1997,7 +2019,17 @@ window.addEventListener("beforeunload", () => {
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js").catch((error) => {
+    navigator.serviceWorker.register("./service-worker.js").then((reg) => {
+      reg.addEventListener("updatefound", () => {
+        const newWorker = reg.installing;
+        newWorker.addEventListener("statechange", () => {
+          if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+            showToast("New version available. Reloading in 3s...", 3000);
+            setTimeout(() => window.location.reload(), 3000);
+          }
+        });
+      });
+    }).catch((error) => {
       console.error("Service worker registration failed:", error);
     });
   });

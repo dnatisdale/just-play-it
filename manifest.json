@@ -1,12 +1,12 @@
 {
   "name": "Just Play It",
-  "short_name": "Just Play It",
+  "short_name": "Just Play It.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#0b0d12",
   "theme_color": "#0b0d12",
   "description": "A simple installable audio player for local files and audio URLs. No sign-in required.",
-  "orientation": "any",
+  "orientation": "portrait",
   "categories": ["music", "utilities"],
   "icons": [
     {
@@ -20,6 +20,30 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Shuffle Music",
+      "url": "./?shuffle=true",
+      "description": "Start playback with shuffle enabled",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Mobile Player View"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Desktop Player View"
     }
   ]
 }
