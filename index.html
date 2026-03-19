@@ -212,10 +212,10 @@
         <section class="player-card">
           <div class="now-playing-header">
             <div class="now-playing-label">NOW PLAYING.</div>
-            <div class="now-playing-playlist-info" id="nowPlayingPlaylistInfo">
+            <button id="nowPlayingPlaylistInfo" class="now-playing-playlist-info interactive-header" type="button" aria-label="Jump to saved playlists">
               <span id="nowPlayingPlaylistName" title="Current playlist">Unsaved</span>
               <span class="counter-badge badge-red" id="nowPlayingPlaylistBadge">0</span>
-            </div>
+            </button>
           </div>
 
           <div class="now-playing-wrap">
@@ -286,7 +286,9 @@
         <!-- ── Library card ── -->
         <section class="library-card">
           <div class="section-head">
-            <h3>SAVED PLAYLISTS<span class="dot"></span> <span class="counter-badge" id="savedPlaylistsBadge">0</span></h3>
+            <h3 id="savedPlaylistsHeader" class="interactive-header" style="display:inline-flex; align-items:center; cursor:pointer;" title="Scroll to saved playlists">
+              SAVED PLAYLISTS<span class="dot"></span> <span class="counter-badge" id="savedPlaylistsBadge">0</span>
+            </h3>
           </div>
 
           <div class="saved-playlist-box" id="savedPlaylistBox" title="No saved playlist selected.">
@@ -325,7 +327,9 @@
 
           <div class="playlist-header" title="Current playlist: Unsaved">
             <div>
-              <h3>CURRENT PLAYLIST<span class="dot"></span> <span class="counter-badge" id="playlistBadge">0</span></h3>
+              <h3 id="currentPlaylistHeader" class="interactive-header" style="display:inline-flex; align-items:center; cursor:pointer;" title="Scroll to current playlist">
+                CURRENT PLAYLIST<span class="dot"></span> <span class="counter-badge" id="playlistBadge">0</span>
+              </h3>
             </div>
           </div>
 

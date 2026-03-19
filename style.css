@@ -640,8 +640,33 @@ h1 .dot {
   border-radius: 999px;
   border: 1px solid var(--border-strong);
   backdrop-filter: blur(8px);
-  transition: opacity 0.3s ease;
+  transition: all var(--transition);
+  cursor: pointer;
 }
+
+.now-playing-playlist-info:hover {
+  background: var(--glass-border);
+  transform: translateY(-1px);
+  border-color: var(--accent-subtle-border);
+}
+
+.now-playing-playlist-info:active {
+  transform: translateY(0);
+}
+
+/* Make headers interactive */
+h3.interactive-header {
+  transition: color var(--transition), transform var(--transition);
+}
+
+h3.interactive-header:hover {
+  color: var(--accent-light);
+  transform: translateY(-1px);
+}
+h3.interactive-header:active {
+  transform: translateY(0);
+}
+
 
 #nowPlayingPlaylistName {
   font-size: 0.72rem;

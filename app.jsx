@@ -2304,21 +2304,25 @@ async function initApp() {
     }
   }
 
-  // Badge jumps
-  if (nowPlayingPlaylistBadge) {
-    nowPlayingPlaylistBadge.addEventListener("click", (e) => {
+  // Header text/badge jumps
+  const nowPlayingPlaylistInfo = document.getElementById("nowPlayingPlaylistInfo");
+  const savedPlaylistsHeader = document.getElementById("savedPlaylistsHeader");
+  const currentPlaylistHeader = document.getElementById("currentPlaylistHeader");
+  
+  if (nowPlayingPlaylistInfo) {
+    nowPlayingPlaylistInfo.addEventListener("click", (e) => {
       e.stopPropagation();
       jumpToSavedPlaylists();
     });
   }
-  if (savedPlaylistsBadge) {
-    savedPlaylistsBadge.addEventListener("click", (e) => {
+  if (savedPlaylistsHeader) {
+    savedPlaylistsHeader.addEventListener("click", (e) => {
       e.stopPropagation();
       jumpToSavedPlaylists();
     });
   }
-  if (playlistBadge) {
-    playlistBadge.addEventListener("click", (e) => {
+  if (currentPlaylistHeader) {
+    currentPlaylistHeader.addEventListener("click", (e) => {
       e.stopPropagation();
       playlistEl.scrollIntoView({ behavior: "smooth", block: "center" });
     });
