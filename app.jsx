@@ -306,25 +306,19 @@ function updatePlaylistNameDisplay() {
 function normalizeTrack(track) {
   if (!track || !track.sourceType || !track.id || !track.title) return null;
 
+  const normalized = {
+    id: track.id,
+    title: track.title,
+    sourceType: track.sourceType,
+    disabled: !!track.disabled,
+  };
+
   if (track.sourceType === "url") {
     if (!track.src) return null;
-    return {
-      id: track.id,
-      title: track.title,
-      sourceType: "url",
-      src: track.src,
-    };
+    normalized.src = track.src;
   }
 
-  if (track.sourceType === "file") {
-    return {
-      id: track.id,
-      title: track.title,
-      sourceType: "file",
-    };
-  }
-
-  return null;
+  return normalized;
 }
 
 function updateNowPlaying(track) {
@@ -793,6 +787,9 @@ function renderPlaylist() {
     if (index === currentTrackIndex) {
       li.classList.add("active");
     }
+    if (track.disabled) {
+      li.classList.add("disabled");
+    }
 
     li.addEventListener("dragstart", () => {
       draggedTrackIndex = index;
@@ -873,6 +870,16 @@ function renderPlaylist() {
       actions.appendChild(playBtn);
     }
 
+    const statusBtn = document.createElement("button");
+    statusBtn.type = "button";
+    statusBtn.className = `track-status-btn${track.disabled ? " disabled" : ""}`;
+    statusBtn.title = track.disabled ? "Click to enable song (Green Light)" : "Click to skip song (Red Light)";
+    statusBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleTrackEnabled(index);
+    });
+
+    li.appendChild(statusBtn);
     li.appendChild(infoBtn);
     li.appendChild(actions);
 
@@ -1297,25 +1304,49 @@ function pauseCurrent() {
 }
 
 function getRandomTrackIndex(excludeIndex) {
-  if (playlist.length <= 1) return excludeIndex;
+  const enabledIndices = playlist
+    .map((t, i) => i)
+    .filter((i) => !playlist[i].disabled && i !== excludeIndex);
 
-  let randomIndex = excludeIndex;
-  while (randomIndex === excludeIndex) {
-    randomIndex = Math.floor(Math.random() * playlist.length);
+  if (enabledIndices.length === 0) {
+    // If no other enabled tracks, check if CURRENT is enabled
+    if (playlist[excludeIndex] && !playlist[excludeIndex].disabled) {
+      return excludeIndex;
+    }
+    // If even current is disabled, find ANY enabled
+    const allEnabled = playlist.map((t, i) => i).filter(i => !playlist[i].disabled);
+    if (allEnabled.length > 0) return allEnabled[Math.floor(Math.random() * allEnabled.length)];
+    return excludeIndex;
   }
-  return randomIndex;
+
+  return enabledIndices[Math.floor(Math.random() * enabledIndices.length)];
 }
 
 async function playNext() {
   if (playlist.length === 0) return;
+
+  const enabledCount = playlist.filter(t => !t.disabled).length;
+  if (enabledCount === 0) {
+    showToast("All songs are 'Red Lighted'. Enable some to play.");
+    return;
+  }
 
   let nextIndex;
 
   if (shuffleEnabled) {
     nextIndex = getRandomTrackIndex(currentTrackIndex);
   } else {
-    nextIndex =
-      currentTrackIndex >= playlist.length - 1 ? 0 : currentTrackIndex + 1;
+    let candidate = (currentTrackIndex >= playlist.length - 1) ? 0 : currentTrackIndex + 1;
+    let found = false;
+    // Walk forward up to one full loop to find an enabled one
+    for (let i = 0; i < playlist.length; i++) {
+        if (!playlist[candidate].disabled) {
+            found = true;
+            break;
+        }
+        candidate = (candidate >= playlist.length - 1) ? 0 : candidate + 1;
+    }
+    nextIndex = found ? candidate : currentTrackIndex;
   }
 
   pendingRestoreTime = null;
@@ -1325,17 +1356,47 @@ async function playNext() {
 async function playPrev() {
   if (playlist.length === 0) return;
 
+  const enabledCount = playlist.filter(t => !t.disabled).length;
+  if (enabledCount === 0) {
+    showToast("All songs are 'Red Lighted'. Enable some to play.");
+    return;
+  }
+
   let prevIndex;
 
   if (shuffleEnabled) {
     prevIndex = getRandomTrackIndex(currentTrackIndex);
   } else {
-    prevIndex =
-      currentTrackIndex <= 0 ? playlist.length - 1 : currentTrackIndex - 1;
+    let candidate = (currentTrackIndex <= 0) ? playlist.length - 1 : currentTrackIndex - 1;
+    let found = false;
+    for (let i = 0; i < playlist.length; i++) {
+        if (!playlist[candidate].disabled) {
+            found = true;
+            break;
+        }
+        candidate = (candidate <= 0) ? playlist.length - 1 : candidate - 1;
+    }
+    prevIndex = found ? candidate : currentTrackIndex;
   }
 
   pendingRestoreTime = null;
   await loadTrack(prevIndex, true);
+}
+
+function toggleTrackEnabled(index) {
+    if (index < 0 || index >= playlist.length) return;
+    playlist[index].disabled = !playlist[index].disabled;
+    
+    // If the track we just disabled was the current one, and we are playing, maybe skip?
+    // User probably just wants to disable it for future passes. 
+    // But if they red-light the NOW PLAYING track, it's a bit ambiguous.
+    // For now, let's just update the UI.
+
+    renderPlaylist();
+    savePlaylistState();
+    
+    const status = playlist[index].disabled ? "Red Light (Skipping)" : "Green Light (Enabled)";
+    showToast(`"${playlist[index].title}" set to ${status}.`);
 }
 
 function toggleShuffle() {
@@ -2189,6 +2250,26 @@ async function initApp() {
     }
   }
 
+  // Badge jumps
+  if (nowPlayingPlaylistBadge) {
+    nowPlayingPlaylistBadge.addEventListener("click", (e) => {
+      e.stopPropagation();
+      jumpToSavedPlaylists();
+    });
+  }
+  if (savedPlaylistsBadge) {
+    savedPlaylistsBadge.addEventListener("click", (e) => {
+      e.stopPropagation();
+      jumpToSavedPlaylists();
+    });
+  }
+  if (playlistBadge) {
+    playlistBadge.addEventListener("click", (e) => {
+      e.stopPropagation();
+      playlistEl.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  }
+
   // Hide splash screen after initialization
   const splash = document.getElementById("splashScreen");
   if (splash) {
@@ -2196,6 +2277,14 @@ async function initApp() {
     setTimeout(() => {
       splash.classList.add("fade-out");
     }, 1200);
+  }
+}
+
+function jumpToSavedPlaylists() {
+  if (savedPlaylistsSelect) {
+    savedPlaylistsSelect.scrollIntoView({ behavior: "smooth", block: "center" });
+    savedPlaylistsSelect.classList.add("highlight");
+    setTimeout(() => savedPlaylistsSelect.classList.remove("highlight"), 1200);
   }
 }
 
