@@ -68,13 +68,26 @@
       </div>
 
       <div class="sidebar-body">
-        <!-- New Share Section -->
-        <div class="sidebar-section">
-          <button id="shareAppBtn" class="sidebar-row-btn" type="button" aria-label="Share this app">
+        <!-- Share Section -->
+        <div class="sidebar-section qr-section" style="margin-top: 0;">
+          <div class="sidebar-section-label">Share</div>
+          <button id="shareAppBtn" class="sidebar-row-btn" type="button" aria-label="Share this app" style="margin-bottom: 16px;">
             <span class="sidebar-row-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></span>
-            <span class="sidebar-row-text">Share Player</span>
+            <span class="sidebar-row-text">Share Player Link</span>
             <span class="sidebar-row-arrow">›</span>
           </button>
+          
+          <div id="qrWrapper" class="qr-wrapper" title="Click to enlarge QR code">
+            <img id="qrImage" class="qr-image" src="" alt="App QR Code" />
+            <div class="qr-logo-overlay">
+              <img src="icons/icon-512.png" alt="" />
+            </div>
+          </div>
+          <div class="qr-actions">
+            <button id="copyQrBtn" class="qr-action-btn" type="button">Copy</button>
+            <button id="downloadQrBtn" class="qr-action-btn" type="button">Download</button>
+          </div>
+          <p class="qr-hint">Scan with another device to open the player.</p>
         </div>
 
         <!-- Theme -->
@@ -125,27 +138,13 @@
             <span class="sidebar-row-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21,15v4a2,2,0,0,1-2,2H5a2,2,0,0,1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
             <span class="sidebar-row-text">Import Playlists</span>
           </label>
+          </div>
           <input
             id="importPlaylistsInput"
             type="file"
             accept="application/json"
             class="hidden-file-input"
           />
-        <!-- App QR Code -->
-        <div class="sidebar-section qr-section">
-          <div class="sidebar-section-label">Share</div>
-          <div id="qrWrapper" class="qr-wrapper" title="Click to enlarge QR code">
-            <img id="qrImage" class="qr-image" src="" alt="App QR Code" />
-            <div class="qr-logo-overlay">
-              <img src="icons/icon-512.png" alt="" />
-            </div>
-          </div>
-          <div class="qr-actions">
-            <button id="copyQrBtn" class="qr-action-btn" type="button">Copy</button>
-            <button id="downloadQrBtn" class="qr-action-btn" type="button">Download</button>
-          </div>
-          <p class="qr-hint">Scan with another device to open the player.</p>
-        </div>
 
       </div>
     </aside>
