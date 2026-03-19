@@ -1944,9 +1944,15 @@ if (toggleEditBtn) {
 }
 
 savedPlaylistsSelect.addEventListener("change", () => {
-  if (name) {
-    localStorage.setItem(STORAGE_KEYS.selectedSavedPlaylist, name);
-    if (savedPlaylistBox) savedPlaylistBox.title = `Selected saved playlist: ${name}`;
+  const selected = savedPlaylistsSelect.value;
+  const isBuiltin = selected && savedPlaylists[selected] && savedPlaylists[selected].isBuiltin;
+  
+  if (renamePlaylistBtn) renamePlaylistBtn.disabled = !!isBuiltin;
+  if (deletePlaylistBtn) deletePlaylistBtn.disabled = !!isBuiltin;
+
+  if (selected) {
+    localStorage.setItem(STORAGE_KEYS.selectedSavedPlaylist, selected);
+    if (savedPlaylistBox) savedPlaylistBox.title = `Selected saved playlist: ${selected}`;
   } else {
     localStorage.removeItem(STORAGE_KEYS.selectedSavedPlaylist);
     if (savedPlaylistBox) savedPlaylistBox.title = "No saved playlist selected.";

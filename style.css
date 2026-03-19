@@ -451,6 +451,13 @@ h1 .dot {
   backdrop-filter: blur(8px);
 }
 
+.ghost-btn:disabled,
+.sidebar-row-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .control-btn:hover,
 .url-row button:hover,
 .ghost-btn:hover,
