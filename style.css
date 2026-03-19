@@ -173,14 +173,17 @@
   to   { transform: rotate(360deg); }
 }
 
-.splash-text {
-  font-family: "Big Shoulders Display", "Oswald", sans-serif;
-  font-size: 2.2rem;
-  font-weight: 900;
-  color: #fff;
-  letter-spacing: 0.12em;
-  text-align: center;
-  text-transform: uppercase;
+.splash-moto-wrap {
+  width: min(80vw, 320px);
+  display: flex;
+  justify-content: center;
+}
+
+.splash-moto-logo {
+  width: 100%;
+  height: auto;
+  filter: invert(1); /* Logo is black, splash is black — invert to make it white */
+  opacity: 0.95;
 }
 
 /* ═══════════════════════════════════════════
