@@ -1498,6 +1498,7 @@ async function loadNamedPlaylist() {
 
   setPlayerStatus(`Loaded saved playlist: ${name}`);
   showToast(`Loaded "${name}".`);
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function renameNamedPlaylist() {
