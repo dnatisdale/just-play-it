@@ -1,13 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Oswald:wght@700&family=Big+Shoulders+Display:wght@900&family=Saira+Extra+Condensed:wght@900&display=swap");
 
-/* Import Futura Extra Black Condensed BT from a public CDN if not installed */
-@font-face {
-  font-family: "Futura Extra Black Condensed BT";
-  src: url("https://db.onlinewebfonts.com/t/0bc022830f6a2731557999723f5b026b.woff2") format("woff2"),
-       url("https://db.onlinewebfonts.com/t/0bc022830f6a2731557999723f5b026b.woff") format("woff");
-  font-display: swap;
-}
-
 /* ═══════════════════════════════════════════
    THEME TOKENS
 ═══════════════════════════════════════════ */
@@ -254,10 +246,10 @@ button {
 .topbar h1 {
   margin: 0;
   font-family: "Futura Extra Black Condensed BT", "Saira Extra Condensed", "Big Shoulders Display", sans-serif;
-  font-size: 5.2rem;
+  font-size: 5rem; /* Matches 58px logo height at 0.72 line-height */
   font-weight: 900;
   line-height: 0.72;
-  letter-spacing: -0.07em; /* Aggressive condensed spacing */
+  letter-spacing: -0.015em; /* Increased for readability */
   text-transform: uppercase;
   color: var(--text);
   position: relative;
@@ -282,8 +274,8 @@ button {
    ═══════════════════════════════════════════ */
 .dot {
   display: inline-block;
-  width: 0.28em; /* Much larger dot per the image */
-  height: 0.28em;
+  width: 0.14em; /* Half the previous size for better balance */
+  height: 0.14em;
   background: currentColor;
   border-radius: 50%;
   margin-left: 0.05em;
@@ -292,10 +284,10 @@ button {
 }
 
 h1 .dot {
-  width: 0.45em; /* HALLMARK LARGE DOT in main header */
-  height: 0.45em;
-  margin-bottom: -0.02em;
-  margin-left: -0.02em;
+  width: 0.22em; /* Scaled down for the header hallmark */
+  height: 0.22em;
+  margin-bottom: 0.04em;
+  margin-left: 0.02em;
 }
 
 /* ═══════════════════════════════════════════
@@ -1816,8 +1808,8 @@ h3 .counter-badge {
   }
 
   .topbar h1 {
-    font-size: 2.1rem;
-    letter-spacing: -0.06em;
+    font-size: 3.8rem; /* Matches 44px logo height */
+    letter-spacing: -0.01em;
   }
 
   /* Shrink logo on small mobile */
@@ -1895,7 +1887,7 @@ h3 .counter-badge {
 /* Extra small screens (e.g. S21 portrait 360px) */
 @media (max-width: 380px) {
   .topbar h1 {
-    font-size: 1.45rem;
+    font-size: 3.3rem; /* Matches 38px logo height */
   }
 
   .brand-logo-wrap {
