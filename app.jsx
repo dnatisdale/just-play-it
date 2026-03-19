@@ -48,13 +48,6 @@ const savedPlaylistBox = document.getElementById("savedPlaylistBox");
 const playlistHeader = document.getElementById("playlistHeader");
 const sleepRow = document.querySelector(".sleep-row");
 
-const miniPlayer = document.getElementById("miniPlayer");
-const miniPlayerTitle = document.getElementById("miniPlayerTitle");
-const miniPlayerMeta = document.getElementById("miniPlayerMeta");
-const miniPrevBtn = document.getElementById("miniPrevBtn");
-const miniPlayPauseBtn = document.getElementById("miniPlayPauseBtn");
-const miniNextBtn = document.getElementById("miniNextBtn");
-const miniVinylEl = document.getElementById("miniVinyl");
 const brandLogoWrap = document.getElementById("brandLogoWrap");
 
 // Sidebar elements
@@ -322,42 +315,6 @@ function normalizeTrack(track) {
 
   return null;
 }
-
-function updateMiniPlayer(track) {
-  if (!track || currentTrackIndex === -1) {
-    miniPlayer.classList.add("hidden");
-    return;
-  }
-
-  // Determine if main player is in view
-  const playerCard = document.querySelector(".player-card");
-  if (playerCard) {
-    const rect = playerCard.getBoundingClientRect();
-    // If the bottom of the player card is above the top of the viewport (or close to it)
-    const isMainPlayerVisible = rect.bottom > 100;
-
-    if (isMainPlayerVisible) {
-      miniPlayer.classList.add("hidden");
-    } else {
-      miniPlayer.classList.remove("hidden");
-    }
-  } else {
-    miniPlayer.classList.remove("hidden");
-  }
-
-  miniPlayerTitle.textContent = track.title;
-  miniPlayerMeta.textContent =
-    track.sourceType === "file" ? "Stored device file" : "Streaming from URL";
-  const icon = audio.paused ? ICONS.play : ICONS.pause;
-  if (miniPlayPauseBtn) miniPlayPauseBtn.innerHTML = icon;
-}
-
-// Add scroll listener to update mini player visibility
-window.addEventListener("scroll", () => {
-  if (currentTrackIndex >= 0 && playlist[currentTrackIndex]) {
-    updateMiniPlayer(playlist[currentTrackIndex]);
-  }
-}, { passive: true });
 
 function updateNowPlaying(track) {
   if (!track) {
@@ -842,10 +799,6 @@ function renderPlaylist() {
       reorderTrack(draggedTrackIndex, targetIndex);
     });
 
-    const thumb = document.createElement("div");
-    thumb.className = "track-thumb";
-    thumb.textContent = getTrackEmoji(track);
-
     const infoBtn = document.createElement("button");
     infoBtn.type = "button";
     infoBtn.className = "track-info-btn";
@@ -891,7 +844,6 @@ function renderPlaylist() {
     actions.appendChild(playBtn);
     actions.appendChild(removeBtn);
 
-    li.appendChild(thumb);
     li.appendChild(infoBtn);
     li.appendChild(actions);
 
@@ -1264,7 +1216,6 @@ async function importPlaylistsFromFile(file) {
 function updatePlayPauseButton() {
   const icon = audio.paused ? ICONS.play : ICONS.pause;
   playPauseBtn.innerHTML = icon;
-  miniPlayPauseBtn.innerHTML = icon;
   updateSpinning();
 }
 
@@ -1730,21 +1681,10 @@ playPauseBtn.addEventListener("click", async () => {
   }
 });
 
-miniPlayPauseBtn.addEventListener("click", async () => {
-  if (!audio.src) return playCurrent();
-  if (audio.paused) {
-    await playCurrent();
-  } else {
-    pauseCurrent();
-  }
-});
-
 nextBtn.addEventListener("click", async () => playNext());
 prevBtn.addEventListener("click", async () => playPrev());
 skipBackBtn.addEventListener("click", () => skipSeconds(-30));
 skipForwardBtn.addEventListener("click", () => skipSeconds(30));
-miniNextBtn.addEventListener("click", async () => playNext());
-miniPrevBtn.addEventListener("click", async () => playPrev());
 
 shuffleBtn.addEventListener("click", toggleShuffle);
 repeatBtn.addEventListener("click", cycleRepeatMode);

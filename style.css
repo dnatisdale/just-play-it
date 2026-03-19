@@ -1007,13 +1007,13 @@ input::placeholder {
 
 .playlist-item {
   display: grid;
-  grid-template-columns: 52px 1fr auto;
-  gap: 12px;
+  grid-template-columns: 1fr auto; /* Removed the thumb column to gain space for titles */
+  gap: 16px;
   align-items: center;
   background: var(--panel-3);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 12px;
+  padding: 14px 18px;
   transition: background var(--transition), border-color var(--transition),
     transform var(--transition);
 }
