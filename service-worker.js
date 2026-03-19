@@ -1,4 +1,4 @@
-const CACHE_NAME = "just-play-it-v33";
+const CACHE_NAME = "just-play-it-v34";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
@@ -16,7 +16,15 @@ const ASSETS_TO_CACHE = [
   "./audio/remember-the-lord/Remember the Lord Part 1.mp3",
   "./audio/remember-the-lord/Remember the Lord Part 2.mp3",
   "./audio/remember-the-lord/Remember the Lord Part 3.mp3",
-  "./audio/remember-the-lord/Remember the Lord Part 4.mp3"
+  "./audio/remember-the-lord/Remember the Lord Part 4.mp3",
+  "./audio/nas-songs_plus/Before My Eyes.mp3",
+  "./audio/nas-songs_plus/God is My H O M E.mp3",
+  "./audio/nas-songs_plus/God with Us.mp3",
+  "./audio/nas-songs_plus/In the Darkest Night.mp3",
+  "./audio/nas-songs_plus/LOOK UP!.mp3",
+  "./audio/nas-songs_plus/The God Who Fights For Me.mp3",
+  "./audio/nas-songs_plus/When My Loved One is Gone!.mp3",
+  "./audio/nas-songs_plus/You are loved, so very loved!.mp3"
 ];
 
 self.addEventListener("install", (event) => {

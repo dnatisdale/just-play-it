@@ -19,5 +19,19 @@
       { "id": "builtin-rtl-3", "title": "Remember the Lord Part 3", "sourceType": "url", "src": "audio/remember-the-lord/Remember the Lord Part 3.mp3" },
       { "id": "builtin-rtl-4", "title": "Remember the Lord Part 4", "sourceType": "url", "src": "audio/remember-the-lord/Remember the Lord Part 4.mp3" }
     ]
+  },
+  "Na's Songs Plus": {
+    "name": "Na's Songs Plus",
+    "isBuiltin": true,
+    "tracks": [
+      { "id": "builtin-nas-1", "title": "Before My Eyes", "sourceType": "url", "src": "audio/nas-songs_plus/Before My Eyes.mp3" },
+      { "id": "builtin-nas-2", "title": "God is My H O M E", "sourceType": "url", "src": "audio/nas-songs_plus/God is My H O M E.mp3" },
+      { "id": "builtin-nas-3", "title": "God with Us", "sourceType": "url", "src": "audio/nas-songs_plus/God with Us.mp3" },
+      { "id": "builtin-nas-4", "title": "In the Darkest Night", "sourceType": "url", "src": "audio/nas-songs_plus/In the Darkest Night.mp3" },
+      { "id": "builtin-nas-5", "title": "LOOK UP!", "sourceType": "url", "src": "audio/nas-songs_plus/LOOK UP!.mp3" },
+      { "id": "builtin-nas-6", "title": "The God Who Fights For Me", "sourceType": "url", "src": "audio/nas-songs_plus/The God Who Fights For Me.mp3" },
+      { "id": "builtin-nas-7", "title": "When My Loved One is Gone!", "sourceType": "url", "src": "audio/nas-songs_plus/When My Loved One is Gone!.mp3" },
+      { "id": "builtin-nas-8", "title": "You are loved, so very loved!", "sourceType": "url", "src": "audio/nas-songs_plus/You are loved, so very loved!.mp3" }
+    ]
   }
 }
