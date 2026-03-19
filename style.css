@@ -1,4 +1,12 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Oswald:wght@700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Oswald:wght@700&family=Big+Shoulders+Display:wght@900&display=swap");
+
+/* Import Futura Extra Black Condensed BT from a public CDN if not installed */
+@font-face {
+  font-family: "Futura Extra Black Condensed BT";
+  src: url("https://db.onlinewebfonts.com/t/0bc022830f6a2731557999723f5b026b.woff2") format("woff2"),
+       url("https://db.onlinewebfonts.com/t/0bc022830f6a2731557999723f5b026b.woff") format("woff");
+  font-display: swap;
+}
 
 /* ═══════════════════════════════════════════
    THEME TOKENS
@@ -173,9 +181,9 @@ button {
 
 .app-shell {
   width: 100%;
-  max-width: 1020px;
+  max-width: 680px; /* Narrower single column for better progressive fit */
   margin: 0 auto;
-  padding: 20px 16px 40px;
+  padding: 24px 16px 60px;
 }
 
 /* ═══════════════════════════════════════════
@@ -245,7 +253,7 @@ button {
 
 .topbar h1 {
   margin: 0;
-  font-family: "Big Shoulders Display", "Oswald", "Futura Extra Black Condensed BT", sans-serif;
+  font-family: "Futura Extra Black Condensed BT", "Big Shoulders Display", "Oswald", sans-serif;
   font-size: 4.8rem; /* Scaled up for the condensed font */
   font-weight: 900;
   line-height: 0.8;
@@ -433,7 +441,7 @@ button {
 ═══════════════════════════════════════════ */
 
 .now-playing-label {
-  font-family: "Big Shoulders Display", "Oswald", sans-serif;
+  font-family: "Futura Extra Black Condensed BT", "Big Shoulders Display", "Oswald", sans-serif;
   font-size: 1.15rem;
   font-weight: 900;
   text-transform: uppercase;
@@ -1749,8 +1757,8 @@ h3 .counter-badge {
   }
 
   .topbar h1 {
-    font-size: 1.8rem; /* Optimized for Big Shoulders Display */
-    letter-spacing: 0;
+    font-size: 1.95rem; /* Scaled for Futura Condensed */
+    letter-spacing: -0.01em;
   }
 
   /* Shrink logo on small mobile */
@@ -1861,9 +1869,8 @@ h3 .counter-badge {
 ═══════════════════════════════════════════ */
 
 @media (min-width: 760px) {
-  .main-layout {
-    grid-template-columns: 0.95fr 1.05fr;
-    align-items: start;
+  .app-shell {
+    padding-top: 40px;
   }
 }
 
