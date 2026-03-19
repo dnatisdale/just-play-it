@@ -1005,6 +1005,15 @@ input::placeholder {
 
 .playlist-tools {
   margin-bottom: 14px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+#toggleEditBtn.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
 }
 
 .playlist {
@@ -1016,16 +1025,17 @@ input::placeholder {
 }
 
 .playlist-item {
-  display: grid;
-  grid-template-columns: 1fr auto; /* Removed the thumb column to gain space for titles */
-  gap: 16px;
+  display: flex; /* Switch to flex for better track-name growth */
+  gap: 12px;
   align-items: center;
+  justify-content: space-between;
   background: var(--panel-3);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 14px 18px;
+  padding: 12px 14px;
   transition: background var(--transition), border-color var(--transition),
     transform var(--transition);
+  cursor: pointer;
 }
 
 .playlist-item:hover {

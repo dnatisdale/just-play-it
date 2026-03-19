@@ -42,6 +42,7 @@ const savedPlaylistStatus = document.getElementById("savedPlaylistStatus");
 const playlistSearchInput = document.getElementById("playlistSearchInput");
 const jumpToCurrentBtn = document.getElementById("jumpToCurrentBtn");
 const playlistNameDisplay = document.getElementById("playlistNameDisplay");
+const toggleEditBtn = document.getElementById("toggleEditBtn");
 
 // Containers for tooltips (decluttering)
 const savedPlaylistBox = document.getElementById("savedPlaylistBox");
@@ -119,6 +120,7 @@ let currentObjectUrl = null;
 let toastTimeout = null;
 let draggedTrackIndex = null;
 let playlistFilter = "";
+let isEditMode = false;
 
 // ── Theme ──────────────────────────────────────────────
 function getSystemTheme() {
@@ -848,35 +850,44 @@ function renderPlaylist() {
     upBtn.type = "button";
     upBtn.className = "small-btn";
     upBtn.textContent = "↑";
-    upBtn.addEventListener("click", () => moveTrack(index, -1));
+    upBtn.title = "Move up";
+    upBtn.addEventListener("click", (e) => { e.stopPropagation(); moveTrack(index, -1); });
 
     const downBtn = document.createElement("button");
     downBtn.type = "button";
     downBtn.className = "small-btn";
     downBtn.textContent = "↓";
-    downBtn.addEventListener("click", () => moveTrack(index, 1));
+    downBtn.title = "Move down";
+    downBtn.addEventListener("click", (e) => { e.stopPropagation(); moveTrack(index, 1); });
 
     const playBtn = document.createElement("button");
     playBtn.type = "button";
     playBtn.className = "small-btn";
     playBtn.textContent = "Play";
-    playBtn.addEventListener("click", async () => {
-      await loadTrack(index, true);
+    playBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      loadTrack(index, true);
     });
 
     const removeBtn = document.createElement("button");
     removeBtn.type = "button";
     removeBtn.className = "small-btn remove";
     removeBtn.textContent = "✕";
-    removeBtn.addEventListener("click", () => removeTrack(index));
+    removeBtn.title = "Remove from playlist";
+    removeBtn.addEventListener("click", (e) => { e.stopPropagation(); removeTrack(index); });
 
-    actions.appendChild(upBtn);
-    actions.appendChild(downBtn);
-    actions.appendChild(playBtn);
-    actions.appendChild(removeBtn);
+    if (isEditMode) {
+      actions.appendChild(upBtn);
+      actions.appendChild(downBtn);
+      actions.appendChild(removeBtn);
+    } else {
+      actions.appendChild(playBtn);
+    }
 
     li.appendChild(infoBtn);
     li.appendChild(actions);
+
+    li.addEventListener("click", () => loadTrack(index, true));
 
     playlistEl.appendChild(li);
   });
@@ -1938,6 +1949,16 @@ playlistSearchInput.addEventListener("input", () => {
 });
 
 jumpToCurrentBtn.addEventListener("click", jumpToCurrentTrack);
+
+if (toggleEditBtn) {
+  toggleEditBtn.addEventListener("click", () => {
+    isEditMode = !isEditMode;
+    toggleEditBtn.classList.toggle("active", isEditMode);
+    toggleEditBtn.textContent = isEditMode ? "Done" : "Edit";
+    renderPlaylist();
+    showToast(isEditMode ? "Edit mode on. You can reorder or remove tracks." : "Edit mode off.");
+  });
+}
 
 savedPlaylistsSelect.addEventListener("change", () => {
   if (name) {
