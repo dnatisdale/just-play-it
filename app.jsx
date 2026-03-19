@@ -59,6 +59,7 @@ const themeIcon = document.getElementById("themeIcon");
 const themeLabel = document.getElementById("themeLabel");
 const shuffleBtnLabel = document.getElementById("shuffleBtnLabel");
 const shuffleToggle = document.getElementById("shuffleToggle");
+const shareAppBtn = document.getElementById("shareAppBtn");
 
 // Badges
 const menuBadge = document.getElementById("menuBadge");
@@ -1741,6 +1742,36 @@ shuffleBtn.addEventListener("click", toggleShuffle);
 repeatBtn.addEventListener("click", cycleRepeatMode);
 installBtn.addEventListener("click", handleInstallClick);
 if (themeToggleBtn) themeToggleBtn.addEventListener("click", toggleTheme);
+
+async function handleShare() {
+  const shareData = {
+    title: "Just Play It",
+    text: "A simple, installable audio player for your local files.",
+    url: window.location.origin + window.location.pathname,
+  };
+
+  try {
+    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+      await navigator.share(shareData);
+      showToast("Sharing options opened.");
+    } else {
+      await navigator.clipboard.writeText(shareData.url);
+      showToast("App link copied to clipboard.");
+    }
+  } catch (err) {
+    if (err.name !== "AbortError") {
+      console.error("Share failed:", err);
+      try {
+        await navigator.clipboard.writeText(shareData.url);
+        showToast("App link copied to clipboard.");
+      } catch (copyErr) {
+        showToast("Could not share or copy link.");
+      }
+    }
+  }
+}
+
+if (shareAppBtn) shareAppBtn.addEventListener("click", handleShare);
 
 // ── Sidebar ──────────────────────────────────────────────
 function openSidebar() {
