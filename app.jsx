@@ -296,7 +296,7 @@ function revokeCurrentObjectUrl() {
 }
 
 function updatePlaylistNameDisplay() {
-  const name = currentPlaylistName || "Unsaved";
+  const name = currentPlaylistName || "Playlist";
   if (nowPlayingPlaylistName) {
     nowPlayingPlaylistName.textContent = name;
   }
@@ -912,7 +912,7 @@ function reorderTrack(fromIndex, toIndex) {
   playlist.splice(toIndex, 0, movedTrack);
 
   updateCurrentTrackIndexAfterMove(fromIndex, toIndex);
-  currentPlaylistName = "";
+  // currentPlaylistName = "";  // Keep name on reorder as requested
   updatePlaylistNameDisplay();
   renderPlaylist();
   savePlaylistState();
@@ -1086,7 +1086,7 @@ function removeTrack(index) {
   const removedTrack = playlist[index];
   const wasCurrent = index === currentTrackIndex;
   playlist.splice(index, 1);
-  currentPlaylistName = "";
+  // currentPlaylistName = ""; // Keep name on track removal as requested
   updatePlaylistNameDisplay();
 
   if (playlist.length === 0) {

@@ -536,11 +536,11 @@ h1 .dot {
 ═══════════════════════════════════════════ */
 
 .now-playing-label {
-  font-family: "Futura Extra Black Condensed BT", "Big Shoulders Display", "Oswald", sans-serif;
-  font-size: 1.15rem;
+  font-family: "Big Shoulders Display", "Oswald", sans-serif;
+  font-size: 1.3rem;
   font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.02em;
   color: var(--text);
   margin: 0;
   display: flex;
@@ -600,20 +600,7 @@ h1 .dot {
   color: var(--text-2);
 }
 
-.now-playing-label::before {
-  content: "";
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #000;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
-  animation: pulse-dot 2s ease-in-out infinite;
-}
-
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%       { opacity: 0.55; transform: scale(0.8); }
-}
+/* Pulse dot removed as requested */
 
 .now-playing-wrap {
   display: grid;
