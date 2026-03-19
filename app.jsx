@@ -39,7 +39,6 @@ const exportPlaylistsBtn = document.getElementById("exportPlaylistsBtn");
 const importPlaylistsInput = document.getElementById("importPlaylistsInput");
 const savedPlaylistStatus = document.getElementById("savedPlaylistStatus");
 const jumpToCurrentBtn = document.getElementById("jumpToCurrentBtn");
-const playlistNameDisplay = document.getElementById("playlistNameDisplay");
 const toggleEditBtn = document.getElementById("toggleEditBtn");
 
 // Containers for tooltips (decluttering)
@@ -298,7 +297,6 @@ function revokeCurrentObjectUrl() {
 
 function updatePlaylistNameDisplay() {
   const name = currentPlaylistName || "Unsaved";
-  playlistNameDisplay.textContent = `Current playlist: ${name}`;
   if (nowPlayingPlaylistName) {
     nowPlayingPlaylistName.textContent = name;
   }
