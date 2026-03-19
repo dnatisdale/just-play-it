@@ -765,12 +765,13 @@ input[type="range"]::-moz-range-thumb {
 
 .skip-label {
   position: absolute;
-  font-size: 0.72rem;
+  font-size: 0.95rem; /* Larger font for clear text skip buttons */
   font-weight: 800;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) translateY(3px);
+  transform: translate(-50%, -50%);
   pointer-events: none;
+  font-family: inherit;
 }
 
 .control-btn.primary,
