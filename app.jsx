@@ -1765,9 +1765,15 @@ if (themeToggleBtn) themeToggleBtn.addEventListener("click", toggleTheme);
 
 async function handleShare() {
   const shareUrl = window.location.origin + window.location.pathname;
+  const shareText = `JUST PLAY IT. 💿
+A simple audio player for all your tracks.
+Click on the record to download and start!
+
+Check it out here: ${shareUrl}`;
+
   const shareData = {
-    title: "Just Play It",
-    text: `JUST PLAY IT. – A simple, installable audio player for your local files: ${shareUrl}`,
+    title: "JUST PLAY IT. 💿",
+    text: shareText,
     url: shareUrl,
   };
 
@@ -1776,15 +1782,15 @@ async function handleShare() {
       await navigator.share(shareData);
       showToast("Sharing options opened.");
     } else {
-      await navigator.clipboard.writeText(shareData.url);
-      showToast("App link copied to clipboard.");
+      await navigator.clipboard.writeText(shareText);
+      showToast("App link and message copied.");
     }
   } catch (err) {
     if (err.name !== "AbortError") {
       console.error("Share failed:", err);
       try {
-        await navigator.clipboard.writeText(shareData.url);
-        showToast("App link copied to clipboard.");
+        await navigator.clipboard.writeText(shareText);
+        showToast("App link and message copied.");
       } catch (copyErr) {
         showToast("Could not share or copy link.");
       }
