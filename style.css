@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Oswald:wght@700&family=Big+Shoulders+Display:wght@900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Oswald:wght@700&family=Big+Shoulders+Display:wght@900&family=Saira+Extra+Condensed:wght@900&display=swap");
 
 /* Import Futura Extra Black Condensed BT from a public CDN if not installed */
 @font-face {
@@ -253,13 +253,17 @@ button {
 
 .topbar h1 {
   margin: 0;
-  font-family: "Futura Extra Black Condensed BT", "Big Shoulders Display", "Oswald", sans-serif;
-  font-size: 4.8rem; /* Scaled up for the condensed font */
+  font-family: "Futura Extra Black Condensed BT", "Saira Extra Condensed", "Big Shoulders Display", sans-serif;
+  font-size: 5.2rem;
   font-weight: 900;
-  line-height: 0.8;
-  letter-spacing: -0.02em;
+  line-height: 0.72;
+  letter-spacing: -0.07em; /* Aggressive condensed spacing */
   text-transform: uppercase;
   color: var(--text);
+  position: relative;
+  /* Slight stroke for that heavy look */
+  -webkit-text-stroke: 1px var(--text);
+  paint-order: stroke fill;
 }
 
 .subtitle {
@@ -273,11 +277,79 @@ button {
    TOPBAR ACTIONS (hamburger menu)
 ═══════════════════════════════════════════ */
 
+/* ═══════════════════════════════════════════
+   ROUND DOTS (Styled periods)
+   ═══════════════════════════════════════════ */
+.dot {
+  display: inline-block;
+  width: 0.28em; /* Much larger dot per the image */
+  height: 0.28em;
+  background: currentColor;
+  border-radius: 50%;
+  margin-left: 0.05em;
+  vertical-align: baseline;
+  margin-bottom: 0.02em;
+}
+
+h1 .dot {
+  width: 0.45em; /* HALLMARK LARGE DOT in main header */
+  height: 0.45em;
+  margin-bottom: -0.02em;
+  margin-left: -0.02em;
+}
+
+/* ═══════════════════════════════════════════
+   TOPBAR ACTIONS
+   ═══════════════════════════════════════════ */
 .topbar-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   flex-shrink: 0;
+}
+
+.topbar-install-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition);
+  box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+.topbar-install-btn:hover {
+  background: var(--accent-light);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px var(--accent-glow);
+}
+
+.topbar-install-btn svg {
+  flex-shrink: 0;
+}
+
+.topbar-install-btn span {
+  display: inline;
+}
+
+/* Hide text on very small screens */
+@media (max-width: 400px) {
+  .topbar-install-btn span {
+    display: none;
+  }
+  .topbar-install-btn {
+    padding: 8px;
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    justify-content: center;
+  }
 }
 
 /* Hamburger menu button */
@@ -1641,20 +1713,7 @@ h3 .counter-badge {
   border-color: var(--danger-border);
 }
 
-.sidebar-row-btn.install-row {
-  background: var(--accent);
-  color: var(--accent-text);
-  border-color: transparent;
-  box-shadow: 0 4px 16px var(--accent-glow);
-  justify-content: center;
-  font-weight: 600;
-}
-
-.sidebar-row-btn.install-row:hover {
-  background: var(--accent-light);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 24px var(--accent-glow);
-}
+/* Install row was moved to topbar */
 
 .sidebar-row-icon {
   font-size: 1.1rem;
@@ -1757,8 +1816,8 @@ h3 .counter-badge {
   }
 
   .topbar h1 {
-    font-size: 1.95rem; /* Scaled for Futura Condensed */
-    letter-spacing: -0.01em;
+    font-size: 2.1rem;
+    letter-spacing: -0.06em;
   }
 
   /* Shrink logo on small mobile */
