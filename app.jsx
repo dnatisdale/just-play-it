@@ -2188,6 +2188,15 @@ async function initApp() {
       }
     }
   }
+
+  // Hide splash screen after initialization
+  const splash = document.getElementById("splashScreen");
+  if (splash) {
+    // Small delay to ensure the UI has settled
+    setTimeout(() => {
+      splash.classList.add("fade-out");
+    }, 1200);
+  }
 }
 
 initApp();
