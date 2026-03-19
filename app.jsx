@@ -1207,7 +1207,7 @@ async function clearDeviceLibrary() {
 function exportPlaylists() {
   const payload = {
     exportedAt: new Date().toISOString(),
-    app: "Just Play It",
+    app: "JUST PLAY IT.",
     version: 1,
     savedPlaylists,
   };
@@ -1638,7 +1638,7 @@ function updateMediaSession() {
     title: currentTrack.title,
     artist:
       currentTrack.sourceType === "file" ? "Saved offline audio" : "URL stream",
-    album: currentPlaylistName || "Just Play It",
+    album: currentPlaylistName || "JUST PLAY IT.",
     artwork: [
       { src: "icons/icon-192.png", sizes: "192x192", type: "image/png" },
       { src: "icons/icon-512.png", sizes: "512x512", type: "image/png" },
