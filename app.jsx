@@ -44,6 +44,8 @@ const toggleEditBtn = document.getElementById("toggleEditBtn");
 // Containers for tooltips (decluttering)
 const savedPlaylistBox = document.getElementById("savedPlaylistBox");
 const playlistHeader = document.getElementById("playlistHeader");
+const currentPlaylistHeaderBtn = document.getElementById("currentPlaylistHeaderBtn");
+const playlistContainer = document.getElementById("playlistContainer");
 const sleepRow = document.querySelector(".sleep-row");
 
 const brandLogoWrap = document.getElementById("brandLogoWrap");
@@ -1235,6 +1237,8 @@ async function clearDeviceLibrary() {
       updatePlayPauseButton();
     }
 
+    updateBadgeCounts();
+
     savedPlaylistStatus.textContent = "Stored device library cleared.";
     setPlayerStatus("Stored device library cleared.");
     showToast("Stored device library cleared.");
@@ -1529,6 +1533,7 @@ async function loadNamedPlaylist() {
   }
 
   setPlayerStatus(`Loaded saved playlist: ${name}`);
+  updateBadgeCounts();
   showToast(`Loaded "${name}".`);
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -1615,6 +1620,7 @@ function deleteNamedPlaylist() {
   }
 
   if (savedPlaylistBox) savedPlaylistBox.title = `Deleted playlist: ${name}`;
+  updateBadgeCounts();
   setPlayerStatus(`Deleted playlist "${name}".`);
   showToast(`Deleted "${name}".`);
 }
@@ -2039,6 +2045,20 @@ if (toggleEditBtn) {
   });
 }
 
+if (currentPlaylistHeaderBtn) {
+  currentPlaylistHeaderBtn.addEventListener("click", () => {
+    const isExpanded = currentPlaylistHeaderBtn.getAttribute("aria-expanded") === "true";
+    currentPlaylistHeaderBtn.setAttribute("aria-expanded", String(!isExpanded));
+    if (playlistContainer) playlistContainer.classList.toggle("collapsed", isExpanded);
+  });
+  currentPlaylistHeaderBtn.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      currentPlaylistHeaderBtn.click();
+    }
+  });
+}
+
 savedPlaylistsSelect.addEventListener("change", () => {
   const selected = savedPlaylistsSelect.value;
   const isBuiltin = selected && savedPlaylists[selected] && savedPlaylists[selected].isBuiltin;
@@ -2343,7 +2363,19 @@ async function initApp() {
   if (nowPlayingPlaylistInfo) {
     nowPlayingPlaylistInfo.addEventListener("click", (e) => {
       e.stopPropagation();
-      jumpToSavedPlaylists();
+      const plistHeader = document.querySelector(".playlist-header");
+      
+      // Auto expand if collapsed
+      if (currentPlaylistHeaderBtn && currentPlaylistHeaderBtn.getAttribute("aria-expanded") === "false") {
+        currentPlaylistHeaderBtn.setAttribute("aria-expanded", "true");
+        if (playlistContainer) playlistContainer.classList.remove("collapsed");
+      }
+
+      if (plistHeader) {
+        plistHeader.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else if (playlistEl) {
+        playlistEl.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
     });
   }
   if (savedPlaylistsBadge) {
@@ -2355,7 +2387,19 @@ async function initApp() {
   if (playlistBadge) {
     playlistBadge.addEventListener("click", (e) => {
       e.stopPropagation();
-      playlistEl.scrollIntoView({ behavior: "smooth", block: "center" });
+      
+      // Auto expand if collapsed
+      if (currentPlaylistHeaderBtn && currentPlaylistHeaderBtn.getAttribute("aria-expanded") === "false") {
+        currentPlaylistHeaderBtn.setAttribute("aria-expanded", "true");
+        if (playlistContainer) playlistContainer.classList.remove("collapsed");
+      }
+
+      if (currentPlaylistHeaderBtn) {
+        // Bring the Current Playlist label to the very top
+        currentPlaylistHeaderBtn.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else if (playlistEl) {
+        playlistEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     });
   }
 
@@ -2374,6 +2418,17 @@ function jumpToSavedPlaylists() {
     savedPlaylistsSelect.scrollIntoView({ behavior: "smooth", block: "center" });
     savedPlaylistsSelect.classList.add("highlight");
     setTimeout(() => savedPlaylistsSelect.classList.remove("highlight"), 1200);
+    
+    // Attempt to open the dropdown menu natively
+    try {
+      if (typeof savedPlaylistsSelect.showPicker === "function") {
+        savedPlaylistsSelect.showPicker();
+      } else {
+        savedPlaylistsSelect.focus();
+      }
+    } catch (e) {
+      savedPlaylistsSelect.focus();
+    }
   }
 }
 

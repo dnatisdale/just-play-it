@@ -1146,10 +1146,37 @@ input::placeholder {
 
 .playlist-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center; /* better alignment with icon */
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.collapse-icon {
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  transition: transform var(--transition);
+}
+
+.playlist-header[aria-expanded="false"] .collapse-icon {
+  transform: rotate(-90deg);
+}
+
+.playlist-container {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows var(--transition);
+}
+
+.playlist-container.collapsed {
+  grid-template-rows: 0fr;
+}
+
+.inner-collapse {
+  overflow: hidden;
 }
 
 .playlist-name-display {

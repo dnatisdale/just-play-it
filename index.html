@@ -147,6 +147,9 @@
           />
 
       </div>
+      <div class="sidebar-footer" style="padding: 24px 16px; text-align: center; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 1px; color: #6b7280; text-transform: uppercase; margin-top: auto;">
+        Build 20MAR2026 13:50
+      </div>
     </aside>
 
     <!-- ══ QR Fullscreen Overlay ══ -->
@@ -211,7 +214,7 @@
         <section class="player-card">
           <div class="now-playing-header">
             <div class="now-playing-label">NOW PLAYING.</div>
-            <button id="nowPlayingPlaylistInfo" class="now-playing-playlist-info interactive-header" type="button" aria-label="Jump to saved playlists">
+            <button id="nowPlayingPlaylistInfo" class="now-playing-playlist-info interactive-header" type="button" aria-label="Jump to current playlist">
               <span id="nowPlayingPlaylistName" title="Current playlist">Unsaved</span>
               <span class="counter-badge badge-red" id="nowPlayingPlaylistBadge">0</span>
             </button>
@@ -322,22 +325,29 @@
             </div>
           </div>
 
-          <div class="playlist-header" title="Current playlist: Unsaved">
+          <div class="playlist-header interactive-header" id="currentPlaylistHeaderBtn" role="button" tabindex="0" title="Click to collapse or expand" aria-expanded="true" aria-controls="playlistContainer">
             <div>
               <h3>CURRENT PLAYLIST<span class="dot"></span> <span class="counter-badge" id="playlistBadge">0</span></h3>
             </div>
+            <span class="collapse-icon" id="playlistCollapseIcon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6,9 12,15 18,9"/></svg>
+            </span>
           </div>
 
-          <div class="playlist-tools">
-            <button id="jumpToCurrentBtn" class="ghost-btn" type="button">
-              Jump to Current
-            </button>
-            <button id="toggleEditBtn" class="ghost-btn" type="button" title="Show/hide reorder and delete buttons">
-              Edit
-            </button>
-          </div>
+          <div id="playlistContainer" class="playlist-container">
+            <div class="inner-collapse">
+              <div class="playlist-tools">
+                <button id="jumpToCurrentBtn" class="ghost-btn" type="button">
+                  Jump to Current
+                </button>
+                <button id="toggleEditBtn" class="ghost-btn" type="button" title="Show/hide reorder and delete buttons">
+                  Edit
+                </button>
+              </div>
 
-          <ul id="playlist" class="playlist" aria-label="Playlist"></ul>
+              <ul id="playlist" class="playlist" aria-label="Playlist"></ul>
+            </div>
+          </div>
 
           <!-- Moved ADD AUDIO here to be at the bottom -->
           <div class="section-head" style="margin-top: 32px; border-top: 1px solid var(--border); padding-top: 24px;">
