@@ -2285,7 +2285,7 @@ h3 .counter-badge {
 ═══════════════════════════════════════════ */
 
 .qr-section {
-  text-align: center;
+  text-align: left;
   margin-top: 24px;
 }
 
@@ -2293,7 +2293,7 @@ h3 .counter-badge {
   position: relative;
   width: 130px;
   height: 130px;
-  margin: 0 auto;
+  margin: 0;
   padding: 8px;
   background: #fff;
   border-radius: 12px;
@@ -2433,7 +2433,7 @@ h3 .counter-badge {
   display: flex;
   gap: 8px;
   margin-top: 12px;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .qr-action-btn {

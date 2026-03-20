@@ -2363,18 +2363,24 @@ async function initApp() {
   if (nowPlayingPlaylistInfo) {
     nowPlayingPlaylistInfo.addEventListener("click", (e) => {
       e.stopPropagation();
-      const plistHeader = document.querySelector(".playlist-header");
       
-      // Auto expand if collapsed
-      if (currentPlaylistHeaderBtn && currentPlaylistHeaderBtn.getAttribute("aria-expanded") === "false") {
-        currentPlaylistHeaderBtn.setAttribute("aria-expanded", "true");
-        if (playlistContainer) playlistContainer.classList.remove("collapsed");
-      }
-
-      if (plistHeader) {
-        plistHeader.scrollIntoView({ behavior: "smooth", block: "start" });
-      } else if (playlistEl) {
-        playlistEl.scrollIntoView({ behavior: "smooth", block: "center" });
+      if (currentPlaylistHeaderBtn && playlistContainer) {
+        const isExpanded = currentPlaylistHeaderBtn.getAttribute("aria-expanded") === "true";
+        
+        if (isExpanded) {
+          currentPlaylistHeaderBtn.setAttribute("aria-expanded", "false");
+          playlistContainer.classList.add("collapsed");
+        } else {
+          currentPlaylistHeaderBtn.setAttribute("aria-expanded", "true");
+          playlistContainer.classList.remove("collapsed");
+          
+          const plistHeader = document.querySelector(".playlist-header");
+          if (plistHeader) {
+            plistHeader.scrollIntoView({ behavior: "smooth", block: "start" });
+          } else if (playlistEl) {
+            playlistEl.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        }
       }
     });
   }
@@ -2388,17 +2394,22 @@ async function initApp() {
     playlistBadge.addEventListener("click", (e) => {
       e.stopPropagation();
       
-      // Auto expand if collapsed
-      if (currentPlaylistHeaderBtn && currentPlaylistHeaderBtn.getAttribute("aria-expanded") === "false") {
-        currentPlaylistHeaderBtn.setAttribute("aria-expanded", "true");
-        if (playlistContainer) playlistContainer.classList.remove("collapsed");
-      }
-
-      if (currentPlaylistHeaderBtn) {
-        // Bring the Current Playlist label to the very top
-        currentPlaylistHeaderBtn.scrollIntoView({ behavior: "smooth", block: "start" });
-      } else if (playlistEl) {
-        playlistEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (currentPlaylistHeaderBtn && playlistContainer) {
+        const isExpanded = currentPlaylistHeaderBtn.getAttribute("aria-expanded") === "true";
+        
+        if (isExpanded) {
+          currentPlaylistHeaderBtn.setAttribute("aria-expanded", "false");
+          playlistContainer.classList.add("collapsed");
+        } else {
+          currentPlaylistHeaderBtn.setAttribute("aria-expanded", "true");
+          playlistContainer.classList.remove("collapsed");
+          
+          if (currentPlaylistHeaderBtn) {
+            currentPlaylistHeaderBtn.scrollIntoView({ behavior: "smooth", block: "start" });
+          } else if (playlistEl) {
+            playlistEl.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }
       }
     });
   }
