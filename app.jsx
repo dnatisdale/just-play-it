@@ -2378,3 +2378,30 @@ function jumpToSavedPlaylists() {
 }
 
 initApp();
+// ── File Handling API (Launch Queue) ─────────────────────────
+// This catches audio files sent from the Android "Complete action using" menu
+if ('launchQueue' in window) {
+  window.launchQueue.setConsumer(async (launchParams) => {
+    // Check if files were actually passed to the app
+    if (!launchParams.files || !launchParams.files.length) return;
+    
+    try {
+      // Extract the actual File objects from the Android file handles
+      const filePromises = launchParams.files.map(handle => handle.getFile());
+      const files = await Promise.all(filePromises);
+      
+      // Filter them using your existing isAudioFile function
+      const audioFiles = files.filter(isAudioFile);
+      
+      if (audioFiles.length > 0) {
+        // Pass them directly into your existing system to save and play!
+        await addFileTracks(audioFiles);
+      } else {
+        showToast("No valid audio files found.");
+      }
+    } catch (error) {
+      console.error("Error opening file from Android menu:", error);
+      showToast("Could not open the file.");
+    }
+  });
+}
