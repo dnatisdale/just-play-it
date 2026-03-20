@@ -45,5 +45,18 @@
       "form_factor": "wide",
       "label": "Desktop Player View"
     }
+  ],
+  "file_handlers": [
+    {
+      "action": "./",
+      "accept": {
+        "audio/mpeg": [".mp3"],
+        "audio/wav": [".wav"],
+        "audio/ogg": [".ogg"],
+        "audio/mp4": [".m4a", ".mp4"],
+        "audio/aac": [".aac"],
+        "audio/flac": [".flac"]
+      }
+    }
   ]
 }
