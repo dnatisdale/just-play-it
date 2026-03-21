@@ -1,4 +1,4 @@
-const BUILD_TIME = "11:09 — 21MAR2026 — v.39";
+const BUILD_TIME = "11:12 — 21MAR2026 — v.40";
 const audio = document.getElementById("audio");
 const fileInput = document.getElementById("fileInput");
 const urlInput = document.getElementById("urlInput");
