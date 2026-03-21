@@ -1,4 +1,4 @@
-const BUILD_TIME = "21MAR2026 — 10:50";
+const BUILD_TIME = "21MAR2026 — 11:00";
 const audio = document.getElementById("audio");
 const fileInput = document.getElementById("fileInput");
 const urlInput = document.getElementById("urlInput");
@@ -1071,9 +1071,15 @@ function addUrlTrack(url) {
       return;
     }
 
+    // Block common image and video formats from being added
+    const blockExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg', '.webp', '.mp4', '.mkv', '.mov', '.avi', '.wmv', '.flv'];
+    if (blockExtensions.some(ext => lowerPath.endsWith(ext))) {
+      showToast("Images and videos cannot be added to the player.", 4000);
+      return;
+    }
+
     // Check against known audio extensions or stream-like paths
     const validExtensions = ['.mp3', '.m4a', '.aac', '.ogg', '.oga', '.wav', '.flac', '.opus', '.weba', '.webm', '.caf', '.m3u8'];
-    const lowerPath = parsedUrl.pathname.toLowerCase();
     
     let seemsLikeAudio = false;
     if (lowerPath.endsWith("/stream") || lowerPath.includes("/stream/") || lowerPath.endsWith("/listen")) {
