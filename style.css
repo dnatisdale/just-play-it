@@ -157,8 +157,20 @@
   height: 160px;
   border-radius: 50%;
   overflow: hidden;
-  box-shadow: 0 0 60px rgba(190, 30, 55, 0.2);
+  box-shadow: 0 0 60px rgba(190, 30, 55, 0.4);
   margin-bottom: 32px;
+  animation: basketball-bounce 2.2s cubic-bezier(0.215, 0.610, 0.355, 1.000) forwards;
+}
+
+@keyframes basketball-bounce {
+  0% { transform: translateY(-600px); animation-timing-function: ease-in; opacity: 0; }
+  25% { transform: translateY(0); animation-timing-function: ease-out; opacity: 1; }
+  40% { transform: translateY(-160px); animation-timing-function: ease-in; }
+  55% { transform: translateY(0); animation-timing-function: ease-out; }
+  70% { transform: translateY(-70px); animation-timing-function: ease-in; }
+  85% { transform: translateY(0); animation-timing-function: ease-out; }
+  92% { transform: translateY(-20px); animation-timing-function: ease-in; }
+  100% { transform: translateY(0); animation-timing-function: ease-out; }
 }
 
 .splash-logo {
