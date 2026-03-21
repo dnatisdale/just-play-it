@@ -152,6 +152,12 @@
   align-items: center;
 }
 
+.accent-dash {
+  color: var(--accent);
+  padding: 0 4px;
+  font-weight: 800;
+}
+
 .splash-logo-wrap {
   width: 160px;
   height: 160px;

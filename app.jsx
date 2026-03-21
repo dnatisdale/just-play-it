@@ -1,4 +1,4 @@
-const BUILD_TIME = "BUILD V.42 – 21MAR2026 – 11:24";
+const BUILD_TIME = "BUILD V.43 <span class=\"accent-dash\">–</span> 21MAR2026 <span class=\"accent-dash\">–</span> 11:26";
 const audio = document.getElementById("audio");
 const fileInput = document.getElementById("fileInput");
 const urlInput = document.getElementById("urlInput");
@@ -2337,9 +2337,9 @@ if (downloadQrBtn) {
 function updateBuildInfo() {
   const sidebarInfo = document.getElementById("sidebarBuildInfo");
   const mainInfo = document.getElementById("mainBuildInfo");
-  const buildText = `Build ${BUILD_TIME}`;
-  if (sidebarInfo) sidebarInfo.textContent = buildText;
-  if (mainInfo) mainInfo.textContent = buildText;
+  const buildText = BUILD_TIME;
+  if (sidebarInfo) sidebarInfo.innerHTML = buildText;
+  if (mainInfo) mainInfo.innerHTML = buildText;
 }
 
 async function initApp() {
