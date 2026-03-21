@@ -1,4 +1,4 @@
-const BUILD_TIME = "11:02 — 21MAR2026 — v.37";
+const BUILD_TIME = "11:09 — 21MAR2026 — v.39";
 const audio = document.getElementById("audio");
 const fileInput = document.getElementById("fileInput");
 const urlInput = document.getElementById("urlInput");
@@ -2229,19 +2229,18 @@ if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("./service-worker.js").then((reg) => {
       // Force a check for updates immediately on load
       reg.update();
-
-      reg.addEventListener("updatefound", () => {
-        const newWorker = reg.installing;
-        newWorker.addEventListener("statechange", () => {
-          if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-            showToast("New version available. Reloading in 3s...", 3000);
-            setTimeout(() => window.location.reload(), 3000);
-          }
-        });
-      });
     }).catch((error) => {
       console.error("Service worker registration failed:", error);
     });
+  });
+
+  // Automatically reload the page when a new service worker takes over (Silent update)
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!refreshing) {
+      refreshing = true;
+      window.location.reload();
+    }
   });
 }
 
