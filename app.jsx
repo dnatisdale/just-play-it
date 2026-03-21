@@ -1,3 +1,4 @@
+const BUILD_TIME = "21MAR2026 — 10:37";
 const audio = document.getElementById("audio");
 const fileInput = document.getElementById("fileInput");
 const urlInput = document.getElementById("urlInput");
@@ -124,6 +125,7 @@ let currentObjectUrl = null;
 let toastTimeout = null;
 let draggedTrackIndex = null;
 let isEditMode = false;
+let userPaused = false; // New: Tracks if the PAUSE was intentional by the user
 
 // ── Theme ──────────────────────────────────────────────
 function getSystemTheme() {
@@ -1313,6 +1315,7 @@ function updatePlayPauseButton() {
 
 async function playCurrent() {
   if (playlist.length === 0) return;
+  userPaused = false; // User explicitly wants to play
 
   if (currentTrackIndex === -1) {
     await loadTrack(0, true);
@@ -1336,6 +1339,7 @@ async function playCurrent() {
 }
 
 function pauseCurrent() {
+  userPaused = true; // User explicitly clicked pause
   audio.pause();
   updatePlayPauseButton();
   setPlayerStatus("Playback paused.");
@@ -1739,14 +1743,15 @@ function updateMediaSession() {
   navigator.mediaSession.metadata = new MediaMetadata({
     title: currentTrack.title,
     artist:
-      currentTrack.sourceType === "file" ? "Saved offline audio" : "URL stream",
-    album: currentPlaylistName || "JUST PLAY IT.",
+      currentTrack.sourceType === "file" ? "Stored Music" : "URL stream",
+    album: currentPlaylistName || "JPi. Player",
     artwork: [
       { src: "icons/icon-192.png", sizes: "192x192", type: "image/png" },
       { src: "icons/icon-512.png", sizes: "512x512", type: "image/png" },
     ],
   });
 
+  // Tell the system the state so the "Play/Pause" buttons on the car stay in sync
   navigator.mediaSession.playbackState = audio.paused ? "paused" : "playing";
 }
 
@@ -2135,7 +2140,16 @@ audio.addEventListener("pause", () => {
   updatePlayPauseButton();
   updateMediaSession();
 
-  if (audio.currentTime > 0 && !audio.ended) {
+  // New: Auto-resume logic for notifications
+  if (!userPaused && !audio.ended) {
+    setPlayerStatus("Interruption detected. Resuming shortly...");
+    setTimeout(() => {
+        // Only resume if the user hasn't clicked pause in the meantime
+        if (!userPaused) {
+            audio.play().catch(() => console.log("Auto-resume blocked by system."));
+        }
+    }, 2000); // 2 second delay is usually enough for a notification to end
+  } else if (audio.currentTime > 0 && !audio.ended) {
     setPlayerStatus("Playback paused.");
   }
 });
@@ -2312,6 +2326,14 @@ if (downloadQrBtn) {
   });
 }
 
+function updateBuildInfo() {
+  const sidebarInfo = document.getElementById("sidebarBuildInfo");
+  const mainInfo = document.getElementById("mainBuildInfo");
+  const buildText = `Build ${BUILD_TIME}`;
+  if (sidebarInfo) sidebarInfo.textContent = buildText;
+  if (mainInfo) mainInfo.textContent = buildText;
+}
+
 async function initApp() {
   // Apply saved/system theme immediately (before any paint)
   initTheme();
@@ -2335,6 +2357,7 @@ async function initApp() {
   await updateStorageUsage();
   await updateBadgeCounts();
   updateQrCode();
+  updateBuildInfo();
 
   if (currentTrackIndex >= 0) {
     await loadTrack(currentTrackIndex, false);
