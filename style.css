@@ -2079,6 +2079,31 @@ h3 .counter-badge {
   line-height: 1;
 }
 
+/* Pulsating hearts for Gold Member button */
+@keyframes heart-pulse {
+  0% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.2); opacity: 1; filter: drop-shadow(0 0 5px var(--accent)); }
+  100% { transform: scale(1); opacity: 0.9; }
+}
+
+.heart-pulsate {
+  animation: heart-pulse 1.4s ease-in-out infinite;
+  display: inline-block;
+  color: var(--accent-light) !important;
+  fill: var(--accent) !important;
+}
+
+.gold-member-btn {
+  justify-content: center !important;
+  text-align: center !important;
+  border-color: var(--accent-subtle-border) !important;
+}
+
+.gold-member-btn .sidebar-row-text {
+  flex: 0 1 auto !important;
+  padding: 0 8px;
+}
+
 /* Shuffle toggle pill */
 .sidebar-row-toggle {
   width: 36px;
