@@ -987,6 +987,14 @@ input[type="range"]::-moz-range-thumb {
   transition: transform var(--transition);
 }
 
+.icon-prev {
+  transform: scaleX(-1);
+}
+
+.control-btn:hover .icon-prev {
+  transform: scaleX(-1) scale(1.1);
+}
+
 .control-btn.primary.icon-btn-3d {
   padding: 0;
   background: transparent !important;
