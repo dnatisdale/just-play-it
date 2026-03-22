@@ -2445,46 +2445,47 @@ async function initApp() {
     });
   }
 
-  // ── Bouncing basketball sound logic ──
+  // ── Squeaking Sneakers sound logic ──
   const splash = document.getElementById("splashScreen");
   if (splash) {
     let bouncePlayed = false;
+    let sequenceStarted = false;
 
-    // Pre-load audio objects so there's no network delay when playing rapidly
-    const hitTimes = [550, 1210, 1870, 2200];
-    const hitAudios = hitTimes.map(() => {
-      const a = new Audio("audio/ElevenLabs_sneakers_squeaking.mp3");
-      a.volume = 0.45;
-      a.preload = "auto";
-      return a;
-    });
+    const splashAudio = new Audio("audio/ElevenLabs_sneakers_squeaking.mp3");
+    splashAudio.volume = 0.45;
+    splashAudio.preload = "auto";
 
-    const playBounceSequence = () => {
-      if (bouncePlayed) return;
-      bouncePlayed = true;
+    const playSplashSound = () => {
+      if (sequenceStarted) return;
+      sequenceStarted = true;
 
-      hitTimes.forEach((delay, i) => {
-        setTimeout(() => {
-          const a = hitAudios[i];
-          // Reset time in case it's used again
-          a.currentTime = 0;
-          a.play().catch(() => {
-             // Reset if blocked so interaction can trigger it
-             bouncePlayed = false;
-          });
-        }, delay);
-      });
+      // Sync start slightly to match animation onset
+      setTimeout(() => {
+        splashAudio.play().then(() => {
+           bouncePlayed = true;
+        }).catch(() => {
+           // Reset if blocked so interaction can trigger it immediately
+           sequenceStarted = false;
+        });
+      }, 100); 
     };
 
     // 1. Try playing automatically
-    playBounceSequence();
+    playSplashSound();
 
     // 2. Fallback: trigger on first user interaction anywhere
     const triggerSplash = () => {
-      playBounceSequence();
+      if (!bouncePlayed) {
+        // If it was blocked, a user click will force it to play
+        splashAudio.currentTime = 0;
+        splashAudio.play().catch(()=>{});
+        bouncePlayed = true;
+        sequenceStarted = true;
+      }
       window.removeEventListener("pointerdown", triggerSplash);
       window.removeEventListener("keydown", triggerSplash);
     };
+    
     window.addEventListener("pointerdown", triggerSplash, { once: true });
     window.addEventListener("keydown", triggerSplash, { once: true });
 
