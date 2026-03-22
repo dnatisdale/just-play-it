@@ -143,16 +143,10 @@ function applyTheme(theme) {
 }
 
 function initTheme() {
+  // Always default to dark mode unless the user explicitly saved 'light'
   const saved = localStorage.getItem(STORAGE_KEYS.theme);
-  const theme = saved || "dark"; // default to dark mode
+  const theme = saved === "light" ? "light" : "dark";
   applyTheme(theme);
-
-  // Keep synced if user clears their saved preference and system changes
-  window.matchMedia("(prefers-color-scheme: light)").addEventListener("change", (e) => {
-    if (!localStorage.getItem(STORAGE_KEYS.theme)) {
-      applyTheme(e.matches ? "light" : "dark");
-    }
-  });
 }
 
 function toggleTheme() {
@@ -836,8 +830,10 @@ function renderPlaylist() {
       <span class="track-name">${escapeHtml(track.title)}</span>
       ${label ? `<span class="track-source">${label}</span>` : ""}
     `;
-    infoBtn.addEventListener("click", async () => {
+    infoBtn.addEventListener("click", async (e) => {
+      e.stopPropagation();
       await loadTrack(index, true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     });
 
     const actions = document.createElement("div");
@@ -860,6 +856,7 @@ function renderPlaylist() {
     playBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       loadTrack(index, true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     });
 
     const removeBtn = document.createElement("button");
@@ -889,7 +886,10 @@ function renderPlaylist() {
     li.appendChild(infoBtn);
     li.appendChild(actions);
 
-    li.addEventListener("click", () => loadTrack(index, true));
+    li.addEventListener("click", () => {
+      loadTrack(index, true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
 
     playlistEl.appendChild(li);
   });
@@ -2448,44 +2448,51 @@ async function initApp() {
   // ── Bouncing basketball sound logic ──
   const splash = document.getElementById("splashScreen");
   if (splash) {
-    let hasPlayed = false;
-    const playBounce = () => {
-      if (hasPlayed) return;
-      hasPlayed = true;
+    let bouncePlayed = false;
 
-      // Sync hits with the CSS basketball-bounce keyframes (2.2s duration)
-      // Hits at approx: 25% (550ms), 55% (1210ms), 85% (1870ms), 100% (2200ms)
-      const hits = [550, 1210, 1870, 2200];
-      hits.forEach((delay) => {
+    // Pre-load audio objects so there's no network delay when playing rapidly
+    const hitTimes = [550, 1210, 1870, 2200];
+    const hitAudios = hitTimes.map(() => {
+      const a = new Audio("audio/ElevenLabs_sneakers_squeaking.mp3");
+      a.volume = 0.45;
+      a.preload = "auto";
+      return a;
+    });
+
+    const playBounceSequence = () => {
+      if (bouncePlayed) return;
+      bouncePlayed = true;
+
+      hitTimes.forEach((delay, i) => {
         setTimeout(() => {
-          // Use new Audio each time for overlapping hits
-          const bounceAudio = new Audio("audio/basketball-bounce.mp3");
-          bounceAudio.volume = 0.45;
-          bounceAudio.play().catch(() => {
+          const a = hitAudios[i];
+          // Reset time in case it's used again
+          a.currentTime = 0;
+          a.play().catch(() => {
              // Reset if blocked so interaction can trigger it
-             hasPlayed = false;
+             bouncePlayed = false;
           });
         }, delay);
       });
     };
 
     // 1. Try playing automatically
-    playBounce();
+    playBounceSequence();
 
-    // 2. Fallback: trigger on first user interaction with the splash screen
+    // 2. Fallback: trigger on first user interaction anywhere
     const triggerSplash = () => {
-      playBounce();
-      splash.removeEventListener("mousedown", triggerSplash);
-      splash.removeEventListener("touchstart", triggerSplash);
+      playBounceSequence();
+      window.removeEventListener("pointerdown", triggerSplash);
+      window.removeEventListener("keydown", triggerSplash);
     };
-    splash.addEventListener("mousedown", triggerSplash, { once: true });
-    splash.addEventListener("touchstart", triggerSplash, { once: true });
+    window.addEventListener("pointerdown", triggerSplash, { once: true });
+    window.addEventListener("keydown", triggerSplash, { once: true });
 
     // Delay to let the fancy bouncy animation finish
     setTimeout(() => {
       splash.classList.add("fade-out");
-      splash.removeEventListener("mousedown", triggerSplash);
-      splash.removeEventListener("touchstart", triggerSplash);
+      window.removeEventListener("pointerdown", triggerSplash);
+      window.removeEventListener("keydown", triggerSplash);
     }, 4000);
   }
 }
