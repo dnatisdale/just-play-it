@@ -1,4 +1,4 @@
-const BUILD_TIME = "BUILD V.52 <span class=\"accent-dash\">—</span> 21MAR2026 <span class=\"accent-dash\">—</span> 17:08";
+const BUILD_TIME = "BUILD V.60 <span class=\"accent-dash\">—</span> 22MAR2026 <span class=\"accent-dash\">—</span> 13:50";
 const audio = document.getElementById("audio");
 const fileInput = document.getElementById("fileInput");
 const urlInput = document.getElementById("urlInput");

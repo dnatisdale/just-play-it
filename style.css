@@ -2395,7 +2395,7 @@ h3 .counter-badge {
   }
 
   .main-layout {
-    grid-template-columns: 4fr 5fr;
+    grid-template-columns: 1fr 1fr;
     gap: 24px;
     align-items: start;
   }
