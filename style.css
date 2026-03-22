@@ -2381,8 +2381,33 @@ h3 .counter-badge {
   color: #fff !important;
 }
 
+.privacy-link {
+  font-family: inherit; /* will inherit Inter from the body */
+  font-size: 0.85rem !important;
+  font-weight: 500 !important;
+  color: #ff7b7b !important; /* forced salmon color, var(--danger) equivalent */
+  text-decoration: none !important;
+  transition: opacity 0.2s ease;
+}
+
+[data-theme="light"] .privacy-link {
+  color: #c0392b !important; /* light mode fallback */
+}
+
+.privacy-link:visited,
+.privacy-link:active {
+  color: #ff7b7b !important;
+  text-decoration: none !important;
+}
+
+[data-theme="light"] .privacy-link:visited,
+[data-theme="light"] .privacy-link:active {
+  color: #c0392b !important;
+}
+
 .privacy-link:hover {
   opacity: 0.7;
+  text-decoration: none !important;
 }
 
 /* ═══════════════════════════════════════════
