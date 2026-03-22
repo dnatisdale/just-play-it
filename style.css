@@ -953,10 +953,11 @@ input[type="range"]::-moz-range-thumb {
 }
 
 #prevBtn, #nextBtn {
-  background: none;
-  border: none;
-  width: 54px;
-  height: 54px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  width: 36px;
+  height: 36px;
   padding: 0;
 }
 
@@ -989,9 +990,9 @@ input[type="range"]::-moz-range-thumb {
 .control-btn.primary.icon-btn-3d {
   padding: 0;
   overflow: hidden;
-  background: none;
-  border: none;
-  box-shadow: none;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
   width: 72px;
   height: 72px;
 }
