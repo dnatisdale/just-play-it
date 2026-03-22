@@ -956,8 +956,8 @@ input[type="range"]::-moz-range-thumb {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
   padding: 0;
 }
 
