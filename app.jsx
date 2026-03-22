@@ -2451,7 +2451,7 @@ async function initApp() {
     let bouncePlayed = false;
     let sequenceStarted = false;
 
-    const splashAudio = new Audio("audio/ElevenLabs_sneakers_squeaking.mp3");
+    const splashAudio = new Audio("audio/ElevenLabs_Basketball2.ogg");
     splashAudio.volume = 0.45;
     splashAudio.preload = "auto";
 
