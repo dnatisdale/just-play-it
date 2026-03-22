@@ -528,7 +528,7 @@ h1 .dot {
    SHARED BUTTON BASE
 ═══════════════════════════════════════════ */
 
-.control-btn,
+.control-btn:not(.secondary):not(.primary),
 .url-row button,
 .ghost-btn,
 .sleep-row button,
@@ -561,7 +561,7 @@ h1 .dot {
   pointer-events: none;
 }
 
-.control-btn:hover,
+.control-btn:not(.secondary):not(.primary):hover,
 .url-row button:hover,
 .ghost-btn:hover,
 .sleep-row button:hover,
@@ -575,7 +575,7 @@ h1 .dot {
   transform: translateY(-1px);
 }
 
-.control-btn:active,
+.control-btn:not(.secondary):not(.primary):active,
 .url-row button:active,
 .ghost-btn:active,
 .sleep-row button:active,
@@ -948,6 +948,16 @@ input[type="range"]::-moz-range-thumb {
   min-height: 52px;
   padding: 0;
   opacity: 0.9;
+  background: none;
+  border: none;
+}
+
+#prevBtn, #nextBtn {
+  background: none;
+  border: none;
+  width: 54px;
+  height: 54px;
+  padding: 0;
 }
 
 .skip-label {
@@ -961,23 +971,41 @@ input[type="range"]::-moz-range-thumb {
   font-family: inherit;
 }
 
-.control-btn.primary,
-.mini-btn.primary {
-  background: var(--accent);
-  color: var(--accent-text);
-  border-color: transparent;
-  font-size: 1.2rem;
-  min-width: 64px;
-  min-height: 64px;
-  box-shadow: 0 4px 24px var(--accent-glow);
-  font-weight: 700;
+.control-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+  transition: transform var(--transition);
 }
 
-.control-btn.primary:hover,
-.mini-btn.primary:hover {
-  background: var(--accent-light);
-  box-shadow: 0 6px 32px var(--accent-glow);
-  transform: scale(1.06);
+.control-btn.primary.icon-btn-3d {
+  padding: 0;
+  overflow: hidden;
+  background: none;
+  border: none;
+  box-shadow: none;
+  width: 72px;
+  height: 72px;
+}
+
+.control-btn.primary.icon-btn-3d:hover {
+  transform: scale(1.1);
+  background: none;
+  box-shadow: 0 0 35px var(--accent-glow);
+}
+
+.icon-prev {
+  transform: scaleX(-1);
+}
+
+.control-btn:hover img {
+  transform: scale(1.1);
+}
+
+.control-btn:hover .icon-prev {
+  transform: scaleX(-1) scale(1.1);
 }
 
 .control-btn.primary:active,

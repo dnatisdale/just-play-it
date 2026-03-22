@@ -1313,8 +1313,15 @@ async function importPlaylistsFromFile(file) {
 }
 
 function updatePlayPauseButton() {
-  const icon = audio.paused ? ICONS.play : ICONS.pause;
-  playPauseBtn.innerHTML = icon;
+  const isPaused = audio.paused;
+  const playIcon = playPauseBtn.querySelector(".play-icon");
+  const pauseIcon = playPauseBtn.querySelector(".pause-icon");
+
+  if (playIcon && pauseIcon) {
+    playIcon.classList.toggle("hidden", !isPaused);
+    pauseIcon.classList.toggle("hidden", isPaused);
+  }
+
   updateSpinning();
 }
 
