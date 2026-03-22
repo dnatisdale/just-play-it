@@ -232,6 +232,7 @@
       </header>
 
       <main class="main-layout">
+        <div class="layout-col">
         <!-- ── Player card ── -->
         <section class="player-card">
           <div class="now-playing-header">
@@ -310,47 +311,6 @@
 
         </section>
 
-        <!-- ── Library card ── -->
-        <section class="library-card">
-          <div class="section-head">
-            <h3>SAVED PLAYLISTS<span class="dot"></span> <span class="counter-badge" id="savedPlaylistsBadge">0</span></h3>
-          </div>
-
-          <div class="saved-playlist-box" id="savedPlaylistBox" title="No saved playlist selected.">
-            <div id="savedPlaylistStatus" class="playlist-status-sub hidden">No playlist selected</div>
-            <div class="save-row">
-              <input
-                id="playlistNameInput"
-                type="text"
-                placeholder="Playlist name"
-                maxlength="60"
-                autocomplete="off"
-              />
-              <button id="savePlaylistBtn" type="button">Save Current</button>
-            </div>
-
-            <div class="load-row">
-              <select id="savedPlaylistsSelect" aria-label="Saved playlists">
-                <option value="">Choose a saved playlist</option>
-              </select>
-              <button id="loadPlaylistBtn" type="button">Load</button>
-            </div>
-
-            <div class="saved-actions">
-              <button id="renamePlaylistBtn" class="ghost-btn" type="button">
-                Rename
-              </button>
-              <button
-                id="deletePlaylistBtn"
-                class="ghost-btn danger-btn"
-                type="button"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </section>
-
         <section class="library-card">
           <div class="playlist-header interactive-header" id="currentPlaylistHeaderBtn" role="button" tabindex="0" title="Click to collapse or expand" aria-expanded="false" aria-controls="playlistContainer">
             <div>
@@ -379,6 +339,51 @@
             </div>
           </div>
         </section>
+        </div>
+
+        <div class="layout-col">
+        <!-- ── Library card ── -->
+        <section class="library-card">
+          <div class="section-head">
+            <h3>SAVED PLAYLISTS<span class="dot"></span> <span class="counter-badge" id="savedPlaylistsBadge">0</span></h3>
+          </div>
+
+          <div class="saved-playlist-box" id="savedPlaylistBox" title="No saved playlist selected.">
+            <div id="savedPlaylistStatus" class="playlist-status-sub hidden">No playlist selected</div>
+            <div class="save-row">
+              <input
+                id="playlistNameInput"
+                type="text"
+                placeholder="Playlist name"
+                maxlength="60"
+                autocomplete="off"
+              />
+              <button id="savePlaylistBtn" type="button">Save Current</button>
+            </div>
+
+            <div class="load-row">
+              <select id="savedPlaylistsSelect" aria-label="Saved playlists">
+                <option value="" disabled selected hidden>— Choose a saved playlist —</option>
+              </select>
+              <button id="loadPlaylistBtn" type="button">Load</button>
+            </div>
+
+            <div class="saved-actions">
+              <button id="renamePlaylistBtn" class="ghost-btn" type="button">
+                Rename
+              </button>
+              <button
+                id="deletePlaylistBtn"
+                class="ghost-btn danger-btn"
+                type="button"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </section>
+
+
 
         <!-- Moved ADD AUDIO here to be at the bottom -->
         <section class="library-card">
@@ -423,6 +428,7 @@
             </div>
           </div>
         </section>
+        </div>
       </main>
       <footer id="mainBuildInfo" class="main-footer" style="padding: 32px 16px 12px; text-align: center; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; opacity: 0.7;">
         BUILD V.60 <span class="accent-dash">—</span> 22MAR2026 <span class="accent-dash">—</span> 13:50

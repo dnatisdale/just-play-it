@@ -694,7 +694,7 @@ function persistSavedPlaylists() {
 
 function refreshSavedPlaylistsSelect() {
   const previousValue = savedPlaylistsSelect.value;
-  savedPlaylistsSelect.innerHTML = `<option value="">Choose a saved playlist</option>`;
+  savedPlaylistsSelect.innerHTML = `<option value="" disabled selected hidden>— Choose a saved playlist —</option>`;
 
   Object.keys(savedPlaylists)
     .sort((a, b) => {

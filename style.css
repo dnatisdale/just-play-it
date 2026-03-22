@@ -609,6 +609,12 @@ h1 .dot {
   gap: 20px;
 }
 
+.layout-col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
 /* ═══════════════════════════════════════════
    CARDS
 ═══════════════════════════════════════════ */
