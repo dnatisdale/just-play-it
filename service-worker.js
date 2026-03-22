@@ -1,9 +1,10 @@
-const CACHE_NAME = "just-play-it-build-1333-21MAR2026-v48";
+const CACHE_NAME = "just-play-it-build-1334-21MAR2026-v49";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
   "./style.css",
   "./app.jsx",
+  "./privacy.html",
   "./manifest.json",
   "./builtin-playlists.json",
   "./icons/icon-192.png",
@@ -50,7 +51,7 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-const CORE_FILES = ["index.html", "style.css", "app.jsx", "manifest.json", "builtin-playlists.json", "/"];
+const CORE_FILES = ["index.html", "style.css", "app.jsx", "manifest.json", "builtin-playlists.json", "privacy.html", "/"];
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;

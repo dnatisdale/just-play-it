@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b0d12" id="themeColorMeta" />
+    <meta name="description" content="JUST PLAY IT. Privacy Policy" />
+    <title>Privacy Policy – JUST PLAY IT.</title>
+    
+    <link rel="icon" href="icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="icons/icon-192.png" />
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Oswald:wght@700&family=Big+Shoulders+Display:wght@900&family=Saira+Extra+Condensed:wght@900&display=swap" rel="stylesheet" />
+    
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      .privacy-container {
+        max-width: 680px;
+        margin: 0 auto;
+        padding: 60px 20px 80px;
+      }
+      .privacy-header {
+        text-align: center;
+        margin-bottom: 40px;
+      }
+      .privacy-header h1 {
+        font-family: "Big Shoulders Display", "Oswald", sans-serif;
+        font-size: 3rem;
+        margin: 0 0 10px;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        color: var(--text);
+      }
+      .privacy-header p {
+        color: var(--muted);
+        font-size: 0.95rem;
+        font-weight: 500;
+        margin: 0;
+      }
+      .privacy-card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 32px 36px;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(20px);
+        position: relative;
+        overflow: hidden;
+      }
+      .privacy-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--accent-glow), transparent);
+        pointer-events: none;
+      }
+      .privacy-card h2 {
+        font-family: "Big Shoulders Display", "Oswald", sans-serif;
+        font-size: 1.6rem;
+        text-transform: uppercase;
+        margin: 32px 0 14px;
+        color: var(--accent-light);
+        letter-spacing: 0.01em;
+      }
+      .privacy-card h2:first-child {
+        margin-top: 0;
+      }
+      .privacy-card p, .privacy-card ul {
+        font-size: 0.98rem;
+        line-height: 1.65;
+        color: var(--text-2);
+        margin-bottom: 16px;
+        margin-top: 0;
+      }
+      .privacy-card ul {
+        padding-left: 24px;
+      }
+      .privacy-card li {
+        margin-bottom: 10px;
+      }
+      .privacy-card strong {
+        color: var(--text);
+      }
+      .back-btn-wrap {
+        margin-top: 32px;
+        text-align: center;
+      }
+      .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 14px 28px;
+        border-radius: 999px;
+        background: var(--glass);
+        border: 1px solid var(--border-strong);
+        color: var(--text);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all var(--transition);
+        backdrop-filter: blur(8px);
+        box-shadow: var(--shadow-sm);
+      }
+      .back-btn:hover {
+        background: var(--glass-border);
+        border-color: var(--accent-subtle-border);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.2), 0 0 15px var(--accent-glow);
+      }
+      .back-btn:active {
+        transform: translateY(0);
+      }
+      
+      @media (max-width: 560px) {
+        .privacy-container {
+          padding: 40px 16px 60px;
+        }
+        .privacy-card {
+          padding: 24px 20px;
+        }
+        .privacy-header h1 {
+          font-size: 2.4rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="privacy-container">
+      <div class="privacy-header">
+        <h1>Privacy Policy<span class="dot" style="width: 0.22em; height: 0.22em; color: var(--accent);"></span></h1>
+        <p>Effective Date: March 21, 2026</p>
+      </div>
+
+      <div class="privacy-card">
+        <h2>1. Data We Do Not Collect</h2>
+        <p><strong>JUST PLAY IT.</strong> is designed with your absolute privacy in mind. We believe in keeping data strictly on your device.</p>
+        <ul>
+          <li>We do <strong>not</strong> collect personal information such as your name, email address, or phone number.</li>
+          <li>We do <strong>not</strong> transmit, upload, or sync your audio files, playlists, or listening history to our servers.</li>
+          <li>We do <strong>not</strong> require you to create an account or sign in.</li>
+        </ul>
+
+        <h2>2. Local Data Processing</h2>
+        <p>All core functionality operates locally on your device:</p>
+        <ul>
+          <li><strong>Local Storage & IndexedDB:</strong> Any audio files you add, custom playlists you create, or preferences you save (like Dark Mode settings and Sleep Timers) are strictly stored within your web browser's local sandbox (IndexedDB and Local Storage).</li>
+          <li>When you clear your browser data or uninstall the app, this data is completely erased.</li>
+        </ul>
+
+        <h2>3. Third-Party Analytics</h2>
+        <p>To improve the performance and reliability of the application, we may use standard anonymous telemetry (such as Google Analytics or Firebase) measuring generalized app performance (e.g., crash reporting, installation counts, and page views). This data is aggregated and contains no personally identifiable information (PII).</p>
+
+        <h2>4. Changes to This Policy</h2>
+        <p>We may update this Privacy Policy occasionally. When we do, we will update the "Effective Date" at the top. Because we don't collect contact information, we encourage you to review this page periodically.</p>
+
+        <h2>5. Contact</h2>
+        <p>If you have any questions or concerns about this privacy policy, please reach out to us on our support page at <a href="https://ko-fi.com/justplayit" target="_blank" style="color: var(--accent-light); text-decoration: none; font-weight: 600;">Ko-fi.com/justplayit</a>.</p>
+      </div>
+
+      <div class="back-btn-wrap">
+        <a href="index.html" class="back-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          Back to Player
+        </a>
+      </div>
+    </div>
+    
+    <script>
+      // Immediately set the theme to match the user's stored preference to prevent flashing.
+      const saved = localStorage.getItem("justPlayItTheme");
+      const theme = saved === "light" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", theme);
+      const meta = document.getElementById("themeColorMeta");
+      if (meta) {
+        meta.content = theme === "light" ? "#f6f4f1" : "#0b0d12";
+      }
+    </script>
+  </body>
+</html>

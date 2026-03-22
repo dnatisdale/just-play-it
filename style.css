@@ -2086,17 +2086,51 @@ h3 .counter-badge {
 }
 
 /* Pulsating hearts for Gold Member button */
-@keyframes heart-pulse {
-  0% { transform: scale(1); opacity: 0.9; }
-  50% { transform: scale(1.2); opacity: 1; filter: drop-shadow(0 0 5px var(--accent)); }
-  100% { transform: scale(1); opacity: 0.9; }
+.blink-wrapper {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-.heart-pulsate {
-  animation: heart-pulse 1.4s ease-in-out infinite;
-  display: inline-block;
+.blink-logo,
+.blink-heart {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.blink-logo {
+  border-radius: 50%;
+  animation: fadePulse 6s ease-in-out infinite;
+  opacity: 0;
+  object-fit: contain;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.blink-heart {
   color: var(--accent-light) !important;
   fill: var(--accent) !important;
+  animation: fadePulseAlt 6s ease-in-out infinite;
+}
+
+/* Ensure opposite fading phases */
+@keyframes fadePulse {
+  0%, 40% { opacity: 0; transform: scale(0.8); }
+  50%, 90% { opacity: 1; transform: scale(1.1); filter: drop-shadow(0 0 5px var(--accent)); }
+  100% { opacity: 0; transform: scale(0.8); }
+}
+
+@keyframes fadePulseAlt {
+  0%, 40% { opacity: 1; transform: scale(1.15); filter: drop-shadow(0 0 5px var(--accent)); }
+  50%, 90% { opacity: 0; transform: scale(0.8); filter: none; }
+  100% { opacity: 1; transform: scale(1.15); filter: drop-shadow(0 0 5px var(--accent)); }
 }
 
 .gold-member-btn {
