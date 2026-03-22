@@ -2380,6 +2380,11 @@ h3 .counter-badge {
 .danger-row.confirming .sidebar-row-text {
   color: #fff !important;
 }
+
+.privacy-link:hover {
+  opacity: 0.7;
+}
+
 /* ═══════════════════════════════════════════
    QR CODE
 ═══════════════════════════════════════════ */
