@@ -1,4 +1,4 @@
-const BUILD_TIME = "BUILD V.51 <span class=\"accent-dash\">—</span> 21MAR2026 <span class=\"accent-dash\">—</span> 16:52";
+const BUILD_TIME = "BUILD V.52 <span class=\"accent-dash\">—</span> 21MAR2026 <span class=\"accent-dash\">—</span> 17:08";
 const audio = document.getElementById("audio");
 const fileInput = document.getElementById("fileInput");
 const urlInput = document.getElementById("urlInput");
@@ -2445,9 +2445,30 @@ async function initApp() {
     });
   }
 
-  // Hide splash screen after initialization
+  // ── Bouncing basketball sound logic ──
   const splash = document.getElementById("splashScreen");
   if (splash) {
+    const playBounce = () => {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const bounceAudio = new Audio("audio/basketball-bounce.mp3");
+      bounceAudio.volume = 0.5;
+
+      // Sync hits with the CSS basketball-bounce keyframes (2.2s duration)
+      // Hits at approx: 25% (550ms), 55% (1210ms), 85% (1870ms), 100% (2200ms)
+      const hits = [550, 1210, 1870, 2200];
+      hits.forEach((delay) => {
+        setTimeout(() => {
+          const hit = bounceAudio.cloneNode();
+          hit.play().catch(() => {
+            /* Autoplay likely blocked or file missing; fail silently */
+          });
+        }, delay);
+      });
+    };
+
+    // Try to play sound immediately (might be blocked by browser)
+    playBounce();
+
     // Delay to let the fancy bouncy animation finish
     setTimeout(() => {
       splash.classList.add("fade-out");
