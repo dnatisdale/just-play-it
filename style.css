@@ -556,7 +556,7 @@ h1 .dot {
 
 .ghost-btn:disabled,
 .sidebar-row-btn:disabled {
-  opacity: 0.35;
+  opacity: 0.65;
   cursor: not-allowed;
   pointer-events: none;
 }
@@ -1104,6 +1104,8 @@ input[type="range"]::-moz-range-thumb {
 .url-row input,
 .save-row input,
 .load-row select,
+.load-row-group select,
+.action-dropdown-row select,
 .playlist-tools input {
   width: 100%;
   border-radius: var(--radius-xs);
@@ -1122,6 +1124,8 @@ input[type="range"]::-moz-range-thumb {
 .url-row input:focus,
 .save-row input:focus,
 .load-row select:focus,
+.load-row-group select:focus,
+.action-dropdown-row select:focus,
 .playlist-tools input:focus {
   border-color: var(--accent-subtle-border);
   box-shadow: 0 0 0 3px var(--accent-subtle);
@@ -1139,7 +1143,9 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .sleep-row select option,
-.load-row select option {
+.load-row select option,
+.load-row-group select option,
+.action-dropdown-row select option {
   background: var(--select-bg);
   color: var(--text);
 }

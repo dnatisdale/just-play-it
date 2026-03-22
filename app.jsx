@@ -2042,7 +2042,7 @@ function updatePlaylistActionUI() {
   
   if (isBuiltin && action !== "load") {
     playlistActionBtn.disabled = true;
-    playlistActionBtn.textContent = action === "rename" ? "Cannot rename builtin" : "Cannot delete builtin";
+    playlistActionBtn.textContent = action === "rename" ? "Cannot rename builtin playlists" : "Cannot delete builtin playlists";
     playlistActionBtn.className = "ghost-btn";
     return;
   }
