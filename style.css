@@ -961,14 +961,20 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .skip-label {
-  position: absolute;
-  font-size: 0.95rem; /* Larger font for clear text skip buttons */
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 0.95rem;
   font-weight: 800;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
+  color: var(--text-2);
+  transition: color var(--transition);
   font-family: inherit;
+}
+
+.control-btn.secondary:hover .skip-label {
+  color: var(--accent-light);
 }
 
 .control-btn img {
@@ -996,16 +1002,13 @@ input[type="range"]::-moz-range-thumb {
   box-shadow: 0 0 35px var(--accent-glow);
 }
 
-.icon-prev {
-  transform: scaleX(-1);
-}
-
 .control-btn:hover img {
   transform: scale(1.1);
 }
 
-.control-btn:hover .icon-prev {
-  transform: scaleX(-1) scale(1.1);
+.control-btn.primary.icon-btn-3d img {
+  filter: none !important; /* Prevent any legacy filters from adding artifacts */
+  background: transparent !important;
 }
 
 .control-btn.primary:active,
