@@ -1218,6 +1218,19 @@ input::placeholder {
   border-color: var(--danger) !important;
 }
 
+.primary-action-btn {
+  background: var(--accent) !important;
+  color: #fff !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 4px 12px var(--accent-glow) !important;
+}
+
+.primary-action-btn:hover {
+  background: var(--accent-light) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 16px var(--accent-glow) !important;
+}
+
 /* ═══════════════════════════════════════════
    PLAYLIST
 ═══════════════════════════════════════════ */

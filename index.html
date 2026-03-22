@@ -361,24 +361,19 @@
               <button id="savePlaylistBtn" type="button">Save Current</button>
             </div>
 
-            <div class="load-row">
+            <div class="load-row-group" style="display: grid; gap: 8px;">
               <select id="savedPlaylistsSelect" aria-label="Saved playlists">
                 <option value="" disabled selected hidden>— Choose a saved playlist —</option>
               </select>
-              <button id="loadPlaylistBtn" type="button">Load</button>
-            </div>
-
-            <div class="saved-actions">
-              <button id="renamePlaylistBtn" class="ghost-btn" type="button">
-                Rename
-              </button>
-              <button
-                id="deletePlaylistBtn"
-                class="ghost-btn danger-btn"
-                type="button"
-              >
-                Delete
-              </button>
+              
+              <div class="action-dropdown-row" style="display: flex; gap: 8px;">
+                <select id="playlistActionSelect" aria-label="Playlist action" style="flex: 1;">
+                  <option value="load" selected>Load</option>
+                  <option value="rename">Rename</option>
+                  <option value="delete">Delete</option>
+                </select>
+                <button id="playlistActionBtn" type="button" class="ghost-btn" disabled style="flex: 1.5; font-weight: 700;">Select Playlist</button>
+              </div>
             </div>
           </div>
         </section>

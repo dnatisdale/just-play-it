@@ -32,9 +32,8 @@ const sleepTimerStatus = document.getElementById("sleepTimerStatus");
 const playlistNameInput = document.getElementById("playlistNameInput");
 const savePlaylistBtn = document.getElementById("savePlaylistBtn");
 const savedPlaylistsSelect = document.getElementById("savedPlaylistsSelect");
-const loadPlaylistBtn = document.getElementById("loadPlaylistBtn");
-const renamePlaylistBtn = document.getElementById("renamePlaylistBtn");
-const deletePlaylistBtn = document.getElementById("deletePlaylistBtn");
+const playlistActionSelect = document.getElementById("playlistActionSelect");
+const playlistActionBtn = document.getElementById("playlistActionBtn");
 const clearDeviceLibraryBtn = document.getElementById("clearDeviceLibraryBtn");
 const exportPlaylistsBtn = document.getElementById("exportPlaylistsBtn");
 const importPlaylistsInput = document.getElementById("importPlaylistsInput");
@@ -681,6 +680,9 @@ async function loadSavedPlaylists() {
   if (selected && savedPlaylists[selected]) {
     savedPlaylistsSelect.value = selected;
     savedPlaylistStatus.textContent = `Selected${savedPlaylists[selected].isBuiltin ? " builtin" : " saved"} playlist: ${selected}`;
+  }
+  if (typeof updatePlaylistActionUI === "function") {
+    updatePlaylistActionUI();
   }
 }
 
@@ -2023,9 +2025,53 @@ if (folderInput) {
 
 
 savePlaylistBtn.addEventListener("click", saveNamedPlaylist);
-loadPlaylistBtn.addEventListener("click", async () => loadNamedPlaylist());
-renamePlaylistBtn.addEventListener("click", renameNamedPlaylist);
-deletePlaylistBtn.addEventListener("click", deleteNamedPlaylist);
+
+function updatePlaylistActionUI() {
+  if (!playlistActionSelect || !playlistActionBtn) return;
+  const selected = savedPlaylistsSelect.value;
+  const isSelected = !!selected;
+  const action = playlistActionSelect.value;
+  const isBuiltin = isSelected && savedPlaylists[selected] && savedPlaylists[selected].isBuiltin;
+  
+  if (!isSelected) {
+    playlistActionBtn.disabled = true;
+    playlistActionBtn.textContent = "Select Playlist";
+    playlistActionBtn.className = "ghost-btn";
+    return;
+  }
+  
+  if (isBuiltin && action !== "load") {
+    playlistActionBtn.disabled = true;
+    playlistActionBtn.textContent = action === "rename" ? "Cannot rename builtin" : "Cannot delete builtin";
+    playlistActionBtn.className = "ghost-btn";
+    return;
+  }
+  
+  playlistActionBtn.disabled = false;
+  if (action === "load") {
+    playlistActionBtn.textContent = "Press to Load";
+    playlistActionBtn.className = "ghost-btn primary-action-btn";
+  } else if (action === "rename") {
+    playlistActionBtn.textContent = "Press to Rename";
+    playlistActionBtn.className = "ghost-btn";
+  } else if (action === "delete") {
+    playlistActionBtn.textContent = "Press to Delete";
+    playlistActionBtn.className = "ghost-btn danger-btn";
+  }
+}
+
+if (playlistActionSelect) {
+  playlistActionSelect.addEventListener("change", updatePlaylistActionUI);
+}
+if (playlistActionBtn) {
+  playlistActionBtn.addEventListener("click", async () => {
+    const action = playlistActionSelect.value;
+    if (action === "load") await loadNamedPlaylist();
+    else if (action === "rename") renameNamedPlaylist();
+    else if (action === "delete") deleteNamedPlaylist();
+    updatePlaylistActionUI();
+  });
+}
 let clearConfirmTimeout = null;
 clearDeviceLibraryBtn.addEventListener("click", async () => {
   if (clearDeviceLibraryBtn.classList.contains("confirming")) {
@@ -2084,17 +2130,17 @@ if (currentPlaylistHeaderBtn) {
 
 savedPlaylistsSelect.addEventListener("change", () => {
   const selected = savedPlaylistsSelect.value;
-  const isBuiltin = selected && savedPlaylists[selected] && savedPlaylists[selected].isBuiltin;
   
-  if (renamePlaylistBtn) renamePlaylistBtn.disabled = !!isBuiltin;
-  if (deletePlaylistBtn) deletePlaylistBtn.disabled = !!isBuiltin;
-
   if (selected) {
     localStorage.setItem(STORAGE_KEYS.selectedSavedPlaylist, selected);
     if (savedPlaylistBox) savedPlaylistBox.title = `Selected saved playlist: ${selected}`;
   } else {
     localStorage.removeItem(STORAGE_KEYS.selectedSavedPlaylist);
     if (savedPlaylistBox) savedPlaylistBox.title = "No saved playlist selected.";
+  }
+  
+  if (typeof updatePlaylistActionUI === "function") {
+    updatePlaylistActionUI();
   }
 });
 
