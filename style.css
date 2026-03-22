@@ -243,8 +243,6 @@ body {
 body {
   min-height: 100vh;
   padding-bottom: 100px;
-  overscroll-behavior-y: none; /* Prevents rubber-banding refresh lag */
-  -webkit-overflow-scrolling: touch; /* Ensures momentum scrolling on iOS */
 }
 
 /* We use a fixed pseudo-element for the gradient instead of background-attachment: fixed 
@@ -721,9 +719,9 @@ h3.interactive-header:active {
 }
 
 .badge-red {
-  background: #dc2626 !important; /* A clear, modern red */
+  background: #940414 !important; /* A clear, modern red */
   color: #fff !important;
-  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3) !important;
+  box-shadow: 0 2px 8px rgba(148, 4, 20, 0.3) !important;
 }
 
 [data-theme="light"] #nowPlayingPlaylistName {
@@ -1316,8 +1314,8 @@ input::placeholder {
 }
 
 .track-status-btn.disabled {
-  background: #dc2626; /* Red */
-  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.4);
+  background: #940414; /* Red */
+  box-shadow: 0 2px 8px rgba(148, 4, 20, 0.4);
 }
 
 /* Subtle inner shine */
