@@ -1,4 +1,4 @@
-const CACHE_NAME = "just-play-it-build-1340-21MAR2026-v58";
+const CACHE_NAME = "just-play-it-build-1340-21MAR2026-v59";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
@@ -18,6 +18,10 @@ const ASSETS_TO_CACHE = [
   "./audio/remember-the-lord/Remember the Lord Part 2.mp3",
   "./audio/remember-the-lord/Remember the Lord Part 3.mp3",
   "./audio/remember-the-lord/Remember the Lord Part 4.mp3",
+  "./audio/remember-the-lord/Part 1 Remember the Lord.wav",
+  "./audio/remember-the-lord/Part 2 Remember the Lord.wav",
+  "./audio/remember-the-lord/Part 3 Remember the Lord.wav",
+  "./audio/remember-the-lord/Part 4 Remember the Lord.wav",
   "./audio/nas-songs_plus/Before My Eyes.mp3",
   "./audio/nas-songs_plus/God is My H O M E.mp3",
   "./audio/nas-songs_plus/God with Us.mp3",
