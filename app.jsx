@@ -1,4 +1,4 @@
-const BUILD_TIME = "BUILD V.61 <span class=\"accent-dash\">—</span> 24MAR2026 <span class=\"accent-dash\">—</span> 11:20";
+const BUILD_TIME = "BUILD V.62 <span class=\"accent-dash\">—</span> 24MAR2026 <span class=\"accent-dash\">—</span> 11:30";
 const audio = document.getElementById("audio");
 const fileInput = document.getElementById("fileInput");
 const urlInput = document.getElementById("urlInput");
@@ -64,7 +64,6 @@ const copyQrBtn = document.getElementById("copyQrBtn");
 const downloadQrBtn = document.getElementById("downloadQrBtn");
 
 // Badges
-const menuBadge = document.getElementById("menuBadge");
 const savedPlaylistsBadge = document.getElementById("savedPlaylistsBadge");
 const playlistBadge = document.getElementById("playlistBadge");
 const nowPlayingPlaylistName = document.getElementById("nowPlayingPlaylistName");
@@ -273,7 +272,8 @@ async function updateBadgeCounts() {
     savedPlaylistsBadge.classList.toggle("hidden", savedCount === 0);
   }
 
-  // Sidebar badge: total library files
+  // Sidebar badge: total library files - Not needed as requested
+/*
   if (menuBadge) {
     try {
       const records = db ? await getAllTrackBlobs() : [];
@@ -285,6 +285,7 @@ async function updateBadgeCounts() {
       menuBadge.classList.add("hidden");
     }
   }
+*/
 }
 
 function revokeCurrentObjectUrl() {
