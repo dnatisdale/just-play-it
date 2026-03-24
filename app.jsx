@@ -1,4 +1,4 @@
-const BUILD_TIME = "BUILD V.69 <span class=\"accent-dash\">—</span> 24MAR2026 <span class=\"accent-dash\">—</span> 18:10";
+const BUILD_TIME = "BUILD V.71 <span class=\"accent-dash\">—</span> 24MAR2026 <span class=\"accent-dash\">—</span> 18:35";
 const audio = document.getElementById("audio");
 const fileInput = document.getElementById("fileInput");
 const urlInput = document.getElementById("urlInput");
@@ -1049,8 +1049,9 @@ function renderPlaylist() {
 
     const playBtn = document.createElement("button");
     playBtn.type = "button";
-    playBtn.className = "small-btn";
-    playBtn.textContent = "Play";
+    playBtn.className = "small-btn play-icon-btn";
+    playBtn.innerHTML = ICONS.play;
+    playBtn.title = "Play track";
     playBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       loadTrack(index, true);
@@ -2862,6 +2863,22 @@ function jumpToSavedPlaylists() {
       savedPlaylistsSelect.focus();
     }
   }
+}
+
+// ── Scroll to Top Logic ─────────────────────────────────────────────
+const scrollToTopBtn = document.getElementById("scrollToTopBtn");
+if (scrollToTopBtn) {
+  window.addEventListener("scroll", () => {
+    if (window.scrollY > 400) {
+      scrollToTopBtn.classList.add("visible");
+    } else {
+      scrollToTopBtn.classList.remove("visible");
+    }
+  });
+
+  scrollToTopBtn.addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
 }
 
 initApp();
