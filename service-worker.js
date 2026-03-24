@@ -1,4 +1,4 @@
-const CACHE_NAME = "just-play-it-build-1340-21MAR2026-v59";
+const CACHE_NAME = "just-play-it-build-1730-24MAR2026-v73";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
@@ -76,20 +76,65 @@ self.addEventListener("fetch", (event) => {
     );
   } else {
     // Cache First for everything else (like music files)
+    // IMPORTANT: Supporting Range Headers specifically for iOS/Safari audio stability
     event.respondWith(
       caches.match(event.request).then((cachedResponse) => {
-        return (
-          cachedResponse ||
-          fetch(event.request).then((response) => {
-            const cacheCopy = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cacheCopy));
+        if (cachedResponse) {
+          if (event.request.headers.get("Range")) {
+            return handleRangeRequest(event.request, cachedResponse);
+          }
+          return cachedResponse;
+        }
+
+        return fetch(event.request).then((response) => {
+          const cacheCopy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cacheCopy));
+          
+          if (event.request.headers.get("Range")) {
+            // We can't easily range-slice a full fetch response stream here without extra buffering
+            // but the browser will handle the network fetch range correctly. 
+            // The issue is mostly with CACHED assets.
             return response;
-          })
-        );
+          }
+          return response;
+        });
       })
     );
   }
 });
+
+/**
+ * Handle Range Requests for cached assets (Critical for iOS/Safari audio)
+ */
+async function handleRangeRequest(request, response) {
+  const rangeHeader = request.headers.get("Range");
+  if (!rangeHeader) return response;
+
+  const arrayBuffer = await response.arrayBuffer();
+  const bytes = rangeHeader.replace(/bytes=/, "").split("-");
+  const start = parseInt(bytes[0], 10);
+  const end = bytes[1] ? parseInt(bytes[1], 10) : arrayBuffer.byteLength - 1;
+
+  if (start >= arrayBuffer.byteLength || end >= arrayBuffer.byteLength) {
+    return new Response("", {
+      status: 416,
+      statusText: "Range Not Satisfiable",
+      headers: { "Content-Range": `bytes */${arrayBuffer.byteLength}` },
+    });
+  }
+
+  const slice = arrayBuffer.slice(start, end + 1);
+  const newHeaders = new Headers(response.headers);
+  newHeaders.set("Content-Range", `bytes ${start}-${end}/${arrayBuffer.byteLength}`);
+  newHeaders.set("Content-Length", slice.byteLength);
+  newHeaders.set("Accept-Ranges", "bytes");
+
+  return new Response(slice, {
+    status: 206,
+    statusText: "Partial Content",
+    headers: newHeaders,
+  });
+}
 
 self.addEventListener("message", (event) => {
   if (event.data && event.data.type === "SKIP_WAITING") {

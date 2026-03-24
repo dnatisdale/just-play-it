@@ -848,18 +848,6 @@ h3.interactive-header:active {
   word-break: break-word;
   letter-spacing: -0.015em;
   color: var(--text);
-  animation: pulse-red-text 3s ease-in-out infinite;
-}
-
-@keyframes pulse-red-text {
-  0%, 100% { 
-    color: var(--text);
-    text-shadow: 0 0 0px transparent;
-  }
-  50% { 
-    color: var(--accent-light);
-    text-shadow: 0 0 12px var(--accent-glow);
-  }
 }
 
 .track-meta {
@@ -1166,6 +1154,10 @@ input[type="range"]::-moz-range-thumb {
   color: var(--accent-light) !important;
 }
 
+.pulse-red-label {
+  font-weight: 700;
+}
+
 .card-pop {
   border: 1px solid var(--border-strong) !important;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 40px rgba(148, 4, 20, 0.05) !important;
@@ -1351,7 +1343,6 @@ input::placeholder {
 }
 
 .collapse-toggle-btn {
-  animation: soft-pulse 2.5s ease-in-out infinite;
   display: flex;
   align-items: center;
   border-radius: 999px;
