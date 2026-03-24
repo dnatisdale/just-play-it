@@ -1,4 +1,4 @@
-const BUILD_TIME = "BUILD V.66 <span class=\"accent-dash\">—</span> 24MAR2026 <span class=\"accent-dash\">—</span> 16:10";
+const BUILD_TIME = "BUILD V.67 <span class=\"accent-dash\">—</span> 24MAR2026 <span class=\"accent-dash\">—</span> 16:50";
 const audio = document.getElementById("audio");
 const fileInput = document.getElementById("fileInput");
 const urlInput = document.getElementById("urlInput");
@@ -2306,6 +2306,10 @@ if (currentPlaylistHeaderBtn) {
     if (collapseText) {
       collapseText.textContent = isExpanded ? "Show" : "Hide";
     }
+    const collapseIcon = document.getElementById("playlistCollapseIcon");
+    if (collapseIcon) {
+      collapseIcon.style.transform = isExpanded ? "" : "rotate(180deg)";
+    }
   });
   currentPlaylistHeaderBtn.addEventListener("keydown", (e) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -2655,8 +2659,16 @@ async function initApp() {
     toggleLibraryBtn.addEventListener("click", () => {
       const isVisible = !libraryCollapsible.classList.contains("collapsed");
       libraryCollapsible.classList.toggle("collapsed");
-      toggleLibraryBtn.textContent = isVisible ? "Show" : "Hide";
       toggleLibraryBtn.setAttribute("aria-expanded", !isVisible);
+      
+      const libText = document.getElementById("libraryCollapseText");
+      if (libText) {
+        libText.textContent = isVisible ? "Show" : "Hide";
+      }
+      const libIcon = document.getElementById("libraryCollapseIcon");
+      if (libIcon) {
+        libIcon.style.transform = isVisible ? "" : "rotate(180deg)";
+      }
     });
   }
 

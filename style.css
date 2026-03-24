@@ -1131,6 +1131,39 @@ input[type="range"]::-moz-range-thumb {
   box-shadow: 0 0 0 3px var(--accent-subtle);
 }
 
+.select-pop {
+  background: var(--input-bg) !important;
+  border: 1px solid var(--border-strong) !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all var(--transition);
+}
+
+.select-pop:hover {
+  border-color: var(--accent-light) !important;
+  background: var(--panel-3) !important;
+  box-shadow: 0 6px 16px rgba(148, 4, 20, 0.1);
+}
+
+.select-pop:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px var(--accent-subtle), 0 8px 24px rgba(148, 4, 20, 0.2) !important;
+}
+
+.accent-label {
+  color: var(--accent-light) !important;
+}
+
+.card-pop {
+  border: 1px solid var(--border-strong) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 40px rgba(148, 4, 20, 0.05) !important;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.card-pop:hover {
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.4), 0 0 60px rgba(148, 4, 20, 0.1) !important;
+}
+
 .highlight {
   animation: highlight-pulse 1.2s ease-out;
 }

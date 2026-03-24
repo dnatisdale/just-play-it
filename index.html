@@ -96,7 +96,12 @@
               Library 
               <span id="selectionBadge" class="counter-badge badge-orange hidden">0</span>
             </div>
-            <button id="toggleLibraryBtn" class="sidebar-collapse-toggle" type="button" aria-expanded="false" style="background: var(--glass); border: 1px solid var(--border-strong); color: var(--text-2); font-size: 11px; font-weight: 700; text-transform: uppercase; padding: 2px 8px; border-radius: 6px; cursor: pointer;">Show</button>
+            <button id="toggleLibraryBtn" class="collapse-toggle-btn" type="button" aria-expanded="false" style="padding: 4px 12px !important; font-size: 11px;">
+              <span id="libraryCollapseText" style="margin-right: 6px; font-weight: 600;">Show</span>
+              <span class="collapse-icon" id="libraryCollapseIcon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6,9 12,15 18,9"/></svg>
+              </span>
+            </button>
           </div>
 
           <div id="libraryCollapsible" class="sidebar-collapsible-content collapsed">
@@ -323,10 +328,10 @@
 
         </section>
 
-        <section class="library-card">
+        <section id="currentPlaylistCard" class="library-card card-pop">
           <div class="playlist-header interactive-header" id="currentPlaylistHeaderBtn" role="button" tabindex="0" title="Click to collapse or expand" aria-expanded="false" aria-controls="playlistContainer">
             <div>
-              <h3>CURRENT PLAYLIST<span class="dot"></span> <span class="counter-badge" id="playlistBadge">0</span></h3>
+              <h3 class="accent-label">CURRENT PLAYLIST<span class="dot"></span> <span class="counter-badge" id="playlistBadge">0</span></h3>
             </div>
             <button class="ghost-btn collapse-toggle-btn" tabindex="-1" style="pointer-events: none;">
               <span id="playlistCollapseText" style="margin-right: 6px; font-weight: 600;">Show</span>
@@ -374,7 +379,7 @@
             </div>
 
             <div class="load-row-group" style="display: grid; gap: 8px;">
-              <select id="savedPlaylistsSelect" aria-label="Saved playlists">
+              <select id="savedPlaylistsSelect" class="select-pop" aria-label="Saved playlists">
                 <option value="" disabled selected hidden>— Choose a saved playlist —</option>
               </select>
               
