@@ -1,4 +1,4 @@
-const BUILD_TIME = "BUILD V.60 <span class=\"accent-dash\">—</span> 22MAR2026 <span class=\"accent-dash\">—</span> 13:50";
+const BUILD_TIME = "BUILD V.61 <span class=\"accent-dash\">—</span> 24MAR2026 <span class=\"accent-dash\">—</span> 11:20";
 const audio = document.getElementById("audio");
 const fileInput = document.getElementById("fileInput");
 const urlInput = document.getElementById("urlInput");
@@ -259,10 +259,10 @@ async function updateBadgeCounts() {
       
       if (nowPlayingPlaylistBadge) {
         nowPlayingPlaylistBadge.textContent = listCount;
-        nowPlayingPlaylistBadge.classList.remove("hidden");
+        nowPlayingPlaylistBadge.classList.toggle("hidden", listCount === 0);
       }
       if (nowPlayingPlaylistInfo) {
-        nowPlayingPlaylistInfo.classList.remove("hidden");
+        nowPlayingPlaylistInfo.classList.toggle("hidden", listCount === 0);
       }
     }
 
@@ -1045,6 +1045,8 @@ async function addFileTracks(files) {
   } else {
     renderPlaylist();
     savePlaylistState();
+    // After adding tracks to an existing playlist, we should still update badge counts
+    updateBadgeCounts();
   }
 
   await updateStorageUsage();
@@ -1517,6 +1519,12 @@ function saveNamedPlaylist() {
   savedPlaylistsSelect.value = name;
   localStorage.setItem(STORAGE_KEYS.selectedSavedPlaylist, name);
   if (savedPlaylistBox) savedPlaylistBox.title = `Saved playlist: ${name}`;
+  
+  // Sync the action button state
+  if (typeof updatePlaylistActionUI === "function") {
+    updatePlaylistActionUI();
+  }
+
   setPlayerStatus(`Saved playlist "${name}".`);
   showToast(`Saved playlist "${name}".`);
 }
@@ -1552,7 +1560,7 @@ async function loadNamedPlaylist() {
   }
 
   setPlayerStatus(`Loaded saved playlist: ${name}`);
-  updateBadgeCounts();
+  await updateBadgeCounts();
   showToast(`Loaded "${name}".`);
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -1600,6 +1608,11 @@ function renameNamedPlaylist() {
   savedPlaylistsSelect.value = cleanName;
   localStorage.setItem(STORAGE_KEYS.selectedSavedPlaylist, cleanName);
 
+  // Sync the action button state
+  if (typeof updatePlaylistActionUI === "function") {
+    updatePlaylistActionUI();
+  }
+
   if (currentPlaylistName === oldName) {
     currentPlaylistName = cleanName;
     updatePlaylistNameDisplay();
@@ -1632,6 +1645,11 @@ function deleteNamedPlaylist() {
   persistSavedPlaylists();
   savedPlaylistsSelect.value = "";
   localStorage.removeItem(STORAGE_KEYS.selectedSavedPlaylist);
+
+  // Sync the action button state
+  if (typeof updatePlaylistActionUI === "function") {
+    updatePlaylistActionUI();
+  }
 
   if (currentPlaylistName === name) {
     currentPlaylistName = "";
