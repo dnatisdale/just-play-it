@@ -1952,7 +1952,7 @@ h3 .counter-badge {
 
 .library-item {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr auto auto;
   align-items: center;
   gap: 8px;
   padding: 8px 10px;
@@ -1960,6 +1960,52 @@ h3 .counter-badge {
   border: 1px solid var(--border);
   background: var(--panel-3);
   transition: background var(--transition), border-color var(--transition);
+}
+
+.library-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  margin: 16px 4px 8px;
+  padding: 0 4px 6px;
+  border-bottom: 1px solid var(--border);
+  display: block;
+}
+
+.library-selector-btn {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--border-strong);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.library-selector-btn.selected {
+  background: #ff9c2b;
+  border-color: #ff9c2b;
+  box-shadow: 0 0 8px rgba(255, 156, 43, 0.4);
+}
+
+.library-selector-btn.selected::after {
+  content: "✓";
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.badge-orange {
+  background: #ff9c2b !important;
+  color: #fff !important;
+  box-shadow: 0 2px 8px rgba(255, 156, 43, 0.3) !important;
 }
 
 .library-item:hover {

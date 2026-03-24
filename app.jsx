@@ -1,4 +1,4 @@
-const BUILD_TIME = "BUILD V.63 <span class=\"accent-dash\">—</span> 24MAR2026 <span class=\"accent-dash\">—</span> 14:40";
+const BUILD_TIME = "BUILD V.64 <span class=\"accent-dash\">—</span> 24MAR2026 <span class=\"accent-dash\">—</span> 15:10";
 const audio = document.getElementById("audio");
 const fileInput = document.getElementById("fileInput");
 const urlInput = document.getElementById("urlInput");
@@ -119,6 +119,7 @@ let shuffleEnabled = false;
 let repeatMode = "off";
 let savedPlaylists = {};
 let currentPlaylistName = "";
+let selectedLibraryTracks = new Set();
 let deferredInstallPrompt = null;
 let currentObjectUrl = null;
 let toastTimeout = null;
@@ -289,6 +290,14 @@ async function updateBadgeCounts() {
       menuBadge.classList.add("hidden");
     }
   }
+}
+
+function updateSelectionBadge() {
+  const selectionBadge = document.getElementById("selectionBadge");
+  if (!selectionBadge) return;
+  const count = selectedLibraryTracks.size;
+  selectionBadge.textContent = count;
+  selectionBadge.classList.toggle("hidden", count === 0);
 }
 
 function revokeCurrentObjectUrl() {
@@ -538,7 +547,6 @@ async function renderSidebarLibrary() {
     records = [];
   }
 
-  // Get built-in tracks from all built-in playlists
   const builtinTracks = [];
   Object.values(savedPlaylists).forEach(pl => {
     if (pl.isBuiltin) {
@@ -546,7 +554,6 @@ async function renderSidebarLibrary() {
     }
   });
 
-  // Unique them by title to avoid noise
   const seenBuiltins = new Set();
   const uniqueBuiltins = builtinTracks.filter(t => {
     if (seenBuiltins.has(t.title)) return false;
@@ -561,67 +568,103 @@ async function renderSidebarLibrary() {
 
   deviceLibraryList.innerHTML = "";
 
-  // Render Built-ins
-  uniqueBuiltins.forEach((track) => {
-    const item = document.createElement("div");
-    item.className = "library-item builtin";
-    item.innerHTML = `
-      <div class="library-item-info">
-        <span class="library-item-name" title="${escapeHtml(track.title)}">${escapeHtml(track.title)}</span>
-        <span class="library-item-size">App Built-in</span>
-      </div>
-      <button type="button" class="small-btn" style="padding: 4px 8px; font-size: 10px; min-height: 24px;">Built-in</button>
-    `;
-    deviceLibraryList.appendChild(item);
-  });
-
-  // Render Stored Files
-  records.forEach((record) => {
-    const size = formatBytes(record.size || record.blob?.size || 0);
-    const name = record.title || record.id;
-
-    const item = document.createElement("div");
-    item.className = "library-item";
-    item.dataset.id = record.id;
-
-    const info = document.createElement("div");
-    info.className = "library-item-info";
-    info.innerHTML = `
-      <span class="library-item-name" title="${escapeHtml(name)}">${escapeHtml(name)}</span>
-      <span class="library-item-size">${size} • Stored</span>
-    `;
-
-    const deleteBtn = document.createElement("button");
-    deleteBtn.type = "button";
-    deleteBtn.className = "library-delete-btn";
-    deleteBtn.innerHTML = ICONS.trash;
-    deleteBtn.setAttribute("aria-label", `Delete ${escapeHtml(name)}`);
-
-    let confirmTimeout = null;
-
-    deleteBtn.addEventListener("click", () => {
-      if (deleteBtn.classList.contains("confirming")) {
-        clearTimeout(confirmTimeout);
-        deleteStoredTrack(record.id, name);
+  // Helper to create a selector button
+  const createSelector = (trackId) => {
+    const selectorBtn = document.createElement("button");
+    selectorBtn.type = "button";
+    selectorBtn.className = "library-selector-btn";
+    if (selectedLibraryTracks.has(trackId)) {
+      selectorBtn.classList.add("selected");
+    }
+    selectorBtn.setAttribute("aria-label", "Toggle selection for new playlist");
+    selectorBtn.addEventListener("click", () => {
+      if (selectedLibraryTracks.has(trackId)) {
+        selectedLibraryTracks.delete(trackId);
+        selectorBtn.classList.remove("selected");
       } else {
-        deleteBtn.classList.add("confirming");
-        deleteBtn.textContent = "Sure?";
-        deleteBtn.setAttribute("aria-label", `Confirm delete ${escapeHtml(name)}`);
-
-        confirmTimeout = setTimeout(() => {
-          if (deleteBtn.classList.contains("confirming")) {
-            deleteBtn.classList.remove("confirming");
-            deleteBtn.innerHTML = ICONS.trash;
-            deleteBtn.setAttribute("aria-label", `Delete ${escapeHtml(name)}`);
-          }
-        }, 3000);
+        selectedLibraryTracks.add(trackId);
+        selectorBtn.classList.add("selected");
       }
+      updateSelectionBadge();
     });
+    return selectorBtn;
+  };
 
-    item.appendChild(info);
-    item.appendChild(deleteBtn);
-    deviceLibraryList.appendChild(item);
-  });
+  // Section 1: Your Tracks (Personal Uploads)
+  if (records.length > 0) {
+    const yourTracksLabel = document.createElement("div");
+    yourTracksLabel.className = "library-section-title";
+    yourTracksLabel.textContent = "Your Tracks";
+    deviceLibraryList.appendChild(yourTracksLabel);
+
+    records.forEach((record) => {
+      const size = formatBytes(record.size || record.blob?.size || 0);
+      const name = record.title || record.id;
+
+      const item = document.createElement("div");
+      item.className = "library-item";
+      item.dataset.id = record.id;
+
+      const info = document.createElement("div");
+      info.className = "library-item-info";
+      info.innerHTML = `
+        <span class="library-item-name" title="${escapeHtml(name)}">${escapeHtml(name)}</span>
+        <span class="library-item-size">${size}</span>
+      `;
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.type = "button";
+      deleteBtn.className = "library-delete-btn";
+      deleteBtn.innerHTML = ICONS.trash;
+      deleteBtn.setAttribute("aria-label", `Delete ${escapeHtml(name)}`);
+
+      let confirmTimeout = null;
+      deleteBtn.addEventListener("click", () => {
+        if (deleteBtn.classList.contains("confirming")) {
+          clearTimeout(confirmTimeout);
+          deleteStoredTrack(record.id, name);
+        } else {
+          deleteBtn.classList.add("confirming");
+          deleteBtn.textContent = "Sure?";
+          confirmTimeout = setTimeout(() => {
+            if (deleteBtn.classList.contains("confirming")) {
+              deleteBtn.classList.remove("confirming");
+              deleteBtn.innerHTML = ICONS.trash;
+            }
+          }, 3000);
+        }
+      });
+
+      item.appendChild(info);
+      item.appendChild(deleteBtn);
+      item.appendChild(createSelector(record.id));
+      deviceLibraryList.appendChild(item);
+    });
+  }
+
+  // Section 2: Tracks Built-In
+  if (uniqueBuiltins.length > 0) {
+    const builtinsLabel = document.createElement("div");
+    builtinsLabel.className = "library-section-title";
+    builtinsLabel.textContent = "Tracks Built-In";
+    deviceLibraryList.appendChild(builtinsLabel);
+
+    uniqueBuiltins.forEach((track) => {
+      const item = document.createElement("div");
+      item.className = "library-item builtin-item";
+      item.innerHTML = `
+        <div class="library-item-info">
+          <span class="library-item-name" title="${escapeHtml(track.title)}">${escapeHtml(track.title)}</span>
+        </div>
+      `;
+      // Delete button - spacer for grid consistency
+      const spacer = document.createElement("div");
+      item.appendChild(spacer);
+      
+      item.appendChild(createSelector(track.id));
+      deviceLibraryList.appendChild(item);
+    });
+  }
 }
 
 // ── Delete a single stored device track and clean up playlists ──
