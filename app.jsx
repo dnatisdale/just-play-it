@@ -1,4 +1,4 @@
-const BUILD_TIME = "BUILD V.68 <span class=\"accent-dash\">—</span> 24MAR2026 <span class=\"accent-dash\">—</span> 17:10";
+const BUILD_TIME = "BUILD V.69 <span class=\"accent-dash\">—</span> 24MAR2026 <span class=\"accent-dash\">—</span> 18:10";
 const audio = document.getElementById("audio");
 const fileInput = document.getElementById("fileInput");
 const urlInput = document.getElementById("urlInput");
@@ -433,6 +433,7 @@ function normalizeTrack(track) {
     title: track.title,
     sourceType: track.sourceType,
     disabled: !!track.disabled,
+    duration: track.duration,
   };
 
   if (track.sourceType === "url") {
@@ -1015,9 +1016,16 @@ function renderPlaylist() {
     const infoBtn = document.createElement("button");
     infoBtn.type = "button";
     infoBtn.className = "track-info-btn";
+    infoBtn.style.flex = "1";
+    infoBtn.style.minWidth = "0"; // Essential for ellipsis to work
     const label = getTrackSourceLabel(track);
+    const duration = track.duration ? formatTime(track.duration) : "";
+
     infoBtn.innerHTML = `
-      <span class="track-name">${escapeHtml(track.title)}</span>
+      <div class="track-info-row">
+        <span class="track-name" title="${escapeHtml(track.title)}">${escapeHtml(track.title)}</span>
+        <span class="track-duration">${duration}</span>
+      </div>
       ${label ? `<span class="track-source">${label}</span>` : ""}
     `;
     infoBtn.addEventListener("click", async (e) => {
@@ -2356,6 +2364,13 @@ savedPlaylistsSelect.addEventListener("change", () => {
 
 audio.addEventListener("loadedmetadata", () => {
   durationEl.textContent = formatTime(audio.duration);
+
+  // Auto-capture duration into playlist if missing
+  if (playlist[currentTrackIndex] && !playlist[currentTrackIndex].duration) {
+    playlist[currentTrackIndex].duration = audio.duration;
+    renderPlaylist();
+    savePlaylistState();
+  }
 
   if (
     pendingRestoreTime !== null &&
