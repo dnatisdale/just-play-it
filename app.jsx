@@ -1,4 +1,4 @@
-const BUILD_TIME = "BUILD V.67 <span class=\"accent-dash\">—</span> 24MAR2026 <span class=\"accent-dash\">—</span> 16:50";
+const BUILD_TIME = "BUILD V.68 <span class=\"accent-dash\">—</span> 24MAR2026 <span class=\"accent-dash\">—</span> 17:10";
 const audio = document.getElementById("audio");
 const fileInput = document.getElementById("fileInput");
 const urlInput = document.getElementById("urlInput");
@@ -296,7 +296,24 @@ function initSidebarRearrangeMode() {
     if (!isRearrangeMode) return;
     
     const section = e.target.closest(".sidebar-section");
-    if (!section || section.classList.contains("ordered")) return;
+    if (!section) return;
+
+    // Toggle off if already ordered
+    if (section.classList.contains("ordered")) {
+      section.classList.remove("ordered");
+      const badge = section.querySelector(".reorder-badge");
+      if (badge) badge.remove();
+      
+      const idx = rearrangeQueue.indexOf(section.id);
+      if (idx !== -1) rearrangeQueue.splice(idx, 1);
+      
+      // Re-index remaining badges
+      sidebarBody.querySelectorAll(".reorder-badge").forEach(b => {
+        const sId = b.parentElement.id;
+        b.textContent = rearrangeQueue.indexOf(sId) + 1;
+      });
+      return;
+    }
     
     rearrangeQueue.push(section.id);
     section.classList.add("ordered");
@@ -307,16 +324,18 @@ function initSidebarRearrangeMode() {
     badge.textContent = rearrangeQueue.length;
     section.appendChild(badge);
     
-    // Check if we finished selecting all sections
+    // Check if we finished selecting all moveable sections
     const total = sidebarBody.querySelectorAll(".sidebar-section").length;
-    if (rearrangeQueue.length === total) {
+    if (rearrangeQueue.length === total && total > 0) {
       applySidebarOrder(rearrangeQueue);
       localStorage.setItem(STORAGE_KEYS.sidebarOrder, JSON.stringify(rearrangeQueue));
       
       // Exit mode automatically
       isRearrangeMode = false;
-      rearrangeSidebarBtn.textContent = "Rearrange Sections";
-      rearrangeSidebarBtn.classList.remove("active");
+      if (rearrangeSidebarBtn) {
+        rearrangeSidebarBtn.textContent = "Rearrange Sections";
+        rearrangeSidebarBtn.classList.remove("active");
+      }
       sidebarBody.classList.remove("rearrange-active");
       
       setTimeout(() => {
