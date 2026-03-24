@@ -1,4 +1,4 @@
-const BUILD_TIME = "BUILD V.64 <span class=\"accent-dash\">—</span> 24MAR2026 <span class=\"accent-dash\">—</span> 15:10";
+const BUILD_TIME = "BUILD V.65 <span class=\"accent-dash\">—</span> 24MAR2026 <span class=\"accent-dash\">—</span> 15:40";
 const audio = document.getElementById("audio");
 const fileInput = document.getElementById("fileInput");
 const urlInput = document.getElementById("urlInput");
@@ -120,6 +120,7 @@ let repeatMode = "off";
 let savedPlaylists = {};
 let currentPlaylistName = "";
 let selectedLibraryTracks = new Set();
+let resumeRetries = 0; // For auto-resume logic tracking
 let deferredInstallPrompt = null;
 let currentObjectUrl = null;
 let toastTimeout = null;
@@ -2295,21 +2296,63 @@ audio.addEventListener("pause", () => {
   updatePlayPauseButton();
   updateMediaSession();
 
-  // New: Auto-resume logic for notifications
-  if (!userPaused && !audio.ended) {
-    setPlayerStatus("Interruption detected. Resuming shortly...");
-    setTimeout(() => {
-        // Only resume if the user hasn't clicked pause in the meantime
-        if (!userPaused) {
-            audio.play().catch(() => console.log("Auto-resume blocked by system."));
+  // Mobile: Auto-resume logic for notifications/interruptions
+  // Avoid auto-resuming if the user intentionally paused, if the track ended, 
+  // or if we are at the very end (to avoid fighting with the 'ended' event).
+  const isNearEnd = audio.duration > 0 && (audio.duration - audio.currentTime < 1.0);
+  
+  if (!userPaused && !audio.ended && !isNearEnd && resumeRetries < 3) {
+    resumeRetries++;
+    setPlayerStatus(`Playback interrupted. Resuming... (Retry ${resumeRetries}/3)`);
+    
+    setTimeout(async () => {
+      // Only resume if the user hasn't toggled pause in the meantime
+      if (!userPaused && !audio.ended) {
+        try {
+          await audio.play();
+          resumeRetries = 0; // Successfully resumed
+        } catch (err) {
+          console.warn(`Auto-resume retry ${resumeRetries} blocked:`, err);
+          if (resumeRetries >= 3) {
+            setPlayerStatus("Playback stalled. Please press Play manually.");
+          }
         }
-    }, 2000); // 2 second delay is usually enough for a notification to end
+      }
+    }, 2000);
+  } else if (!userPaused && audio.ended) {
+    // Already handled by 'ended' listener, do nothing here
   } else if (audio.currentTime > 0 && !audio.ended) {
     setPlayerStatus("Playback paused.");
+    resumeRetries = 0; // Reset if it was a legitimate manual pause
+  }
+});
+
+// Audio Error Handling
+audio.addEventListener("error", (e) => {
+  const err = audio.error;
+  let msg = "Playback error occurred.";
+  if (err) {
+    switch (err.code) {
+      case 1: msg = "Playback aborted."; break;
+      case 2: msg = "Network error while loading audio."; break;
+      case 3: msg = "Audio decoding failed."; break;
+      case 4: msg = "Audio format not supported or file missing."; break;
+    }
+  }
+  console.error("Audio element error:", err);
+  setPlayerStatus(msg);
+  showToast(msg);
+  resumeRetries = 0; // Stop auto-resume loop on actual errors
+});
+
+audio.addEventListener("stalled", () => {
+  if (!audio.paused && !audio.ended) {
+    setPlayerStatus("Buffering/Stalled...");
   }
 });
 
 audio.addEventListener("ended", async () => {
+  resumeRetries = 0; // Reset retries on successful completion
   pendingRestoreTime = null;
   localStorage.removeItem(STORAGE_KEYS.currentTime);
 
