@@ -1,4 +1,4 @@
-const BUILD_TIME = "BUILD V.65 <span class=\"accent-dash\">—</span> 24MAR2026 <span class=\"accent-dash\">—</span> 15:40";
+const BUILD_TIME = "BUILD V.66 <span class=\"accent-dash\">—</span> 24MAR2026 <span class=\"accent-dash\">—</span> 16:10";
 const audio = document.getElementById("audio");
 const fileInput = document.getElementById("fileInput");
 const urlInput = document.getElementById("urlInput");
@@ -102,6 +102,7 @@ const STORAGE_KEYS = {
   selectedSavedPlaylist: "justPlayItSelectedSavedPlaylist",
   currentPlaylistName: "justPlayItCurrentPlaylistName",
   theme: "justPlayItTheme",
+  sidebarOrder: "justPlayItSidebarOrder"
 };
 
 
@@ -120,7 +121,9 @@ let repeatMode = "off";
 let savedPlaylists = {};
 let currentPlaylistName = "";
 let selectedLibraryTracks = new Set();
-let resumeRetries = 0; // For auto-resume logic tracking
+let resumeRetries = 0;
+let isRearrangeMode = false;
+let rearrangeQueue = []; // For storing the sequence of selected section IDs
 let deferredInstallPrompt = null;
 let currentObjectUrl = null;
 let toastTimeout = null;
@@ -237,6 +240,93 @@ function getTrackSourceLabel(track) {
 
 function setPlayerStatus(text) {
   if (playerCard) playerCard.title = text;
+}
+
+// ── Sidebar Sequential Reordering ──────────────────────
+
+function initSidebarOrder() {
+  const saved = localStorage.getItem(STORAGE_KEYS.sidebarOrder);
+  if (saved) {
+    try {
+      const order = JSON.parse(saved);
+      applySidebarOrder(order);
+    } catch (e) {
+      console.error("Failed to load sidebar order:", e);
+    }
+  }
+}
+
+function applySidebarOrder(orderArray) {
+  const body = document.querySelector(".sidebar-body");
+  if (!body || !orderArray) return;
+  orderArray.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) body.appendChild(el);
+  });
+}
+
+function initSidebarRearrangeMode() {
+  const rearrangeSidebarBtn = document.getElementById("rearrangeSidebarBtn");
+  const sidebarBody = document.querySelector(".sidebar-body");
+  if (!rearrangeSidebarBtn || !sidebarBody) return;
+
+  rearrangeSidebarBtn.addEventListener("click", () => {
+    isRearrangeMode = !isRearrangeMode;
+    rearrangeQueue = [];
+    
+    if (isRearrangeMode) {
+      rearrangeSidebarBtn.textContent = "Cancel Rearrange";
+      rearrangeSidebarBtn.classList.add("active");
+      sidebarBody.classList.add("rearrange-active");
+      showToast("REARRANGE MODE: Click sections in the order you want them.");
+      
+      // Reset any previous state
+      sidebarBody.querySelectorAll(".sidebar-section").forEach(s => s.classList.remove("ordered"));
+      sidebarBody.querySelectorAll(".reorder-badge").forEach(b => b.remove());
+    } else {
+      rearrangeSidebarBtn.textContent = "Rearrange Sections";
+      rearrangeSidebarBtn.classList.remove("active");
+      sidebarBody.classList.remove("rearrange-active");
+      sidebarBody.querySelectorAll(".sidebar-section").forEach(s => s.classList.remove("ordered"));
+      sidebarBody.querySelectorAll(".reorder-badge").forEach(b => b.remove());
+    }
+  });
+
+  sidebarBody.addEventListener("click", (e) => {
+    if (!isRearrangeMode) return;
+    
+    const section = e.target.closest(".sidebar-section");
+    if (!section || section.classList.contains("ordered")) return;
+    
+    rearrangeQueue.push(section.id);
+    section.classList.add("ordered");
+    
+    // Add badge
+    const badge = document.createElement("div");
+    badge.className = "reorder-badge";
+    badge.textContent = rearrangeQueue.length;
+    section.appendChild(badge);
+    
+    // Check if we finished selecting all sections
+    const total = sidebarBody.querySelectorAll(".sidebar-section").length;
+    if (rearrangeQueue.length === total) {
+      applySidebarOrder(rearrangeQueue);
+      localStorage.setItem(STORAGE_KEYS.sidebarOrder, JSON.stringify(rearrangeQueue));
+      
+      // Exit mode automatically
+      isRearrangeMode = false;
+      rearrangeSidebarBtn.textContent = "Rearrange Sections";
+      rearrangeSidebarBtn.classList.remove("active");
+      sidebarBody.classList.remove("rearrange-active");
+      
+      setTimeout(() => {
+        sidebarBody.querySelectorAll(".sidebar-section").forEach(s => s.classList.remove("ordered"));
+        sidebarBody.querySelectorAll(".reorder-badge").forEach(b => b.remove());
+      }, 1200);
+      
+      showToast("Layout updated & saved!");
+    }
+  });
 }
 
 function showToast(message, duration = 2400) {
@@ -2535,6 +2625,9 @@ function updateBuildInfo() {
 }
 
 async function initApp() {
+  // Restore sidebar layout order before anything else
+  initSidebarOrder();
+
   // Apply saved/system theme immediately (before any paint)
   initTheme();
 
@@ -2566,6 +2659,9 @@ async function initApp() {
       toggleLibraryBtn.setAttribute("aria-expanded", !isVisible);
     });
   }
+
+  // Initialize sidebar reordering logic
+  initSidebarRearrangeMode();
 
   // Final count update
   await updateBadgeCounts();
