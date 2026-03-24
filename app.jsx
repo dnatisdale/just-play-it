@@ -1,4 +1,4 @@
-const BUILD_TIME = "BUILD V.62 <span class=\"accent-dash\">—</span> 24MAR2026 <span class=\"accent-dash\">—</span> 11:30";
+const BUILD_TIME = "BUILD V.63 <span class=\"accent-dash\">—</span> 24MAR2026 <span class=\"accent-dash\">—</span> 14:40";
 const audio = document.getElementById("audio");
 const fileInput = document.getElementById("fileInput");
 const urlInput = document.getElementById("urlInput");
@@ -64,6 +64,7 @@ const copyQrBtn = document.getElementById("copyQrBtn");
 const downloadQrBtn = document.getElementById("downloadQrBtn");
 
 // Badges
+const menuBadge = document.getElementById("menuBadge");
 const savedPlaylistsBadge = document.getElementById("savedPlaylistsBadge");
 const playlistBadge = document.getElementById("playlistBadge");
 const nowPlayingPlaylistName = document.getElementById("nowPlayingPlaylistName");
@@ -272,20 +273,22 @@ async function updateBadgeCounts() {
     savedPlaylistsBadge.classList.toggle("hidden", savedCount === 0);
   }
 
-  // Sidebar badge: total library files - Not needed as requested
-/*
+  // Sidebar badge: total library files (Stored + Built-in)
   if (menuBadge) {
     try {
       const records = db ? await getAllTrackBlobs() : [];
-      const count = records.length;
-      menuBadge.textContent = count;
-      menuBadge.classList.toggle("hidden", count === 0);
+      let builtinCount = 0;
+      Object.values(savedPlaylists).forEach(pl => {
+        if (pl.isBuiltin) builtinCount += (pl.tracks || []).length;
+      });
+      const totalCount = records.length + builtinCount;
+      menuBadge.textContent = totalCount;
+      menuBadge.classList.toggle("hidden", totalCount === 0);
     } catch (err) {
       console.error("Badge update error:", err);
       menuBadge.classList.add("hidden");
     }
   }
-*/
 }
 
 function revokeCurrentObjectUrl() {
@@ -524,7 +527,7 @@ async function renderSidebarLibrary() {
   if (!deviceLibraryList) return;
 
   if (!db) {
-    deviceLibraryList.innerHTML = `<p class="library-empty-state">Storage unavailable.</p>`;
+    deviceLibraryList.innerHTML = `<p class="library-empty-state">Library unavailable.</p>`;
     return;
   }
 
@@ -535,13 +538,44 @@ async function renderSidebarLibrary() {
     records = [];
   }
 
-  if (records.length === 0) {
-    deviceLibraryList.innerHTML = `<p class="library-empty-state">No offline tracks stored yet.</p>`;
+  // Get built-in tracks from all built-in playlists
+  const builtinTracks = [];
+  Object.values(savedPlaylists).forEach(pl => {
+    if (pl.isBuiltin) {
+      builtinTracks.push(...(pl.tracks || []));
+    }
+  });
+
+  // Unique them by title to avoid noise
+  const seenBuiltins = new Set();
+  const uniqueBuiltins = builtinTracks.filter(t => {
+    if (seenBuiltins.has(t.title)) return false;
+    seenBuiltins.add(t.title);
+    return true;
+  });
+
+  if (records.length === 0 && uniqueBuiltins.length === 0) {
+    deviceLibraryList.innerHTML = `<p class="library-empty-state">Your library is empty.</p>`;
     return;
   }
 
   deviceLibraryList.innerHTML = "";
 
+  // Render Built-ins
+  uniqueBuiltins.forEach((track) => {
+    const item = document.createElement("div");
+    item.className = "library-item builtin";
+    item.innerHTML = `
+      <div class="library-item-info">
+        <span class="library-item-name" title="${escapeHtml(track.title)}">${escapeHtml(track.title)}</span>
+        <span class="library-item-size">App Built-in</span>
+      </div>
+      <button type="button" class="small-btn" style="padding: 4px 8px; font-size: 10px; min-height: 24px;">Built-in</button>
+    `;
+    deviceLibraryList.appendChild(item);
+  });
+
+  // Render Stored Files
   records.forEach((record) => {
     const size = formatBytes(record.size || record.blob?.size || 0);
     const name = record.title || record.id;
@@ -554,7 +588,7 @@ async function renderSidebarLibrary() {
     info.className = "library-item-info";
     info.innerHTML = `
       <span class="library-item-name" title="${escapeHtml(name)}">${escapeHtml(name)}</span>
-      <span class="library-item-size">${size}</span>
+      <span class="library-item-size">${size} • Stored</span>
     `;
 
     const deleteBtn = document.createElement("button");
@@ -2435,6 +2469,19 @@ async function initApp() {
   updateNowPlaying(playlist[currentTrackIndex] || null);
   setupMediaSessionActions();
   await updateStorageUsage();
+   // Sidebar Library Toggle
+  const toggleLibraryBtn = document.getElementById("toggleLibraryBtn");
+  const libraryCollapsible = document.getElementById("libraryCollapsible");
+  if (toggleLibraryBtn && libraryCollapsible) {
+    toggleLibraryBtn.addEventListener("click", () => {
+      const isVisible = !libraryCollapsible.classList.contains("collapsed");
+      libraryCollapsible.classList.toggle("collapsed");
+      toggleLibraryBtn.textContent = isVisible ? "Show" : "Hide";
+      toggleLibraryBtn.setAttribute("aria-expanded", !isVisible);
+    });
+  }
+
+  // Final count update
   await updateBadgeCounts();
   updateQrCode();
   updateBuildInfo();

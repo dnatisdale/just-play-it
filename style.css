@@ -1896,12 +1896,58 @@ h3 .counter-badge {
 ═══════════════════════════════════════════ */
 
 .device-library-list {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 4px;
   margin: 4px 0 8px;
-  max-height: 260px;
+  max-height: 280px;
   overflow-y: auto;
   border-radius: var(--radius-xs);
+  padding-right: 4px;
+}
+
+.device-library-list.collapsed {
+  display: none;
+}
+
+.sidebar-collapsible-content {
+  transition: max-height 0.3s ease-out, opacity 0.3s ease;
+  max-height: 2000px;
+  opacity: 1;
+}
+
+.sidebar-collapsible-content.collapsed {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+}
+
+.sidebar-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.sidebar-collapse-toggle {
+  background: var(--glass);
+  border: 1px solid var(--border-strong);
+  color: var(--text-2);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+
+.sidebar-collapse-toggle:hover {
+  background: var(--glass-border);
+  color: var(--text);
 }
 
 .library-item {
