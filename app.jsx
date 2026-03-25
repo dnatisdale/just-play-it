@@ -2834,15 +2834,21 @@ async function initApp() {
       if (sequenceStarted) return;
       sequenceStarted = true;
 
-      // Sync start slightly to match animation onset
+      // First play
       setTimeout(() => {
         splashAudio.play().then(() => {
            bouncePlayed = true;
         }).catch(() => {
-           // Reset if blocked so interaction can trigger it immediately
            sequenceStarted = false;
         });
-      }, 100); 
+      }, 100);
+
+      // Second play (1.2s later for a double-bounce effect)
+      setTimeout(() => {
+        const secondAudio = new Audio("audio/ElevenLabs_Basketball2.ogg");
+        secondAudio.volume = 0.45;
+        secondAudio.play().catch(() => {});
+      }, 1300);
     };
 
     // 1. Try playing automatically
@@ -2851,9 +2857,16 @@ async function initApp() {
     // 2. Fallback: trigger on first user interaction anywhere
     const triggerSplash = () => {
       if (!bouncePlayed) {
-        // If it was blocked, a user click will force it to play
+        // If it was blocked, a user click will force it to play twice
         splashAudio.currentTime = 0;
         splashAudio.play().catch(()=>{});
+        
+        setTimeout(() => {
+          const secondAudio = new Audio("audio/ElevenLabs_Basketball2.ogg");
+          secondAudio.volume = 0.45;
+          secondAudio.play().catch(() => {});
+        }, 1200);
+
         bouncePlayed = true;
         sequenceStarted = true;
       }

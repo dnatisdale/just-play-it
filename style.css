@@ -1517,8 +1517,8 @@ h3 .dot {
   flex-shrink: 0;
   transition: all var(--transition);
   padding: 0;
-  background: #22c55e; /* Green */
-  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.4);
+  background: var(--orange); /* Orange */
+  box-shadow: 0 2px 8px var(--orange-glow);
   position: relative;
   overflow: hidden;
 }
