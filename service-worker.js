@@ -1,4 +1,4 @@
-const CACHE_NAME = "just-play-it-build-1730-24MAR2026-v73";
+const CACHE_NAME = "just-play-it-build-1730-25MAR2026-v74";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
@@ -8,28 +8,7 @@ const ASSETS_TO_CACHE = [
   "./manifest.json",
   "./builtin-playlists.json",
   "./icons/icon-192.png",
-  "./icons/icon-512.png",
-  "./audio/jonahs-songs/Song 1 Run to Tarshish.mp3",
-  "./audio/jonahs-songs/Song 2 Who Is This God.mp3",
-  "./audio/jonahs-songs/Song 3 A God Who Relents.mp3",
-  "./audio/jonahs-songs/Song 4 Who Knows.mp3",
-  "./audio/jonahs-songs/The Jonah Songs.mp3",
-  "./audio/remember-the-lord/Remember the Lord Part 1.mp3",
-  "./audio/remember-the-lord/Remember the Lord Part 2.mp3",
-  "./audio/remember-the-lord/Remember the Lord Part 3.mp3",
-  "./audio/remember-the-lord/Remember the Lord Part 4.mp3",
-  "./audio/remember-the-lord/Part 1 Remember the Lord.wav",
-  "./audio/remember-the-lord/Part 2 Remember the Lord.wav",
-  "./audio/remember-the-lord/Part 3 Remember the Lord.wav",
-  "./audio/remember-the-lord/Part 4 Remember the Lord.wav",
-  "./audio/nas-songs_plus/Before My Eyes.mp3",
-  "./audio/nas-songs_plus/God is My H O M E.mp3",
-  "./audio/nas-songs_plus/God with Us.mp3",
-  "./audio/nas-songs_plus/In the Darkest Night.mp3",
-  "./audio/nas-songs_plus/LOOK UP!.mp3",
-  "./audio/nas-songs_plus/The God Who Fights For Me.mp3",
-  "./audio/nas-songs_plus/When My Loved One is Gone!.mp3",
-  "./audio/nas-songs_plus/You are loved, so very loved!.mp3"
+  "./icons/icon-512.png"
 ];
 
 self.addEventListener("install", (event) => {
@@ -64,18 +43,20 @@ self.addEventListener("fetch", (event) => {
   const isCoreFile = CORE_FILES.some(f => url.pathname.endsWith(f) || url.pathname === "/");
 
   if (isCoreFile) {
-    // Network First strategy for core files: get the latest from the web if possible
+    // Stale-While-Revalidate strategy for core files: 
+    // Load from cache instantly, but update the cache in the background
     event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          const cacheCopy = response.clone();
+      caches.match(event.request).then((cachedResponse) => {
+        const fetchPromise = fetch(event.request).then((networkResponse) => {
+          const cacheCopy = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cacheCopy));
-          return response;
-        })
-        .catch(() => caches.match(event.request))
+          return networkResponse;
+        });
+        return cachedResponse || fetchPromise;
+      })
     );
   } else {
-    // Cache First for everything else (like music files)
+    // Cache First for everything else (music files, icons, etc.)
     // IMPORTANT: Supporting Range Headers specifically for iOS/Safari audio stability
     event.respondWith(
       caches.match(event.request).then((cachedResponse) => {
@@ -91,10 +72,7 @@ self.addEventListener("fetch", (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cacheCopy));
           
           if (event.request.headers.get("Range")) {
-            // We can't easily range-slice a full fetch response stream here without extra buffering
-            // but the browser will handle the network fetch range correctly. 
-            // The issue is mostly with CACHED assets.
-            return response;
+             return response;
           }
           return response;
         });

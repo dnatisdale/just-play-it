@@ -1,4 +1,4 @@
-const BUILD_TIME = "BUILD V.73 <span class=\"accent-dash\">—</span> 24MAR2026 <span class=\"accent-dash\">—</span> 19:30";
+const BUILD_TIME = "BUILD V.74 <span class=\"accent-dash\">—</span> 25MAR2026 <span class=\"accent-dash\">—</span> 14:10";
 const audio = document.getElementById("audio");
 const fileInput = document.getElementById("fileInput");
 const urlInput = document.getElementById("urlInput");
@@ -2611,19 +2611,20 @@ window.addEventListener("beforeunload", () => {
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("./service-worker.js").then((reg) => {
-      // Force a check for updates immediately on load
-      reg.update();
+      // Check for updates periodically (every hour) instead of every load
+      setInterval(() => reg.update(), 60 * 60 * 1000);
     }).catch((error) => {
       console.error("Service worker registration failed:", error);
     });
   });
 
-  // Automatically reload the page when a new service worker takes over (Silent update)
+  // Notify the user when an update is available instead of silent reloading
   let refreshing = false;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (!refreshing) {
       refreshing = true;
-      window.location.reload();
+      showToast("App updated in background. Refresh to use latest version.", 6000);
+      // Optional: Add a real UI button for refreshing if we want to be more explicit
     }
   });
 }
