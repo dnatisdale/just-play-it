@@ -1,4 +1,4 @@
-const BUILD_TIME = "BUILD V.76 <span class=\"accent-dash\">—</span> 25MAR2026 <span class=\"accent-dash\">—</span> 15:15";
+const BUILD_TIME = "BUILD V.77 <span class=\"accent-dash\">—</span> 25MAR2026 <span class=\"accent-dash\">—</span> 15:35";
 const audio = document.getElementById("audio");
 const fileInput = document.getElementById("fileInput");
 const urlInput = document.getElementById("urlInput");
@@ -129,7 +129,8 @@ let currentObjectUrl = null;
 let toastTimeout = null;
 let draggedTrackIndex = null;
 let isEditMode = false;
-let userPaused = false; // New: Tracks if the PAUSE was intentional by the user
+let userPaused = false; // Tracks if the PAUSE was intentional by the user
+let isTransitioning = false; // Prevents auto-resume from racing against track transitions
 
 // ── Theme ──────────────────────────────────────────────
 function getSystemTheme() {
@@ -1214,8 +1215,9 @@ async function resolveTrackSource(track) {
 
 async function loadTrack(index, shouldPlay = false) {
   if (index < 0 || index >= playlist.length) return;
-  
-  // Explicitly stop and clear previous src to flush state
+
+  // Signal to the auto-resume handler that we are intentionally changing tracks
+  isTransitioning = true;
   audio.pause();
   revokeCurrentObjectUrl();
 
@@ -1224,6 +1226,7 @@ async function loadTrack(index, shouldPlay = false) {
   const source = await resolveTrackSource(track);
 
   if (!source) {
+    isTransitioning = false;
     updateNowPlaying(track);
     renderPlaylist();
     savePlaylistState();
@@ -1234,7 +1237,7 @@ async function loadTrack(index, shouldPlay = false) {
   }
 
   audio.src = source;
-  // Let the browser handle the load triggered by the change in src.
+  isTransitioning = false; // Safe to allow auto-resume again from here
 
   updateNowPlaying(track);
   renderPlaylist();
@@ -1736,9 +1739,17 @@ function cycleRepeatMode() {
 }
 
 function skipSeconds(seconds) {
-  if (!audio.src || !Number.isFinite(audio.duration)) return;
+  if (!audio.src) {
+    showToast("No track loaded.");
+    return;
+  }
+  if (!Number.isFinite(audio.duration)) {
+    // Audio metadata not yet loaded — try to seek anyway; it will clamp once loaded
+    setPlayerStatus("Track still loading, try again in a moment.");
+    return;
+  }
   audio.currentTime = Math.max(0, Math.min(audio.duration, audio.currentTime + seconds));
-  showToast(`${seconds > 0 ? "Forward" : "Back"} ${Math.abs(seconds)}s`);
+  showToast(`${seconds > 0 ? "+" : ""}${seconds}s`);
 }
 
 function saveNamedPlaylist() {
@@ -2496,8 +2507,9 @@ audio.addEventListener("pause", () => {
     setPlayerStatus(`Playback interrupted. Resuming... (Retry ${resumeRetries}/3)`);
     
     setTimeout(async () => {
-      // Only resume if the user hasn't toggled pause in the meantime
-      if (!userPaused && !audio.ended) {
+      // Do NOT auto-resume if we are in the middle of loading a new track.
+      // This prevents the race condition that causes "Playback could not start."
+      if (!userPaused && !audio.ended && !isTransitioning) {
         try {
           await audio.play();
           resumeRetries = 0; // Successfully resumed
