@@ -1176,13 +1176,17 @@ input[type="range"]::-moz-range-thumb {
 
 .select-pop.has-selection,
 #savedPlaylistsSelect.has-selection {
-  background: var(--orange) !important;
+  background: var(--orange) url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 18px center !important;
+  background-size: 18px !important;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
   color: #fff !important;
   border-color: transparent !important;
   box-shadow: 0 4px 15px var(--orange-glow) !important;
   font-weight: 600 !important;
   border-radius: 999px !important;
-  padding-right: 40px !important;
+  padding-right: 48px !important;
 }
 
 .select-pop.has-selection:focus,
@@ -1890,7 +1894,7 @@ h3 .dot {
 #menuBadge {
   background: var(--orange) !important;
   box-shadow: 0 2px 8px var(--orange-glow) !important;
-  border-color: #fff !important;
+  border-color: transparent !important;
 }
 
 [data-theme="dark"] .counter-badge {
