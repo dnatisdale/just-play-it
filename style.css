@@ -1453,13 +1453,14 @@ input::placeholder {
 
 .playlist-item {
   display: flex; /* Switch to flex for better track-name growth */
-  gap: 12px;
+  gap: 10px;
   align-items: center;
   justify-content: space-between;
   background: var(--panel-3);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 12px 14px;
+  padding: 8px 12px;
+  padding-left: 8px; /* Tighter against the left side as requested */
   transition: background var(--transition), border-color var(--transition),
     transform var(--transition);
   cursor: pointer;
@@ -1564,8 +1565,8 @@ input::placeholder {
 .play-icon-btn {
   background: var(--accent) !important;
   color: #fff !important;
-  width: 34px;
-  height: 34px;
+  width: 28px;
+  height: 28px;
   border-radius: 50% !important;
   display: flex;
   align-items: center;
@@ -1581,7 +1582,9 @@ input::placeholder {
 }
 
 .play-icon-btn svg {
-  margin-left: 2px; /* Visual centering for triangle */
+  margin-left: 1px; /* Visual centering for triangle */
+  width: 12px;
+  height: 12px;
 }
 
 .track-info-btn {
@@ -2600,21 +2603,47 @@ h3 .counter-badge {
   }
 
   .playlist-item {
-    grid-template-columns: 44px 1fr;
-    align-items: start;
+    display: flex; /* Force single row on mobile */
+    flex-direction: row;
+    gap: 8px;
+    padding: 6px 8px;
+    padding-left: 4px; /* Flushed to left on mobile */
+    align-items: center;
+    grid-template-columns: none; /* Clear the grid */
   }
 
   .track-thumb {
-    width: 44px;
-    height: 44px;
-    border-radius: 10px;
-    font-size: 1.2rem;
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    font-size: 1rem;
   }
 
   .item-actions {
-    grid-column: 2 / 3;
-    justify-content: flex-start;
-    margin-top: 8px;
+    grid-column: auto;
+    justify-content: flex-end;
+    margin-top: 0;
+    flex-wrap: nowrap;
+  }
+  
+  .play-icon-btn {
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+  }
+  
+  /* Hide text buttons on mobile to save space */
+  .item-actions .small-btn.remove {
+    padding: 6px;
+    min-width: 26px;
+    min-height: 26px;
+    font-size: 0; /* Hide text */
+  }
+  
+  .item-actions .small-btn.remove::after {
+    content: "✕";
+    font-size: 14px;
+    margin-left: 0;
   }
 
   .url-row,
