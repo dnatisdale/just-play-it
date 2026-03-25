@@ -1,4 +1,4 @@
-const CACHE_NAME = "just-play-it-build-1730-25MAR2026-v74";
+const CACHE_NAME = "just-play-it-build-1730-25MAR2026-v75";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
@@ -69,12 +69,13 @@ self.addEventListener("fetch", (event) => {
         }
 
         return fetch(event.request).then((response) => {
-          const cacheCopy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cacheCopy));
-          
-          if (event.request.headers.get("Range")) {
-             return response;
+          // Never attempt to cache a 206 Partial Content piece - it crashes the Stream clones
+          // and instantly breaks user playback with an AbortError.
+          if (response.status === 200) {
+            const cacheCopy = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cacheCopy)).catch(e => console.warn("Cache put failed", e));
           }
+          
           return response;
         });
       })

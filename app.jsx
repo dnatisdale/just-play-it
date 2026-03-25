@@ -1,4 +1,4 @@
-const BUILD_TIME = "BUILD V.74 <span class=\"accent-dash\">—</span> 25MAR2026 <span class=\"accent-dash\">—</span> 14:10";
+const BUILD_TIME = "BUILD V.75 <span class=\"accent-dash\">—</span> 25MAR2026 <span class=\"accent-dash\">—</span> 14:45";
 const audio = document.getElementById("audio");
 const fileInput = document.getElementById("fileInput");
 const urlInput = document.getElementById("urlInput");
@@ -1215,11 +1215,9 @@ async function resolveTrackSource(track) {
 async function loadTrack(index, shouldPlay = false) {
   if (index < 0 || index >= playlist.length) return;
   
-  // Explicitly stop and clear previous src to flush hardware
+  // Explicitly stop and clear previous src to flush state
   audio.pause();
   revokeCurrentObjectUrl();
-  audio.removeAttribute("src");
-  audio.load();
 
   currentTrackIndex = index;
   const track = playlist[index];
