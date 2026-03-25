@@ -8,7 +8,8 @@ const ASSETS_TO_CACHE = [
   "./manifest.json",
   "./builtin-playlists.json",
   "./icons/icon-192.png",
-  "./icons/icon-512.png"
+  "./icons/icon-512.png",
+  "./audio/ElevenLabs_sneakers_squeaking.mp3"
 ];
 
 self.addEventListener("install", (event) => {

@@ -2860,9 +2860,32 @@ async function initApp() {
   // ── Splash screen logic ──
   const splash = document.getElementById("splashScreen");
   if (splash) {
+    const splashAudio = new Audio("./audio/ElevenLabs_sneakers_squeaking.mp3");
+    let playCount = 0;
+
+    const playSplashSound = async () => {
+      try {
+        await splashAudio.play();
+        playCount++;
+        if (playCount < 2) {
+          splashAudio.onended = playSplashSound;
+        } else {
+          splashAudio.onended = null;
+        }
+      } catch (err) {
+        // Most browsers block autoplay without a user gesture.
+        // We catch this quietly so it doesn't break the splash screen.
+        console.warn("Splash audio autoplay was blocked by browser:", err);
+      }
+    };
+
+    playSplashSound();
+
     // Delay to let the fancy bouncy animation finish
     setTimeout(() => {
       splash.classList.add("fade-out");
+      // Optionally stop a long-playing sound if it's still going when fading
+      splashAudio.onended = null;
     }, 4000);
   }
 }
