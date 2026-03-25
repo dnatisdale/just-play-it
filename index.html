@@ -383,7 +383,7 @@
                 maxlength="60"
                 autocomplete="off"
               />
-              <button id="savePlaylistBtn" type="button">Save Current</button>
+              <button id="savePlaylistBtn" type="button">Save</button>
             </div>
 
             <div class="load-row-group" style="display: grid; gap: 8px;">
@@ -391,13 +391,13 @@
                 <option value="" disabled selected hidden>— Choose a saved playlist —</option>
               </select>
               
-              <div class="action-dropdown-row" style="display: flex; gap: 8px;">
-                <select id="playlistActionSelect" aria-label="Playlist action" style="flex: 1;">
+              <div class="action-dropdown-row" style="display: grid; gap: 8px;">
+                <select id="playlistActionSelect" aria-label="Playlist action">
                   <option value="load" selected>Load</option>
                   <option value="rename">Rename</option>
                   <option value="delete">Delete</option>
                 </select>
-                <button id="playlistActionBtn" type="button" class="ghost-btn" disabled style="flex: 1.5; font-weight: 700;">Select Playlist</button>
+                <button id="playlistActionBtn" type="button" class="ghost-btn" disabled style="font-weight: 700;">Select Playlist</button>
               </div>
             </div>
           </div>
