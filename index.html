@@ -167,28 +167,29 @@
         <!-- Support Section (Fixed at bottom of scrolling area) -->
         <div id="sidebar-section-support" class="sidebar-section-fixed" style="margin-top: 12px; padding-top: 16px; border-top: 1px solid var(--border);">
           <div class="sidebar-section-label">Support</div>
-          <p class="sidebar-storage-text" style="padding: 0 14px 12px; font-weight: 400; opacity: 1; text-align: center; font-style: italic;">
-            Help keep the wheels turning and the records spinning.
-          </p>
           <a href="https://ko-fi.com/justplayit" class="sidebar-row-btn gold-member-btn" id="supportLinkTop" target="_blank" rel="noopener noreferrer" style="text-decoration: none; background: var(--glass-border); box-shadow: 0 4px 12px rgba(148, 4, 20, 0.15);">
             <span class="sidebar-row-icon blink-wrapper">
               <img src="icons/icon-192.png" width="18" height="18" alt="JPi Logo" class="blink-logo" />
               <svg class="blink-heart" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="#940414" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.72-8.72 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </span>
-            <span class="sidebar-row-text" style="font-weight: 700; color: var(--accent-light);">Click, to become a Gold Member today!</span>
+            <span class="sidebar-row-text" style="font-weight: 700; color: var(--accent);">Click, to become a Gold Member today!</span>
             <span class="sidebar-row-icon blink-wrapper" style="margin-left: 0;">
               <img src="icons/icon-192.png" width="18" height="18" alt="JPi Logo" class="blink-logo" />
               <svg class="blink-heart" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="#940414" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.72-8.72 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </span>
           </a>
+          <p class="sidebar-storage-text" style="padding: 12px 14px 0; font-weight: 400; opacity: 1; text-align: center; font-style: italic;">
+            Help keep the wheels turning and the records spinning.
+          </p>
+        </div>
+        
+        <div id="sidebarBuildInfo" style="text-align: center; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 1px; color: #6b7280; text-transform: uppercase; padding: 24px 0 16px;">
+          BUILD V.68 <span class="accent-dash">—</span> 24MAR2026 <span class="accent-dash">—</span> 17:10
         </div>
       </div><!-- End sidebar-body -->
 
       <!-- Fixed Sidebar Footer -->
       <div class="sidebar-footer-pinned" style="padding: 16px; border-top: 1px solid var(--border); background: var(--panel-2); backdrop-filter: blur(10px);">
-        <div id="sidebarBuildInfo" style="text-align: center; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 1px; color: #6b7280; text-transform: uppercase; padding-bottom: 20px;">
-          BUILD V.68 <span class="accent-dash">—</span> 24MAR2026 <span class="accent-dash">—</span> 17:10
-        </div>
         <div style="text-align: center; display: flex; flex-direction: column; gap: 8px; align-items: center;">
           <button id="rearrangeSidebarBtn" class="sidebar-rearrange-link" type="button">Rearrange Sections</button>
           <button id="resetSidebarOrderBtn" class="sidebar-reset-link" type="button">Reset Sidebar Order</button>
@@ -260,7 +261,7 @@
         <!-- ── Player card ── -->
         <section class="player-card">
           <div class="now-playing-header">
-            <div class="now-playing-label">NOW PLAYING.</div>
+            <div class="now-playing-label">NOW PLAYING<span class="dot"></span></div>
             <button id="nowPlayingPlaylistInfo" class="now-playing-playlist-info interactive-header" type="button" aria-label="Jump to current playlist">
               <span id="nowPlayingPlaylistName" title="Current playlist">Unsaved</span>
               <span class="counter-badge" id="nowPlayingPlaylistBadge">0</span>

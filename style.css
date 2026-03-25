@@ -650,7 +650,7 @@ h1 .dot {
 
 .now-playing-label {
   font-family: "Big Shoulders Display", "Oswald", sans-serif;
-  font-size: 1.3rem;
+  font-size: 1.6rem;
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.02em;
@@ -1160,6 +1160,10 @@ input[type="range"]::-moz-range-thumb {
   box-shadow: 0 0 0 3px var(--accent-subtle);
 }
 
+#playlistNameInput {
+  border: 1px solid var(--accent) !important;
+}
+
 .select-pop {
   background: var(--input-bg) !important;
   border: 1px solid var(--border-strong) !important;
@@ -1323,7 +1327,7 @@ input::placeholder {
 .library-card h3 {
   margin: 0;
   font-family: "Big Shoulders Display", "Oswald", sans-serif;
-  font-size: 1.3rem;
+  font-size: 1.6rem;
   font-weight: 900;
   color: #fff !important;
   text-transform: uppercase;
@@ -1337,7 +1341,7 @@ input::placeholder {
 }
 
 h3 .dot {
-  background: var(--accent); /* Revert dot to accent red */
+  background: currentColor; /* Dot follows text color for light/dark mode */
 }
 
 .add-grid {
@@ -1866,11 +1870,11 @@ h3 .dot {
   background: var(--accent);
   color: #fff;
   font-family: "Inter", sans-serif;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   font-weight: 800;
-  min-width: 18px;
-  height: 18px;
-  border-radius: 9px;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 11px;
   display: flex;
   align-items: center;
   justify-content: center;

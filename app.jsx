@@ -1073,17 +1073,6 @@ function renderPlaylist() {
     dragHandle.title = "Drag to reorder";
     // We don't need a click listener as the parent li is draggable=true
 
-    const playBtn = document.createElement("button");
-    playBtn.type = "button";
-    playBtn.className = "small-btn play-icon-btn";
-    playBtn.innerHTML = ICONS.play;
-    playBtn.title = "Play track";
-    playBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      loadTrack(index, true);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    });
-
     const removeBtn = document.createElement("button");
     removeBtn.type = "button";
     removeBtn.className = "small-btn remove";
@@ -1094,8 +1083,6 @@ function renderPlaylist() {
     if (isEditMode) {
       actions.appendChild(dragHandle);
       actions.appendChild(removeBtn);
-    } else {
-      actions.appendChild(playBtn);
     }
 
     const statusBtn = document.createElement("button");
