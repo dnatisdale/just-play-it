@@ -1202,7 +1202,11 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .accent-label {
-  color: var(--orange) !important;
+  color: #fff !important;
+}
+
+[data-theme="light"] .accent-label {
+  color: var(--text) !important;
 }
 
 .pulse-red-label {
@@ -1317,13 +1321,19 @@ input::placeholder {
   font-family: "Big Shoulders Display", "Oswald", sans-serif;
   font-size: 1.3rem;
   font-weight: 900;
-  color: var(--orange) !important;
+  color: #fff !important;
   text-transform: uppercase;
   letter-spacing: 0.02em;
 }
 
+[data-theme="light"] .section-head h3,
+[data-theme="light"] .playlist-header h3,
+[data-theme="light"] .library-card h3 {
+  color: var(--text) !important;
+}
+
 h3 .dot {
-  background: var(--orange) !important;
+  background: var(--accent); /* Revert dot to accent red */
 }
 
 .add-grid {
