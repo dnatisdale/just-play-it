@@ -2856,68 +2856,12 @@ async function initApp() {
     });
   }
 
-  // ── Squeaking Sneakers sound logic ──
+  // ── Splash screen logic ──
   const splash = document.getElementById("splashScreen");
   if (splash) {
-    let bouncePlayed = false;
-    let sequenceStarted = false;
-
-    const splashAudio = new Audio("audio/ElevenLabs_Basketball2.ogg");
-    splashAudio.volume = 0.45;
-    splashAudio.preload = "auto";
-
-    const playSplashSound = () => {
-      if (sequenceStarted) return;
-      sequenceStarted = true;
-
-      // First play
-      setTimeout(() => {
-        splashAudio.play().then(() => {
-           bouncePlayed = true;
-        }).catch(() => {
-           sequenceStarted = false;
-        });
-      }, 100);
-
-      // Second play (1.2s later for a double-bounce effect)
-      setTimeout(() => {
-        const secondAudio = new Audio("audio/ElevenLabs_Basketball2.ogg");
-        secondAudio.volume = 0.45;
-        secondAudio.play().catch(() => {});
-      }, 1300);
-    };
-
-    // 1. Try playing automatically
-    playSplashSound();
-
-    // 2. Fallback: trigger on first user interaction anywhere
-    const triggerSplash = () => {
-      if (!bouncePlayed) {
-        // If it was blocked, a user click will force it to play twice
-        splashAudio.currentTime = 0;
-        splashAudio.play().catch(()=>{});
-        
-        setTimeout(() => {
-          const secondAudio = new Audio("audio/ElevenLabs_Basketball2.ogg");
-          secondAudio.volume = 0.45;
-          secondAudio.play().catch(() => {});
-        }, 1200);
-
-        bouncePlayed = true;
-        sequenceStarted = true;
-      }
-      window.removeEventListener("pointerdown", triggerSplash);
-      window.removeEventListener("keydown", triggerSplash);
-    };
-    
-    window.addEventListener("pointerdown", triggerSplash, { once: true });
-    window.addEventListener("keydown", triggerSplash, { once: true });
-
     // Delay to let the fancy bouncy animation finish
     setTimeout(() => {
       splash.classList.add("fade-out");
-      window.removeEventListener("pointerdown", triggerSplash);
-      window.removeEventListener("keydown", triggerSplash);
     }, 4000);
   }
 }
