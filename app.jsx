@@ -585,7 +585,23 @@ function openDatabase() {
   });
 }
 
-function saveTrackBlob(id, file) {
+function getAudioDuration(file) {
+  return new Promise((resolve) => {
+    const objectUrl = URL.createObjectURL(file);
+    const audioObj = new Audio();
+    audioObj.addEventListener("loadedmetadata", () => {
+      resolve(audioObj.duration);
+      URL.revokeObjectURL(objectUrl);
+    });
+    audioObj.addEventListener("error", () => {
+      resolve(0);
+      URL.revokeObjectURL(objectUrl);
+    });
+    audioObj.src = objectUrl;
+  });
+}
+
+function saveTrackBlob(id, file, duration = 0) {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(TRACK_STORE, "readwrite");
     const store = tx.objectStore(TRACK_STORE);
@@ -596,6 +612,7 @@ function saveTrackBlob(id, file) {
       title: file.name,
       type: file.type || "audio/*",
       size: file.size || 0,
+      duration: duration,
       updatedAt: Date.now(),
     });
 
@@ -740,6 +757,8 @@ async function renderSidebarLibrary() {
     records.forEach((record) => {
       const size = formatBytes(record.size || record.blob?.size || 0);
       const name = record.title || record.id;
+      const durationStr = record.duration ? formatTime(record.duration) : "";
+      const metaText = durationStr ? `${durationStr} • ${size}` : size;
 
       const item = document.createElement("div");
       item.className = "library-item";
@@ -749,7 +768,7 @@ async function renderSidebarLibrary() {
       info.className = "library-item-info";
       info.innerHTML = `
         <span class="library-item-name" title="${escapeHtml(name)}">${escapeHtml(name)}</span>
-        <span class="library-item-size">${size}</span>
+        <span class="library-item-size">${metaText}</span>
       `;
 
       const deleteBtn = document.createElement("button");
@@ -790,11 +809,14 @@ async function renderSidebarLibrary() {
     deviceLibraryList.appendChild(builtinsLabel);
 
     uniqueBuiltins.forEach((track) => {
+      const durationStr = track.duration ? formatTime(track.duration) : "";
+      const metaText = durationStr ? durationStr : "Built-in";
       const item = document.createElement("div");
       item.className = "library-item builtin-item";
       item.innerHTML = `
         <div class="library-item-info">
           <span class="library-item-name" title="${escapeHtml(track.title)}">${escapeHtml(track.title)}</span>
+          <span class="library-item-size">${metaText}</span>
         </div>
       `;
       // Delete button - spacer for grid consistency
@@ -1241,12 +1263,14 @@ async function addFileTracks(files) {
     }
 
     const id = crypto.randomUUID();
-    await saveTrackBlob(id, file);
+    const duration = await getAudioDuration(file);
+    await saveTrackBlob(id, file, duration);
 
     newTracks.push({
       id,
       title: file.name,
       sourceType: "file",
+      duration: duration
     });
 
     existingTitles.add(file.name); // Prevent duplicates within the same batch
