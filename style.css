@@ -705,9 +705,10 @@ h1 .dot {
 }
 
 .now-playing-playlist-info.has-playlist .counter-badge {
-  background: var(--accent) !important;
+  background: var(--orange) !important;
   color: #fff !important;
-  border-color: var(--border-strong) !important;
+  box-shadow: 0 2px 8px var(--orange-glow) !important;
+  border-color: #fff !important;
 }
 
 .now-playing-playlist-info:active {
@@ -1862,7 +1863,7 @@ h3 .dot {
    ═══════════════════════════════════════════ */
 
 .counter-badge {
-  background: var(--accent);
+  background: var(--orange);
   color: #fff;
   font-family: "Inter", sans-serif;
   font-size: 0.7rem;
@@ -1877,7 +1878,7 @@ h3 .dot {
   position: absolute;
   top: -4px;
   right: -4px;
-  box-shadow: 0 2px 8px var(--accent-glow);
+  box-shadow: 0 2px 8px var(--orange-glow);
   /* pointer-events: none removed to allow clicking */
   border: 1.5px solid #fff;
   z-index: 10;
@@ -1909,7 +1910,7 @@ h3 .counter-badge {
   margin-left: 8px;
   vertical-align: middle;
   border: none;
-  box-shadow: 0 2px 6px rgba(148, 4, 20, 0.2);
+  box-shadow: 0 2px 6px var(--orange-glow);
 }
 
 /* ═══════════════════════════════════════════
