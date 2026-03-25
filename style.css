@@ -1172,12 +1172,24 @@ input[type="range"]::-moz-range-thumb {
   box-shadow: 0 6px 16px rgba(148, 4, 20, 0.1);
 }
 
-.select-pop.has-selection {
+.select-pop.has-selection,
+#savedPlaylistsSelect.has-selection {
   background: var(--orange) !important;
+  color: #fff !important; /* White lettering as requested */
+  border-color: #fff !important; /* White border to make it pop */
+  box-shadow: 0 4px 15px var(--orange-glow) !important;
+  font-weight: 800 !important;
+}
+
+.select-pop.has-selection:focus,
+#savedPlaylistsSelect.has-selection:focus {
+  border-color: #fff !important;
+  box-shadow: 0 0 0 3px rgba(255, 156, 43, 0.4), 0 8px 32px var(--orange-glow) !important;
+}
+
+[data-theme="light"] .select-pop.has-selection,
+[data-theme="light"] #savedPlaylistsSelect.has-selection {
   color: #fff !important;
-  border-color: var(--orange-light) !important;
-  box-shadow: 0 4px 12px var(--orange-glow) !important;
-  font-weight: 700 !important;
 }
 
 .select-pop:focus {
@@ -1301,7 +1313,7 @@ input::placeholder {
   font-family: "Big Shoulders Display", "Oswald", sans-serif;
   font-size: 1.3rem;
   font-weight: 900;
-  color: var(--text);
+  color: #fff !important; /* Explicitly white as requested */
   text-transform: uppercase;
   letter-spacing: 0.02em;
 }
@@ -1826,7 +1838,7 @@ input::placeholder {
    ═══════════════════════════════════════════ */
 
 .counter-badge {
-  background: var(--orange);
+  background: var(--accent);
   color: #fff;
   font-family: "Inter", sans-serif;
   font-size: 0.7rem;
@@ -1841,7 +1853,7 @@ input::placeholder {
   position: absolute;
   top: -4px;
   right: -4px;
-  box-shadow: 0 2px 8px var(--orange-glow);
+  box-shadow: 0 2px 8px var(--accent-glow);
   /* pointer-events: none removed to allow clicking */
   border: 1.5px solid #fff;
   z-index: 10;
@@ -1851,7 +1863,7 @@ input::placeholder {
 
 .counter-badge:hover {
   transform: scale(1.15);
-  background: var(--orange-light);
+  background: var(--accent-light);
 }
 
 [data-theme="dark"] .counter-badge {

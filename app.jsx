@@ -427,6 +427,14 @@ function updatePlaylistNameDisplay() {
     nowPlayingPlaylistInfo.classList.toggle("has-playlist", !!currentPlaylistName);
   }
 
+  // Also sync the dropdown selection if it matches the current playlist name
+  if (savedPlaylistsSelect) {
+    if (currentPlaylistName && [...savedPlaylistsSelect.options].some(o => o.value === currentPlaylistName)) {
+      savedPlaylistsSelect.value = currentPlaylistName;
+    }
+    savedPlaylistsSelect.classList.toggle("has-selection", !!savedPlaylistsSelect.value);
+  }
+
   localStorage.setItem(STORAGE_KEYS.currentPlaylistName, currentPlaylistName);
 }
 
