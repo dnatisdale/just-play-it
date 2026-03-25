@@ -654,13 +654,9 @@ h1 .dot {
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.02em;
-  color: #fff;
-  background: var(--orange);
-  padding: 4px 12px;
-  border-radius: 999px;
-  box-shadow: 0 4px 12px var(--orange-glow);
+  color: var(--text);
   margin: 0;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 8px;
 }
@@ -705,10 +701,9 @@ h1 .dot {
 }
 
 .now-playing-playlist-info.has-playlist .counter-badge {
-  background: var(--orange) !important;
+  background: var(--accent) !important;
   color: #fff !important;
-  box-shadow: 0 2px 8px var(--orange-glow) !important;
-  border-color: #fff !important;
+  border-color: var(--border-strong) !important;
 }
 
 .now-playing-playlist-info:active {
@@ -1182,11 +1177,12 @@ input[type="range"]::-moz-range-thumb {
 .select-pop.has-selection,
 #savedPlaylistsSelect.has-selection {
   background: var(--orange) !important;
-  color: #fff !important; /* White lettering as requested */
-  border-color: #fff !important; /* White border to make it pop */
+  color: #fff !important;
+  border-color: transparent !important;
   box-shadow: 0 4px 15px var(--orange-glow) !important;
-  font-weight: 800 !important;
+  font-weight: 600 !important;
   border-radius: 999px !important;
+  padding-right: 40px !important;
 }
 
 .select-pop.has-selection:focus,
@@ -1863,7 +1859,7 @@ h3 .dot {
    ═══════════════════════════════════════════ */
 
 .counter-badge {
-  background: var(--orange);
+  background: var(--accent);
   color: #fff;
   font-family: "Inter", sans-serif;
   font-size: 0.7rem;
@@ -1878,7 +1874,7 @@ h3 .dot {
   position: absolute;
   top: -4px;
   right: -4px;
-  box-shadow: 0 2px 8px var(--orange-glow);
+  box-shadow: 0 2px 8px var(--accent-glow);
   /* pointer-events: none removed to allow clicking */
   border: 1.5px solid #fff;
   z-index: 10;
@@ -1889,6 +1885,12 @@ h3 .dot {
 .counter-badge:hover {
   transform: scale(1.15);
   background: var(--accent-light);
+}
+
+#menuBadge {
+  background: var(--orange) !important;
+  box-shadow: 0 2px 8px var(--orange-glow) !important;
+  border-color: #fff !important;
 }
 
 [data-theme="dark"] .counter-badge {
@@ -1910,7 +1912,7 @@ h3 .counter-badge {
   margin-left: 8px;
   vertical-align: middle;
   border: none;
-  box-shadow: 0 2px 6px var(--orange-glow);
+  box-shadow: 0 2px 6px var(--accent-glow);
 }
 
 /* ═══════════════════════════════════════════
