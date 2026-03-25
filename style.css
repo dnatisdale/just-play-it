@@ -2368,12 +2368,15 @@ h3 .counter-badge {
   padding: 16px 0 32px;
 }
 
-.sidebar-section {
+.sidebar-section,
+.sidebar-section-fixed {
   padding: 0 16px 8px;
   margin-bottom: 4px;
 }
 
-.sidebar-section + .sidebar-section {
+.sidebar-section + .sidebar-section,
+.sidebar-section + .sidebar-section-fixed,
+.sidebar-section-fixed + .sidebar-section {
   border-top: 1px solid var(--border);
   padding-top: 12px;
   margin-top: 4px;
@@ -3042,10 +3045,31 @@ h3 .counter-badge {
   transition: all var(--transition);
 }
 
-.sidebar-rearrange-link:hover {
+.sidebar-rearrange-link:hover,
+.sidebar-reset-link:hover {
   color: var(--accent-light);
   background: var(--glass-border);
   border-color: var(--border-strong);
+}
+
+.sidebar-reset-link {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  padding: 4px 12px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  transition: all var(--transition);
+  opacity: 0.8;
+}
+
+.sidebar-reset-link:active {
+  transform: translateY(1px);
 }
 
 .sidebar-rearrange-link.active {

@@ -254,6 +254,15 @@ function initSidebarOrder() {
       console.error("Failed to load sidebar order:", e);
     }
   }
+
+  const resetSidebarOrderBtn = document.getElementById("resetSidebarOrderBtn");
+  if (resetSidebarOrderBtn) {
+    resetSidebarOrderBtn.addEventListener("click", () => {
+      localStorage.removeItem(STORAGE_KEYS.sidebarOrder);
+      showToast("Sidebar layout reset to default.");
+      setTimeout(() => window.location.reload(), 1200);
+    });
+  }
 }
 
 function applySidebarOrder(orderArray) {
