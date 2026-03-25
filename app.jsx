@@ -422,6 +422,11 @@ function updatePlaylistNameDisplay() {
   if (nowPlayingPlaylistName) {
     nowPlayingPlaylistName.textContent = name;
   }
+  
+  if (nowPlayingPlaylistInfo) {
+    nowPlayingPlaylistInfo.classList.toggle("has-playlist", !!currentPlaylistName);
+  }
+
   localStorage.setItem(STORAGE_KEYS.currentPlaylistName, currentPlaylistName);
 }
 
@@ -905,6 +910,10 @@ function refreshSavedPlaylistsSelect() {
 
   if (previousValue && savedPlaylists[previousValue]) {
     savedPlaylistsSelect.value = previousValue;
+  }
+  
+  if (savedPlaylistsSelect) {
+    savedPlaylistsSelect.classList.toggle("has-selection", !!savedPlaylistsSelect.value);
   }
 }
 
@@ -2356,6 +2365,10 @@ if (currentPlaylistHeaderBtn) {
 savedPlaylistsSelect.addEventListener("change", () => {
   const selected = savedPlaylistsSelect.value;
   
+  if (savedPlaylistsSelect) {
+    savedPlaylistsSelect.classList.toggle("has-selection", !!selected);
+  }
+
   if (selected) {
     localStorage.setItem(STORAGE_KEYS.selectedSavedPlaylist, selected);
     if (savedPlaylistBox) savedPlaylistBox.title = `Selected saved playlist: ${selected}`;

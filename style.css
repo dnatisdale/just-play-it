@@ -29,6 +29,10 @@
   --accent-subtle: rgba(148, 4, 20, 0.1);
   --accent-subtle-border: rgba(148, 4, 20, 0.3);
 
+  --orange: #ff9c2b;
+  --orange-light: #ffb459;
+  --orange-glow: rgba(255, 156, 43, 0.35);
+
   --danger: #ff7b7b;
   --danger-subtle: rgba(255, 123, 123, 0.08);
   --danger-border: rgba(255, 123, 123, 0.25);
@@ -685,6 +689,23 @@ h1 .dot {
   border-color: var(--accent-subtle-border);
 }
 
+.now-playing-playlist-info.has-playlist {
+  background: var(--orange);
+  border-color: var(--orange-light);
+  color: #fff !important;
+  box-shadow: 0 4px 12px var(--orange-glow);
+}
+
+.now-playing-playlist-info.has-playlist #nowPlayingPlaylistName {
+  color: #fff !important;
+}
+
+.now-playing-playlist-info.has-playlist .counter-badge {
+  background: #fff !important;
+  color: var(--orange) !important;
+  border-color: #fff !important;
+}
+
 .now-playing-playlist-info:active {
   transform: translateY(0);
 }
@@ -725,9 +746,15 @@ h3.interactive-header:active {
 }
 
 .badge-red {
-  background: #940414 !important; /* A clear, modern red */
+  background: var(--accent) !important;
   color: #fff !important;
-  box-shadow: 0 2px 8px rgba(148, 4, 20, 0.3) !important;
+  box-shadow: 0 2px 8px var(--accent-glow) !important;
+}
+
+.badge-orange {
+  background: var(--orange) !important;
+  color: #fff !important;
+  box-shadow: 0 2px 8px var(--orange-glow) !important;
 }
 
 [data-theme="light"] #nowPlayingPlaylistName {
@@ -1143,6 +1170,14 @@ input[type="range"]::-moz-range-thumb {
   border-color: var(--accent-light) !important;
   background: var(--panel-3) !important;
   box-shadow: 0 6px 16px rgba(148, 4, 20, 0.1);
+}
+
+.select-pop.has-selection {
+  background: var(--orange) !important;
+  color: #fff !important;
+  border-color: var(--orange-light) !important;
+  box-shadow: 0 4px 12px var(--orange-glow) !important;
+  font-weight: 700 !important;
 }
 
 .select-pop:focus {
@@ -1791,7 +1826,7 @@ input::placeholder {
    ═══════════════════════════════════════════ */
 
 .counter-badge {
-  background: var(--accent);
+  background: var(--orange);
   color: #fff;
   font-family: "Inter", sans-serif;
   font-size: 0.7rem;
@@ -1806,7 +1841,7 @@ input::placeholder {
   position: absolute;
   top: -4px;
   right: -4px;
-  box-shadow: 0 2px 8px rgba(148, 4, 20, 0.4);
+  box-shadow: 0 2px 8px var(--orange-glow);
   /* pointer-events: none removed to allow clicking */
   border: 1.5px solid #fff;
   z-index: 10;
@@ -1816,7 +1851,7 @@ input::placeholder {
 
 .counter-badge:hover {
   transform: scale(1.15);
-  background: var(--accent-light);
+  background: var(--orange-light);
 }
 
 [data-theme="dark"] .counter-badge {
