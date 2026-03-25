@@ -1420,16 +1420,28 @@ h3 .dot {
   align-items: center;
   border-radius: 999px;
   padding: 6px 12px !important;
-  border-color: var(--accent-subtle-border) !important;
-  background: var(--accent-subtle) !important;
-  color: var(--accent-light) !important;
+  border-color: var(--orange-glow) !important;
+  background: var(--panel-3) !important;
+  color: var(--orange) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all var(--transition);
+}
+
+.collapse-toggle-btn:hover {
+  background: var(--glass-border) !important;
+  box-shadow: 0 4px 12px var(--orange-glow);
+  transform: translateY(-1px);
 }
 
 .collapse-icon {
-  color: var(--muted);
+  color: var(--orange);
   display: flex;
   align-items: center;
   transition: transform var(--transition);
+}
+
+.collapse-icon svg {
+  stroke-width: 3.5px; /* Thicker for better visibility */
 }
 
 .playlist-header[aria-expanded="false"] .collapse-icon {
