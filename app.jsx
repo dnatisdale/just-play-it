@@ -1,4 +1,4 @@
-const BUILD_TIME = "BUILD V.77 <span class=\"accent-dash\">—</span> 25MAR2026 <span class=\"accent-dash\">—</span> 15:35";
+const BUILD_TIME = "BUILD V.78 <span class=\"accent-dash\">—</span> 25MAR2026 <span class=\"accent-dash\">—</span> 15:55";
 const audio = document.getElementById("audio");
 const fileInput = document.getElementById("fileInput");
 const urlInput = document.getElementById("urlInput");
@@ -62,6 +62,7 @@ const shuffleToggle = document.getElementById("shuffleToggle");
 const shareAppBtn = document.getElementById("shareAppBtn");
 const copyQrBtn = document.getElementById("copyQrBtn");
 const downloadQrBtn = document.getElementById("downloadQrBtn");
+const viewErrorLogBtn = document.getElementById("viewErrorLogBtn");
 
 // Badges
 const menuBadge = document.getElementById("menuBadge");
@@ -102,7 +103,8 @@ const STORAGE_KEYS = {
   selectedSavedPlaylist: "justPlayItSelectedSavedPlaylist",
   currentPlaylistName: "justPlayItCurrentPlaylistName",
   theme: "justPlayItTheme",
-  sidebarOrder: "justPlayItSidebarOrder"
+  sidebarOrder: "justPlayItSidebarOrder",
+  errorLogs: "justPlayItErrorLogs"
 };
 
 
@@ -131,6 +133,70 @@ let draggedTrackIndex = null;
 let isEditMode = false;
 let userPaused = false; // Tracks if the PAUSE was intentional by the user
 let isTransitioning = false; // Prevents auto-resume from racing against track transitions
+
+// ── Error Logging ─────────────────────────────────────
+function addErrorLog(message, type = "General") {
+  try {
+    const logs = JSON.parse(localStorage.getItem(STORAGE_KEYS.errorLogs) || "[]");
+    const entry = {
+      timestamp: new Date().toISOString(),
+      type,
+      message,
+      version: "V.78",
+      url: window.location.href,
+      userAgent: navigator.userAgent
+    };
+    logs.unshift(entry); // Newest first
+    if (logs.length > 50) logs.pop(); // Keep last 50
+    localStorage.setItem(STORAGE_KEYS.errorLogs, JSON.stringify(logs));
+    console.log(`[ErrorLog] [${type}] ${message}`);
+  } catch (e) {
+    console.warn("Failed to save error log", e);
+  }
+}
+
+function showErrorLog() {
+  const logs = JSON.parse(localStorage.getItem(STORAGE_KEYS.errorLogs) || "[]");
+  if (logs.length === 0) {
+    showToast("No errors logged yet.");
+    return;
+  }
+  
+  let content = "--- JUST PLAY IT. ERROR LOG ---\n\n";
+  logs.forEach(log => {
+    content += `[${log.timestamp}] [${log.type}]\n${log.message}\n\n`;
+  });
+  
+  // Use a simple prompt/alert to show the log for now, 
+  // or a more sophisticated modal later.
+  console.log(content);
+  
+  // Create a temporary overlay to show logs
+  const overlay = document.createElement("div");
+  overlay.style = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:10000; padding:20px; overflow-y:auto; color:#fff; font-family:monospace; font-size:12px; white-space:pre-wrap;";
+  overlay.innerHTML = `
+    <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+      <h2 style="margin:0;">Technical Error Log</h2>
+      <button onclick="this.parentElement.parentElement.remove()" style="background:#cc3300; color:#fff; border:none; padding:8px 16px; border-radius:4px; font-weight:bold; cursor:pointer;">Close</button>
+    </div>
+    <button id="copyLogBtn" style="background:#3182ce; color:#fff; border:none; padding:8px 16px; border-radius:4px; font-weight:bold; cursor:pointer; margin-bottom:20px;">Copy to Clipboard</button>
+    <div>${content}</div>
+  `;
+  document.body.appendChild(overlay);
+  
+  document.getElementById("copyLogBtn").onclick = () => {
+    navigator.clipboard.writeText(content).then(() => showToast("Log copied to clipboard"));
+  };
+}
+
+// Global error handlers
+window.onerror = (message, source, lineno, colno, error) => {
+  addErrorLog(`${message} at ${source}:${lineno}:${colno}`, "GlobalError");
+};
+
+window.onunhandledrejection = (event) => {
+  addErrorLog(`Promise rejected: ${event.reason}`, "UnhandledPromise");
+};
 
 // ── Theme ──────────────────────────────────────────────
 function getSystemTheme() {
@@ -2145,6 +2211,7 @@ shuffleBtn.addEventListener("click", toggleShuffle);
 repeatBtn.addEventListener("click", cycleRepeatMode);
 installBtn.addEventListener("click", handleInstallClick);
 if (themeToggleBtn) themeToggleBtn.addEventListener("click", toggleTheme);
+if (viewErrorLogBtn) viewErrorLogBtn.addEventListener("click", showErrorLog);
 
 async function handleShare() {
   const shareUrl = window.location.origin + window.location.pathname;
@@ -2533,7 +2600,9 @@ audio.addEventListener("pause", () => {
 audio.addEventListener("error", (e) => {
   const err = audio.error;
   let msg = "Playback error occurred.";
+  let technical = "Unknown audio error";
   if (err) {
+    technical = `Code: ${err.code}, Message: ${err.message || "N/A"}`;
     switch (err.code) {
       case 1: msg = "Playback aborted."; break;
       case 2: msg = "Network error while loading audio."; break;
@@ -2541,6 +2610,7 @@ audio.addEventListener("error", (e) => {
       case 4: msg = "Audio format not supported or file missing."; break;
     }
   }
+  addErrorLog(`Audio Error: ${msg} (${technical}) Source: ${audio.src ? audio.src.substring(0, 100) : "none"}`, "Audio");
   console.error("Audio element error:", err);
   setPlayerStatus(msg);
   showToast(msg);
@@ -2549,6 +2619,7 @@ audio.addEventListener("error", (e) => {
 
 audio.addEventListener("stalled", () => {
   if (!audio.paused && !audio.ended) {
+    addErrorLog(`Playback stalled/buffering at ${audio.currentTime.toFixed(2)}s`, "AudioStatus");
     setPlayerStatus("Buffering/Stalled...");
   }
 });
@@ -2960,6 +3031,15 @@ if ('launchQueue' in window) {
     } catch (error) {
       console.error("Error opening file from Android menu:", error);
       showToast("Could not open the file.");
+    }
+  });
+}
+
+// ── Service Worker Error Reporting ─────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SW_ERROR') {
+      addErrorLog(`ServiceWorker: ${event.data.message}`, "ServiceWorker");
     }
   });
 }

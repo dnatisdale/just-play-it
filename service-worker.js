@@ -44,21 +44,22 @@ self.addEventListener("fetch", (event) => {
   const isCoreFile = CORE_FILES.some(f => url.pathname.endsWith(f) || url.pathname === "/");
 
   if (isCoreFile) {
-    // Stale-While-Revalidate strategy for core files: 
-    // Load from cache instantly, but update the cache in the background
+    // Stale-While-Revalidate strategy for core files
     event.respondWith(
       caches.match(event.request).then((cachedResponse) => {
         const fetchPromise = fetch(event.request).then((networkResponse) => {
           const cacheCopy = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cacheCopy));
           return networkResponse;
+        }).catch(err => {
+          reportError(`Fetch failed for ${url.pathname}: ${err.message}`);
+          throw err;
         });
         return cachedResponse || fetchPromise;
       })
     );
   } else {
-    // Cache First for everything else (music files, icons, etc.)
-    // IMPORTANT: Supporting Range Headers specifically for iOS/Safari audio stability
+    // Cache First for everything else
     event.respondWith(
       caches.match(event.request).then((cachedResponse) => {
         if (cachedResponse) {
@@ -69,14 +70,14 @@ self.addEventListener("fetch", (event) => {
         }
 
         return fetch(event.request).then((response) => {
-          // Never attempt to cache a 206 Partial Content piece - it crashes the Stream clones
-          // and instantly breaks user playback with an AbortError.
           if (response.status === 200) {
             const cacheCopy = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cacheCopy)).catch(e => console.warn("Cache put failed", e));
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cacheCopy)).catch(e => reportError(`Cache put failed: ${e.message}`));
           }
-          
           return response;
+        }).catch(err => {
+          reportError(`Fetch failed for ${url.pathname}: ${err.message}`);
+          throw err;
         });
       })
     );
@@ -113,6 +114,19 @@ async function handleRangeRequest(request, response) {
     status: 206,
     statusText: "Partial Content",
     headers: newHeaders,
+  });
+}
+
+/**
+ * Report error back to the main app for logging
+ */
+async function reportError(message) {
+  const clients = await self.clients.matchAll();
+  clients.forEach(client => {
+    client.postMessage({
+      type: 'SW_ERROR',
+      message
+    });
   });
 }
 
