@@ -273,6 +273,21 @@ function applySidebarOrder(orderArray) {
     const el = document.getElementById(id);
     if (el) body.appendChild(el);
   });
+  
+  // Ensure "Support" and "Utility" areas remain at the end of the scroll list
+  // The Support section could also be reordered if converted to sidebar-section
+  // but for now we keep it at the top as requested, then the rest scroll.
+  // Wait, the user said "Put it all back on the regular Sidebar list".
+  
+  const supportSection = document.getElementById("sidebar-section-support");
+  if (supportSection) body.appendChild(supportSection);
+  
+  // Re-append the rest of the order to put support at the top if we want it there
+  // Actually, to put Support at the top and Utility at the bottom:
+  if (supportSection) body.prepend(supportSection);
+
+  const utilitySection = document.getElementById("sidebar-section-utility");
+  if (utilitySection) body.appendChild(utilitySection);
 }
 
 function initSidebarRearrangeMode() {
