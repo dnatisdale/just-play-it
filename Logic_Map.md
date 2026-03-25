@@ -19,7 +19,7 @@ This document serves as a comprehensive 1-to-5 page logic map of the **JUST PLAY
 
 The user interface follows a single-page, vertically scrolling logic, prioritizing immediate access to the audio player, current queue, and playlist management.
 
-![Main Interface Screenshot 1](file:///C:/Users/dnati/.gemini/antigravity/brain/98905ba1-9d9e-48a4-a2a7-858b1d26af48/media__1774443309854.png)
+![Main Interface Screenshot 1](docs-images/media__1774443309854.png)
 *Figure 1: The main player view, highlighting the core playback controls and "Now Playing" status.*
 
 ### A. The App Shell & Topbar
@@ -34,7 +34,7 @@ The user interface follows a single-page, vertically scrolling logic, prioritizi
     *   **Transport Controls:** Play/Pause, Next/Previous, Skip Back/Forward (±30s), Shuffle, and Repeat mode toggles.
     *   **Seek Bar:** An interactive range input that scrubs through the track, continually updated via the `timeupdate` event from the `<audio>` element.
 
-![Interface Screenshot 2](file:///C:/Users/dnati/.gemini/antigravity/brain/98905ba1-9d9e-48a4-a2a7-858b1d26af48/media__1774444081991.png)
+![Interface Screenshot 2](docs-images/media__1774444081991.png)
 
 ---
 
@@ -57,7 +57,7 @@ Below the player card, the application handles active playback queues (Current P
     *   **Built-in Playlists:** Injected at runtime from `builtin-playlists.json` providing curated starter tracks (e.g., "Remember the Lord", "Jonah's Songs"). These are read-only to prevent accidental deletion.
     *   **Import/Export:** Converts `savedPlaylists` to/from a physical `.json` file for backup/migrations across devices.
 
-![Saved Playlists Management](file:///C:/Users/dnati/.gemini/antigravity/brain/98905ba1-9d9e-48a4-a2a7-858b1d26af48/media__1774444827843.png)
+![Saved Playlists Management](docs-images/media__1774444827843.png)
 
 ---
 
@@ -93,7 +93,7 @@ flowchart TD
     3.  **IndexedDB Storage (`saveTrackBlob`):** The physical `File` Blob is transferred into a permanent `IndexedDB` record under `deviceTracks`. 
     4.  **Playback Bridge (`resolveTrackSource`):** When it's time to play a stored file, the app generates a temporary `URL.createObjectURL()` pointing directly to the IndexedDB Blob so the HTML5 `<audio>` tag can read it as a standard source.
 
-![Library Processing](file:///C:/Users/dnati/.gemini/antigravity/brain/98905ba1-9d9e-48a4-a2a7-858b1d26af48/media__1774444873892.png)
+![Library Processing](docs-images/media__1774444873892.png)
 
 ---
 
@@ -107,7 +107,7 @@ The sidebar slides out as a global settings and library dashboard.
 *   **Config Toggles:** Sleep Timer (creates a `setTimeout` to trigger the `audio.pause()` function), Dark/Light Mode, QR Code generator (via iframe API for quick mobile sharing).
 *   **Rearrange Mode:** Allows the user to change the physical order of sidebar components, with the preferred order saved to `localStorage` and mapped dynamically via `applySidebarOrder()`.
 
-![Sidebar UI Focus](file:///C:/Users/dnati/.gemini/antigravity/brain/98905ba1-9d9e-48a4-a2a7-858b1d26af48/media__1774445211547.png)
+![Sidebar UI Focus](docs-images/media__1774445211547.png)
 
 ---
 
