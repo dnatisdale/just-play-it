@@ -654,9 +654,13 @@ h1 .dot {
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.02em;
-  color: var(--text);
+  color: #fff;
+  background: var(--orange);
+  padding: 4px 12px;
+  border-radius: 999px;
+  box-shadow: 0 4px 12px var(--orange-glow);
   margin: 0;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
 }
@@ -690,20 +694,20 @@ h1 .dot {
 }
 
 .now-playing-playlist-info.has-playlist {
-  background: var(--orange);
-  border-color: var(--orange-light);
-  color: #fff !important;
-  box-shadow: 0 4px 12px var(--orange-glow);
+  background: var(--glass);
+  border-color: var(--border-strong);
+  color: var(--text-2) !important;
+  box-shadow: none;
 }
 
 .now-playing-playlist-info.has-playlist #nowPlayingPlaylistName {
-  color: #fff !important;
+  color: var(--muted) !important;
 }
 
 .now-playing-playlist-info.has-playlist .counter-badge {
-  background: #fff !important;
-  color: var(--orange) !important;
-  border-color: #fff !important;
+  background: var(--accent) !important;
+  color: #fff !important;
+  border-color: var(--border-strong) !important;
 }
 
 .now-playing-playlist-info:active {
@@ -1198,7 +1202,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .accent-label {
-  color: var(--accent-light) !important;
+  color: var(--orange) !important;
 }
 
 .pulse-red-label {
@@ -1313,9 +1317,13 @@ input::placeholder {
   font-family: "Big Shoulders Display", "Oswald", sans-serif;
   font-size: 1.3rem;
   font-weight: 900;
-  color: #fff !important; /* Explicitly white as requested */
+  color: var(--orange) !important;
   text-transform: uppercase;
   letter-spacing: 0.02em;
+}
+
+h3 .dot {
+  background: var(--orange) !important;
 }
 
 .add-grid {
