@@ -1,4 +1,4 @@
-const CACHE_NAME = "just-play-it-build-1730-25MAR2026-v75";
+const CACHE_NAME = "just-play-it-build-1730-25MAR2026-v76";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
@@ -9,7 +9,7 @@ const ASSETS_TO_CACHE = [
   "./builtin-playlists.json",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
-  "./audio/ElevenLabs_sneakers_squeaking.mp3"
+  "./audio/Basketball_Court.mp3"
 ];
 
 self.addEventListener("install", (event) => {

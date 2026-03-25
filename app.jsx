@@ -1,4 +1,4 @@
-const BUILD_TIME = "BUILD V.75 <span class=\"accent-dash\">—</span> 25MAR2026 <span class=\"accent-dash\">—</span> 14:45";
+const BUILD_TIME = "BUILD V.76 <span class=\"accent-dash\">—</span> 25MAR2026 <span class=\"accent-dash\">—</span> 15:15";
 const audio = document.getElementById("audio");
 const fileInput = document.getElementById("fileInput");
 const urlInput = document.getElementById("urlInput");
@@ -2858,7 +2858,7 @@ async function initApp() {
   // ── Splash screen logic ──
   const splash = document.getElementById("splashScreen");
   if (splash) {
-    const splashAudio = new Audio("./audio/ElevenLabs_sneakers_squeaking.mp3");
+    const splashAudio = new Audio("./audio/Basketball_Court.mp3");
     let playCount = 0;
 
     const playSplashSound = async () => {
