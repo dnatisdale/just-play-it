@@ -268,17 +268,11 @@ function initSidebarOrder() {
 function applySidebarOrder(orderArray) {
   const body = document.querySelector(".sidebar-body");
   if (!body || !orderArray) return;
+  
   orderArray.forEach(id => {
     const el = document.getElementById(id);
     if (el) body.appendChild(el);
   });
-  
-  // Ensure the fixed sections remain at the absolute bottom
-  const supportSection = document.getElementById("sidebar-section-support");
-  if (supportSection) body.appendChild(supportSection);
-  
-  const buildInfo = document.getElementById("sidebarBuildInfo");
-  if (buildInfo) body.appendChild(buildInfo);
 }
 
 function initSidebarRearrangeMode() {

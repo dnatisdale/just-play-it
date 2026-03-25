@@ -2375,7 +2375,7 @@ h3 .counter-badge {
 .sidebar-body {
   flex: 1;
   overflow-y: auto;
-  padding: 16px 0 32px;
+  padding: 16px 0 120px;
 }
 
 .sidebar-section,
