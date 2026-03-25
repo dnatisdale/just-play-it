@@ -1102,7 +1102,7 @@ input[type="range"]::-moz-range-thumb {
 .saved-playlist-box {
   background: var(--panel-3);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: 28px;
   padding: 14px;
   transition: background 0.3s ease;
 }
@@ -1134,16 +1134,18 @@ input[type="range"]::-moz-range-thumb {
 .input-block input[type="file"],
 .url-row input,
 .save-row input,
+.save-row button,
 .load-row select,
+.load-row button,
 .load-row-group select,
 .action-dropdown-row select,
 .playlist-tools input {
   width: 100%;
-  border-radius: var(--radius-xs);
+  border-radius: 999px;
   border: 1px solid var(--border);
   background: var(--input-bg);
   color: var(--text);
-  padding: 10px 14px;
+  padding: 10px 20px;
   min-height: 44px;
   font-size: 0.9rem;
   outline: none;
@@ -1183,6 +1185,7 @@ input[type="range"]::-moz-range-thumb {
   border-color: #fff !important; /* White border to make it pop */
   box-shadow: 0 4px 15px var(--orange-glow) !important;
   font-weight: 800 !important;
+  border-radius: 999px !important;
 }
 
 .select-pop.has-selection:focus,
