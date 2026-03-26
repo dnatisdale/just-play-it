@@ -131,8 +131,9 @@ let currentObjectUrl = null;
 let toastTimeout = null;
 let draggedTrackIndex = null;
 let isEditMode = false;
-let userPaused = false; // Tracks if the PAUSE was intentional by the user
-let isTransitioning = false; // Prevents auto-resume from racing against track transitions
+let userPaused = false;
+let isTransitioning = false;
+let selectedPlaylistKey = ""; // Tracks the active saved playlist WITHOUT showing it in the select
 
 // ── Error Logging ─────────────────────────────────────
 function addErrorLog(message, type = "General") {
@@ -519,12 +520,9 @@ function updatePlaylistNameDisplay() {
     nowPlayingPlaylistInfo.classList.toggle("has-playlist", !!currentPlaylistName);
   }
 
-  // Also sync the dropdown selection if it matches the current playlist name
+  // Sync selectedPlaylistKey if it matches a real playlist
   if (savedPlaylistsSelect) {
-    if (currentPlaylistName && [...savedPlaylistsSelect.options].some(o => o.value === currentPlaylistName)) {
-      savedPlaylistsSelect.value = currentPlaylistName;
-    }
-    savedPlaylistsSelect.classList.toggle("has-selection", !!savedPlaylistsSelect.value);
+    savedPlaylistsSelect.value = ""; // Always show placeholder heading
   }
 
   localStorage.setItem(STORAGE_KEYS.currentPlaylistName, currentPlaylistName);
@@ -1861,7 +1859,7 @@ function saveNamedPlaylist() {
 }
 
 async function loadNamedPlaylist() {
-  const name = savedPlaylistsSelect.value;
+  const name = selectedPlaylistKey;
 
   if (!name || !savedPlaylists[name]) {
     if (savedPlaylistBox) savedPlaylistBox.title = "Choose a saved playlist first.";
@@ -1897,7 +1895,7 @@ async function loadNamedPlaylist() {
 }
 
 function renameNamedPlaylist() {
-  const oldName = savedPlaylistsSelect.value;
+  const oldName = selectedPlaylistKey;
 
   if (!oldName || !savedPlaylists[oldName]) {
     savedPlaylistStatus.textContent = "Choose a saved playlist to rename.";
@@ -1936,7 +1934,7 @@ function renameNamedPlaylist() {
   }
 
   persistSavedPlaylists();
-  savedPlaylistsSelect.value = cleanName;
+  selectedPlaylistKey = cleanName;
   localStorage.setItem(STORAGE_KEYS.selectedSavedPlaylist, cleanName);
 
   // Sync the action button state
@@ -1956,7 +1954,7 @@ function renameNamedPlaylist() {
 }
 
 function deleteNamedPlaylist() {
-  const name = savedPlaylistsSelect.value;
+  const name = selectedPlaylistKey;
 
   if (!name || !savedPlaylists[name]) {
     savedPlaylistStatus.textContent = "Choose a saved playlist to delete.";
@@ -1974,6 +1972,7 @@ function deleteNamedPlaylist() {
 
   delete savedPlaylists[name];
   persistSavedPlaylists();
+  selectedPlaylistKey = "";
   savedPlaylistsSelect.value = "";
   localStorage.removeItem(STORAGE_KEYS.selectedSavedPlaylist);
 
@@ -2380,9 +2379,7 @@ savePlaylistBtn.addEventListener("click", saveNamedPlaylist);
 // Enable Action dropdown once a playlist is selected; reset it after each use
 function updatePlaylistActionUI() {
   if (!playlistActionSelect) return;
-  const selected = savedPlaylistsSelect.value;
-  playlistActionSelect.disabled = !selected;
-  // Reset to placeholder after each operation
+  playlistActionSelect.disabled = !selectedPlaylistKey;
   playlistActionSelect.value = "";
 }
 
@@ -2390,7 +2387,7 @@ function updatePlaylistActionUI() {
 if (playlistActionSelect) {
   playlistActionSelect.addEventListener("change", async () => {
     const action = playlistActionSelect.value;
-    const selected = savedPlaylistsSelect.value;
+    const selected = selectedPlaylistKey;
     const isBuiltin = selected && savedPlaylists[selected] && savedPlaylists[selected].isBuiltin;
 
     if (isBuiltin && action !== "load") {
@@ -2468,22 +2465,20 @@ if (currentPlaylistHeaderBtn) {
 
 savedPlaylistsSelect.addEventListener("change", () => {
   const selected = savedPlaylistsSelect.value;
-  
-  if (savedPlaylistsSelect) {
-    savedPlaylistsSelect.classList.toggle("has-selection", !!selected);
-  }
+  selectedPlaylistKey = selected;
+  // Always reset visible value so placeholder heading shows
+  savedPlaylistsSelect.value = "";
 
   if (selected) {
     localStorage.setItem(STORAGE_KEYS.selectedSavedPlaylist, selected);
-    if (savedPlaylistBox) savedPlaylistBox.title = `Selected saved playlist: ${selected}`;
+    if (savedPlaylistBox) savedPlaylistBox.title = `Selected: ${selected}`;
+    showToast(`Selected: ${selected}`);
   } else {
     localStorage.removeItem(STORAGE_KEYS.selectedSavedPlaylist);
     if (savedPlaylistBox) savedPlaylistBox.title = "No saved playlist selected.";
   }
-  
-  if (typeof updatePlaylistActionUI === "function") {
-    updatePlaylistActionUI();
-  }
+
+  updatePlaylistActionUI();
 });
 
 audio.addEventListener("loadedmetadata", () => {
@@ -2809,6 +2804,15 @@ async function initApp() {
   loadVolume();
   loadModes();
   await loadSavedPlaylists();
+  // Restore previously selected playlist key (without showing it in the select UI)
+  const restoredKey = localStorage.getItem(STORAGE_KEYS.selectedSavedPlaylist);
+  if (restoredKey && savedPlaylists[restoredKey]) {
+    selectedPlaylistKey = restoredKey;
+  }
+  // Always show placeholder in select; enable Action if key is restored
+  savedPlaylistsSelect.value = "";
+  savedPlaylistsSelect.classList.add("has-selection"); // Always orange
+  updatePlaylistActionUI();
   loadPlaylistFromStorage();
   restoreSleepTimer();
   renderPlaylist();
@@ -2863,7 +2867,7 @@ async function initApp() {
       // If library is also empty, load "Remember the Lord" as a sample starter
       const starterName = "Remember the Lord";
       if (savedPlaylists[starterName]) {
-        savedPlaylistsSelect.value = starterName;
+        selectedPlaylistKey = starterName;
         localStorage.setItem(STORAGE_KEYS.selectedSavedPlaylist, starterName);
         await loadNamedPlaylist();
       }
