@@ -1029,8 +1029,8 @@ input[type="range"]::-moz-range-thumb {
   width: 100%;
   height: 100%;
   font-size: 0.95rem;
-  font-weight: 800;
-  color: var(--text-2);
+  font-weight: 500;
+  color: #fff;
   transition: color var(--transition);
   font-family: inherit;
 }
