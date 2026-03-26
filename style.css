@@ -868,7 +868,7 @@ h3.interactive-header:active {
 
 .track-title {
   margin: 0;
-  font-size: 1.3rem;
+  font-size: 1.15rem;
   font-weight: 500;
   line-height: 1.25;
   word-break: break-word;
@@ -2704,7 +2704,7 @@ h3 .counter-badge {
   }
 
   .track-title {
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
 
   .progress-wrap {
@@ -2853,7 +2853,7 @@ h3 .counter-badge {
   }
 
   .track-title {
-    font-size: 1.5rem;
+    font-size: 1.35rem;
   }
 }
 
