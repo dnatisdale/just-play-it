@@ -2110,7 +2110,7 @@ function restoreSleepTimer() {
     audio.pause();
     updatePlayPauseButton();
     clearSleepTimer();
-    sleepTimerStatus.textContent = "Sleep timer finished. Playback paused.";
+    if (sleepTimerStatus) sleepTimerStatus.textContent = "Sleep timer finished. Playback paused.";
     setPlayerStatus("Sleep timer finished.");
     showToast("Sleep timer finished.");
   }, remainingMs);
