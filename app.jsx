@@ -1,4 +1,4 @@
-const BUILD_TIME = "BUILD V.79 <span class=\"accent-dash\">—</span> 25MAR2026 <span class=\"accent-dash\">—</span> 18:30";
+const BUILD_TIME = "BUILD V.80 <span class=\"accent-dash\">—</span> 26MAR2026 <span class=\"accent-dash\">—</span> 10:00";
 const audio = document.getElementById("audio");
 const fileInput = document.getElementById("fileInput");
 const urlInput = document.getElementById("urlInput");
@@ -540,8 +540,26 @@ function normalizeTrack(track) {
   };
 
   if (track.sourceType === "url") {
-    if (!track.src) return null;
-    normalized.src = track.src;
+    // REPAIR BRIDGE: If this is a builtin track, sync its 'src' with the latest 
+    // metadata from builtin-playlists.json. This fixes stale/broken URLs in localStorage.
+    if (track.id.startsWith("builtin-") && typeof savedPlaylists === "object") {
+      for (const playlistName in savedPlaylists) {
+        const pl = savedPlaylists[playlistName];
+        if (pl.isBuiltin && Array.isArray(pl.tracks)) {
+          const found = pl.tracks.find(t => t.id === track.id);
+          if (found && found.src) {
+            normalized.src = found.src;
+            break;
+          }
+        }
+      }
+    }
+
+    // Fallback if not repaired or search yielded nothing
+    if (!normalized.src) {
+      if (!track.src) return null;
+      normalized.src = track.src;
+    }
   }
 
   return normalized;
@@ -2936,32 +2954,9 @@ async function initApp() {
   // ── Splash screen logic ──
   const splash = document.getElementById("splashScreen");
   if (splash) {
-    const splashAudio = new Audio("./audio/Basketball_Court.mp3");
-    let playCount = 0;
-
-    const playSplashSound = async () => {
-      try {
-        await splashAudio.play();
-        playCount++;
-        if (playCount < 2) {
-          splashAudio.onended = playSplashSound;
-        } else {
-          splashAudio.onended = null;
-        }
-      } catch (err) {
-        // Most browsers block autoplay without a user gesture.
-        // We catch this quietly so it doesn't break the splash screen.
-        console.warn("Splash audio autoplay was blocked by browser:", err);
-      }
-    };
-
-    playSplashSound();
-
     // Delay to let the fancy bouncy animation finish
     setTimeout(() => {
       splash.classList.add("fade-out");
-      // Optionally stop a long-playing sound if it's still going when fading
-      splashAudio.onended = null;
     }, 4000);
   }
 }
