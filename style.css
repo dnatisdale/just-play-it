@@ -1104,11 +1104,13 @@ input[type="range"]::-moz-range-thumb {
   min-width: 0;
   padding: 10px;
   justify-content: center;
+  font-weight: 500 !important;
+  font-size: 0.85rem !important;
 }
 
 .mode-btn {
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 500;
   gap: 6px;
   white-space: nowrap;
 }
@@ -1179,10 +1181,40 @@ input[type="range"]::-moz-range-thumb {
   color: var(--text);
   padding: 10px 20px;
   min-height: 44px;
-  font-size: 0.9rem;
+  font-size: 0.85rem !important;
+  font-weight: 500 !important;
   outline: none;
   transition: border-color var(--transition), box-shadow var(--transition),
     background 0.3s ease;
+}
+
+/* Standardized Action Buttons (ADD, SAVE, GO) */
+.url-row button,
+.save-row button,
+.action-run-btn {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: var(--text) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  border-radius: 999px !important;
+  padding: 10px 20px !important;
+  font-weight: 700 !important;
+  font-size: 0.85rem !important;
+  text-transform: uppercase !important;
+  cursor: pointer !important;
+  transition: all var(--transition) !important;
+  min-height: 44px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+}
+
+.url-row button:hover,
+.save-row button:hover,
+.action-run-btn:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  transform: translateY(-1px);
 }
 
 .sleep-row select:focus,
@@ -3224,29 +3256,4 @@ h3 .counter-badge {
   100% { transform: scale(1); }
 }
 
-.action-run-btn {
-  background: var(--glass);
-  color: var(--text);
-  border: 1px solid var(--border-strong);
-  border-radius: 999px;
-  padding: 10px 20px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all var(--transition);
-  min-height: 44px;
-}
-
-.action-run-btn:hover {
-  background: var(--panel-hover);
-  border-color: var(--accent-subtle-border);
-  transform: translateY(-1px);
-}
-
-.action-run-btn:active {
-  transform: translateY(0);
-}
-
-.action-run-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+/* action-run-btn is now handled by the standardized block at line 1180 */
