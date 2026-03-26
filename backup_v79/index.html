@@ -78,7 +78,7 @@
                 <img src="icons/icon-192.png" width="18" height="18" alt="JPi Logo" class="blink-logo" />
                 <svg class="blink-heart" width="18" height="18" viewBox="0 0 24 24" fill="#ffffff" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.72-8.72 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
               </span>
-              <span class="sidebar-row-text" style="font-weight: 700; color: #ffffff;">Help support JPi. & Become a Gold Member!</span>
+              <span class="sidebar-row-text" style="font-weight: 700; color: #ffffff;">Click, to become a Gold Member today!</span>
               <span class="sidebar-row-icon blink-wrapper" style="margin-left: 0;">
                 <img src="icons/icon-192.png" width="18" height="18" alt="JPi Logo" class="blink-logo" />
                 <svg class="blink-heart" width="18" height="18" viewBox="0 0 24 24" fill="#ffffff" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.72-8.72 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
@@ -267,7 +267,7 @@
         <!-- ── Player card ── -->
         <section class="player-card">
           <div class="now-playing-header">
-            <div class="now-playing-label">NOW PLAYING</div>
+            <div class="now-playing-label">NOW PLAYING.</div>
             <button id="nowPlayingPlaylistInfo" class="now-playing-playlist-info interactive-header" type="button" aria-label="Jump to current playlist">
               <span id="nowPlayingPlaylistName" title="Current playlist">Unsaved</span>
               <span class="counter-badge" id="nowPlayingPlaylistBadge">0</span>
@@ -320,14 +320,14 @@
               <img src="icons/play-btn.png?v=3" alt="Play" class="play-icon">
               <img src="icons/pause-btn.png?v=3" alt="Pause" class="pause-icon hidden">
             </button>
-            <button id="skipForwardBtn" class="control-btn secondary" type="button" aria-label="Skip forward 30 seconds"><span class="skip-label">+30</span></button>
+            <button id="skipForwardBtn" class="control-btn secondary" type="button" aria-label="Skip backward 30 seconds"><span class="skip-label">+30</span></button>
             <button id="nextBtn" class="control-btn" type="button" aria-label="Next track"><img src="icons/next-btn-3d.png?v=5" alt="" class="icon-img"></button>
           </div>
 
           <div class="mode-row">
             <button id="repeatBtn" class="mode-btn" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="17,1 21,5 17,9"/><path d="M3,11V9a4,4,0,0,1,4-4h14"/><polyline points="7,23 3,19 7,15"/><path d="M21,13v2a4,4,0,0,1-4,4H3"/></svg> Repeat: Off</button>
           <div class="sleep-row" title="No sleep timer set.">
-            <select id="sleepTimerSelect" class="sleep-select" aria-label="Sleep timer duration">
+            <select id="sleepTimerSelect" aria-label="Sleep timer duration">
               <option value="0">Sleep: Off</option>
               <option value="5">Sleep: 5 min</option>
               <option value="10">Sleep: 10 min</option>
@@ -336,6 +336,7 @@
               <option value="45">Sleep: 45 min</option>
               <option value="60">Sleep: 60 min</option>
             </select>
+            <button id="setSleepTimerBtn" type="button">Set</button>
             <span id="sleepTimerStatus" class="hidden"></span>
           </div>
 
@@ -344,7 +345,7 @@
         <section id="currentPlaylistCard" class="library-card card-pop">
           <div class="playlist-header interactive-header" id="currentPlaylistHeaderBtn" role="button" tabindex="0" title="Click to collapse or expand" aria-expanded="false" aria-controls="playlistContainer">
             <div>
-            <h3 class="accent-label">CURRENT PLAYLIST <span class="counter-badge" id="playlistBadge">0</span></h3>
+            <h3 class="accent-label">CURRENT PLAYLIST. <span class="counter-badge" id="playlistBadge">0</span></h3>
             </div>
             <button class="ghost-btn collapse-toggle-btn" tabindex="-1" style="pointer-events: none;">
               <span id="playlistCollapseText" style="margin-right: 6px; font-weight: 600;">Show</span>
@@ -375,7 +376,7 @@
         <!-- ── Library card ── -->
         <section class="library-card">
           <div class="section-head">
-            <h3>SAVED PLAYLISTS <span class="counter-badge" id="savedPlaylistsBadge">0</span></h3>
+            <h3>SAVED PLAYLISTS. <span class="counter-badge" id="savedPlaylistsBadge">0</span></h3>
           </div>
 
           <div class="saved-playlist-box" id="savedPlaylistBox" title="No saved playlist selected.">
@@ -388,9 +389,9 @@
 
               <select id="playlistActionSelect" class="select-pop select-action" aria-label="Playlist action" disabled>
                 <option value="" disabled selected hidden>— Action —</option>
-                <option value="load">Load Playlist</option>
-                <option value="rename">Rename Playlist</option>
-                <option value="delete">Delete Playlist</option>
+                <option value="load">Load</option>
+                <option value="rename">Rename</option>
+                <option value="delete">Delete</option>
               </select>
             </div>
 
@@ -398,7 +399,7 @@
               <input
                 id="playlistNameInput"
                 type="text"
-                placeholder="Playlist Name..."
+                placeholder="Type your playlist name here"
                 maxlength="60"
                 autocomplete="off"
               />
@@ -412,7 +413,7 @@
         <!-- Moved ADD AUDIO here to be at the bottom -->
         <section class="library-card">
           <div class="section-head">
-            <h3>ADD AUDIO</h3>
+            <h3>ADD AUDIO.</h3>
           </div>
 
           <!-- ── Add audio block ── -->
@@ -430,12 +431,8 @@
               <span class="drop-zone-text">Drag &amp; drop audio here</span>
             </div>
 
-            <div class="add-btn-row-dual">
-              <button id="pickFilesBtn" class="add-method-btn" type="button">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-                Pick File(s)
-              </button>
-              <label for="folderInput" class="add-method-btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;">
+            <div class="add-btn-row-single">
+              <label for="folderInput" class="add-method-btn full-width">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22,19a2,2,0,0,1-2,2H4a2,2,0,0,1-2-2V5a2,2,0,0,1,2-3H9l2,3H20a2,2,0,0,1,2,2Z"/></svg>
                 Pick Folder
               </label>

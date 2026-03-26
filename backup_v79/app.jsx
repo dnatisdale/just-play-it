@@ -26,7 +26,7 @@ const playerCard = document.querySelector(".player-card");
 
 const volumeSlider = document.getElementById("volumeSlider");
 const sleepTimerSelect = document.getElementById("sleepTimerSelect");
-const pickFilesBtn = document.getElementById("pickFilesBtn");
+const setSleepTimerBtn = document.getElementById("setSleepTimerBtn");
 const sleepTimerStatus = document.getElementById("sleepTimerStatus");
 
 const playlistNameInput = document.getElementById("playlistNameInput");
@@ -1862,8 +1862,8 @@ async function loadNamedPlaylist() {
   const name = selectedPlaylistKey;
 
   if (!name || !savedPlaylists[name]) {
-    if (savedPlaylistBox) savedPlaylistBox.title = "Select a playlist first.";
-    showToast("Select a playlist first.");
+    if (savedPlaylistBox) savedPlaylistBox.title = "Choose a saved playlist first.";
+    showToast("Choose a saved playlist first.");
     return;
   }
 
@@ -1898,8 +1898,8 @@ function renameNamedPlaylist() {
   const oldName = selectedPlaylistKey;
 
   if (!oldName || !savedPlaylists[oldName]) {
-    savedPlaylistStatus.textContent = "Select a playlist to rename.";
-    showToast("Select a playlist to rename.");
+    savedPlaylistStatus.textContent = "Choose a saved playlist to rename.";
+    showToast("Choose a saved playlist to rename.");
     return;
   }
 
@@ -1957,8 +1957,8 @@ function deleteNamedPlaylist() {
   const name = selectedPlaylistKey;
 
   if (!name || !savedPlaylists[name]) {
-    savedPlaylistStatus.textContent = "Select a playlist to delete.";
-    showToast("Select a playlist to delete.");
+    savedPlaylistStatus.textContent = "Choose a saved playlist to delete.";
+    showToast("Choose a saved playlist to delete.");
     return;
   }
 
@@ -2525,17 +2525,10 @@ if (volumeSlider) {
   });
 }
 
-// Automatic sleep timer on selection
-if (sleepTimerSelect) {
-  sleepTimerSelect.addEventListener("change", () => {
-    const minutes = Number(sleepTimerSelect.value);
-    setSleepTimer(minutes);
-  });
-}
-
-if (pickFilesBtn) {
-  pickFilesBtn.addEventListener("click", () => fileInput.click());
-}
+setSleepTimerBtn.addEventListener("click", () => {
+  const minutes = Number(sleepTimerSelect.value);
+  setSleepTimer(minutes);
+});
 
 audio.addEventListener("play", () => {
   updatePlayPauseButton();
