@@ -651,7 +651,7 @@ h1 .dot {
 .now-playing-label {
   font-family: "Big Shoulders Display", "Oswald", sans-serif;
   font-size: 1.6rem;
-  font-weight: 900;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.02em;
   color: var(--text);
@@ -869,7 +869,7 @@ h3.interactive-header:active {
 .track-title {
   margin: 0;
   font-size: 1.3rem;
-  font-weight: 700;
+  font-weight: 500;
   line-height: 1.25;
   word-break: break-word;
   letter-spacing: -0.015em;
@@ -1389,7 +1389,7 @@ input::placeholder {
   margin: 0;
   font-family: "Big Shoulders Display", "Oswald", sans-serif;
   font-size: 1.6rem;
-  font-weight: 900;
+  font-weight: 600;
   color: #fff !important;
   text-transform: uppercase;
   letter-spacing: 0.04em;
