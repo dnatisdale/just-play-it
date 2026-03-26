@@ -25,15 +25,15 @@ const storageUsageText = document.getElementById("storageUsageText");
 const playerCard = document.querySelector(".player-card");
 
 const volumeSlider = document.getElementById("volumeSlider");
-const sleepTimerSelect = document.getElementById("sleepTimerSelect");
+const sleepTimerBtn = document.getElementById("sleepTimerBtn");
+const playlistActionBtn = document.getElementById("playlistActionBtn");
+const runActionBtn = document.getElementById("runActionBtn");
 const pickFilesBtn = document.getElementById("pickFilesBtn");
 const sleepTimerStatus = document.getElementById("sleepTimerStatus");
 
 const playlistNameInput = document.getElementById("playlistNameInput");
 const savePlaylistBtn = document.getElementById("savePlaylistBtn");
 const savedPlaylistsSelect = document.getElementById("savedPlaylistsSelect");
-const playlistActionSelect = document.getElementById("playlistActionSelect");
-const playlistActionBtn = document.getElementById("playlistActionBtn");
 const clearDeviceLibraryBtn = document.getElementById("clearDeviceLibraryBtn");
 const exportPlaylistsBtn = document.getElementById("exportPlaylistsBtn");
 const importPlaylistsInput = document.getElementById("importPlaylistsInput");
@@ -1880,7 +1880,6 @@ async function loadNamedPlaylist() {
   const name = selectedPlaylistKey;
 
   if (!name || !savedPlaylists[name]) {
-    if (savedPlaylistBox) savedPlaylistBox.title = "Select a playlist first.";
     showToast("Select a playlist first.");
     return;
   }
@@ -2401,25 +2400,50 @@ function updatePlaylistActionUI() {
   playlistActionSelect.value = "";
 }
 
-// Action dropdown: execute immediately on selection
-if (playlistActionSelect) {
-  playlistActionSelect.addEventListener("change", async () => {
-    const action = playlistActionSelect.value;
-    const selected = selectedPlaylistKey;
-    const isBuiltin = selected && savedPlaylists[selected] && savedPlaylists[selected].isBuiltin;
+// Playlist Action cycling
+let currentAction = "load"; // default
+if (playlistActionBtn) {
+  playlistActionBtn.addEventListener("click", () => {
+    if (currentAction === "load") currentAction = "rename";
+    else if (currentAction === "rename") currentAction = "delete";
+    else currentAction = "load";
+    
+    playlistActionBtn.textContent = `— Action: ${currentAction.charAt(0).toUpperCase() + currentAction.slice(1)} —`;
+  });
+}
 
-    if (isBuiltin && action !== "load") {
-      showToast(`Cannot ${action} a built-in playlist.`);
-      playlistActionSelect.value = "";
+if (runActionBtn) {
+  runActionBtn.addEventListener("click", async () => {
+    const selected = selectedPlaylistKey;
+    if (!selected) {
+      showToast("Select a playlist first.");
+      return;
+    }
+    const isBuiltin = savedPlaylists[selected] && savedPlaylists[selected].isBuiltin;
+    if (isBuiltin && currentAction !== "load") {
+      showToast(`Cannot ${currentAction} a built-in playlist.`);
       return;
     }
 
-    if (action === "load") await loadNamedPlaylist();
-    else if (action === "rename") renameNamedPlaylist();
-    else if (action === "delete") deleteNamedPlaylist();
-
-    updatePlaylistActionUI();
+    if (currentAction === "load") await loadNamedPlaylist();
+    else if (currentAction === "rename") renameNamedPlaylist();
+    else if (currentAction === "delete") deleteNamedPlaylist();
   });
+}
+
+function updatePlaylistActionUI() {
+  if (!playlistActionBtn || !runActionBtn) return;
+  const hasSelection = !!selectedPlaylistKey;
+  playlistActionBtn.disabled = !hasSelection;
+  runActionBtn.disabled = !hasSelection;
+  
+  if (!hasSelection) {
+    playlistActionBtn.style.opacity = "0.5";
+    runActionBtn.style.opacity = "0.5";
+  } else {
+    playlistActionBtn.style.opacity = "1";
+    runActionBtn.style.opacity = "1";
+  }
 }
 let clearConfirmTimeout = null;
 clearDeviceLibraryBtn.addEventListener("click", async () => {
@@ -2543,11 +2567,19 @@ if (volumeSlider) {
   });
 }
 
-// Automatic sleep timer on selection
-if (sleepTimerSelect) {
-  sleepTimerSelect.addEventListener("change", () => {
-    const minutes = Number(sleepTimerSelect.value);
-    setSleepTimer(minutes);
+// Automatic sleep timer on cycling
+if (sleepTimerBtn) {
+  sleepTimerBtn.addEventListener("click", () => {
+    // Sequence: 0 -> 10 -> 30 -> 60 -> 0
+    let current = sleepTimerMinutes || 0;
+    let next = 0;
+    if (current === 0) next = 10;
+    else if (current === 10) next = 30;
+    else if (current === 30) next = 60;
+    else next = 0;
+
+    setSleepTimer(next);
+    sleepTimerBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Sleep: ${next === 0 ? "Off" : next + " min"}`;
   });
 }
 

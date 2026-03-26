@@ -330,18 +330,10 @@
 
           <div class="mode-row">
             <button id="repeatBtn" class="mode-btn" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="17,1 21,5 17,9"/><path d="M3,11V9a4,4,0,0,1,4-4h14"/><polyline points="7,23 3,19 7,15"/><path d="M21,13v2a4,4,0,0,1-4,4H3"/></svg> Repeat: Off</button>
-          <div class="sleep-row" title="No sleep timer set.">
-            <select id="sleepTimerSelect" class="sleep-select" aria-label="Sleep timer duration">
-              <option value="0">Sleep: Off</option>
-              <option value="5">Sleep: 5 min</option>
-              <option value="10">Sleep: 10 min</option>
-              <option value="15">Sleep: 15 min</option>
-              <option value="30">Sleep: 30 min</option>
-              <option value="45">Sleep: 45 min</option>
-              <option value="60">Sleep: 60 min</option>
-            </select>
-            <span id="sleepTimerStatus" class="hidden"></span>
-          </div>
+            <button id="sleepTimerBtn" class="mode-btn" type="button">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 
+              Sleep: Off
+            </button>
 
         </section>
 
@@ -390,12 +382,14 @@
                 <option value="" disabled selected hidden>— Select a playlist from list —</option>
               </select>
 
-              <select id="playlistActionSelect" class="select-pop select-action" aria-label="Playlist action" disabled>
-                <option value="" disabled selected hidden>— Action —</option>
-                <option value="load">Load Playlist</option>
-                <option value="rename">Rename Playlist</option>
-                <option value="delete">Delete Playlist</option>
-              </select>
+              <div class="action-btn-row" style="display: flex; gap: 8px;">
+                <button id="playlistActionBtn" class="select-pop select-action" type="button" style="flex: 1; text-align: left; padding-left: 15px;">
+                  — Action: Load —
+                </button>
+                <button id="runActionBtn" class="action-run-btn" type="button" title="Run selected action">
+                  GO
+                </button>
+              </div>
             </div>
 
             <div class="save-row" style="margin-top: 8px;">

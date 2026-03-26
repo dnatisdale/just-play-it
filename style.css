@@ -3218,3 +3218,31 @@ h3 .counter-badge {
   70% { transform: scale(1.2); }
   100% { transform: scale(1); }
 }
+
+.action-run-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 0 16px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all var(--transition);
+  box-shadow: 0 4px 12px var(--accent-glow);
+  min-height: 44px;
+}
+
+.action-run-btn:hover {
+  background: var(--accent-light);
+  transform: translateY(-1px);
+}
+
+.action-run-btn:active {
+  transform: translateY(0);
+}
+
+.action-run-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
