@@ -1,4 +1,4 @@
-const BUILD_TIME = "BUILD V.80 <span class=\"accent-dash\">—</span> 26MAR2026 <span class=\"accent-dash\">—</span> 10:00";
+const BUILD_TIME = "BUILD V.81 <span class=\"accent-dash\">—</span> 26MAR2026 <span class=\"accent-dash\">—</span> 11:00";
 const audio = document.getElementById("audio");
 const fileInput = document.getElementById("fileInput");
 const urlInput = document.getElementById("urlInput");
@@ -2015,7 +2015,7 @@ function setSleepTimer(minutes) {
   sleepTimerMinutes = minutes || 0;
 
   if (!minutes || minutes <= 0) {
-    sleepTimerStatus.textContent = "No sleep timer set.";
+    if (sleepTimerStatus) sleepTimerStatus.textContent = "No sleep timer set.";
     localStorage.removeItem(STORAGE_KEYS.sleepTimerEnd);
     if (sleepTimerBtn) {
       sleepTimerBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Sleep: Off`;
@@ -2099,7 +2099,7 @@ function restoreSleepTimer() {
   const savedEnd = Number(localStorage.getItem(STORAGE_KEYS.sleepTimerEnd));
   if (!Number.isFinite(savedEnd) || savedEnd <= Date.now()) {
     localStorage.removeItem(STORAGE_KEYS.sleepTimerEnd);
-    sleepTimerStatus.textContent = "No sleep timer set.";
+    if (sleepTimerStatus) sleepTimerStatus.textContent = "No sleep timer set.";
     return;
   }
 
@@ -2991,13 +2991,17 @@ async function initApp() {
     });
   }
 
-  // ── Splash screen logic ──
-  const splash = document.getElementById("splashScreen");
-  if (splash) {
-    // Delay to let the fancy bouncy animation finish
-    setTimeout(() => {
-      splash.classList.add("fade-out");
-    }, 4000);
+  // ── Splash screen failure protection ──
+  try {
+    const splash = document.getElementById("splashScreen");
+    if (splash) {
+      // Delay to let the fancy bouncy animation finish
+      setTimeout(() => {
+        splash.classList.add("fade-out");
+      }, 4000);
+    }
+  } catch (err) {
+    console.warn("Splash screen fade failed:", err);
   }
 }
 
@@ -3036,40 +3040,38 @@ if (scrollToTopBtn) {
   });
 }
 
-initApp();
-// ── File Handling API (Launch Queue) ─────────────────────────
-// This catches audio files sent from the Android "Complete action using" menu
-if ('launchQueue' in window) {
-  window.launchQueue.setConsumer(async (launchParams) => {
-    // Check if files were actually passed to the app
-    if (!launchParams.files || !launchParams.files.length) return;
-    
-    try {
-      // Extract the actual File objects from the Android file handles
-      const filePromises = launchParams.files.map(handle => handle.getFile());
-      const files = await Promise.all(filePromises);
-      
-      // Filter them using your existing isAudioFile function
-      const audioFiles = files.filter(isAudioFile);
-      
-      if (audioFiles.length > 0) {
-        // Pass them directly into your existing system to save and play!
-        await addFileTracks(audioFiles);
-      } else {
-        showToast("No valid audio files found.");
-      }
-    } catch (error) {
-      console.error("Error opening file from Android menu:", error);
-      showToast("Could not open the file.");
-    }
-  });
-}
+try {
+  initApp();
 
-// ── Service Worker Error Reporting ─────────────────────────
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.addEventListener('message', (event) => {
-    if (event.data && event.data.type === 'SW_ERROR') {
-      addErrorLog(`ServiceWorker: ${event.data.message}`, "ServiceWorker");
-    }
-  });
+  // ── File Handling API (Launch Queue) ─────────────────────────
+  if ('launchQueue' in window) {
+    window.launchQueue.setConsumer(async (launchParams) => {
+      if (!launchParams.files || !launchParams.files.length) return;
+      try {
+        const filePromises = launchParams.files.map(handle => handle.getFile());
+        const files = await Promise.all(filePromises);
+        const audioFiles = files.filter(isAudioFile);
+        if (audioFiles.length > 0) await addFileTracks(audioFiles);
+        else showToast("No valid audio files found.");
+      } catch (error) {
+        console.error("Error opening file from Android menu:", error);
+        showToast("Could not open the file.");
+      }
+    });
+  }
+
+  // ── Service Worker Error Reporting ─────────────────────────
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', (event) => {
+      if (event.data && event.data.type === 'SW_ERROR') {
+        addErrorLog(`ServiceWorker: ${event.data.message}`, "ServiceWorker");
+      }
+    });
+  }
+} catch (error) {
+  console.error("CRITICAL: Application failed to start:", error);
+  // Emergency splash clear so user isn't stuck
+  const splash = document.getElementById("splashScreen");
+  if (splash) splash.classList.add("fade-out");
+  addErrorLog(`Critical Start Fail: ${error.message}`, "System");
 }
