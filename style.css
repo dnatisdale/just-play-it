@@ -3226,20 +3226,20 @@ h3 .counter-badge {
 }
 
 .action-run-btn {
-  background: var(--accent);
-  color: #fff;
-  border: none;
-  border-radius: var(--radius-pill);
-  padding: 0 16px;
-  font-weight: 800;
+  background: var(--input-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 10px 20px;
+  font-weight: 500;
   cursor: pointer;
   transition: all var(--transition);
-  box-shadow: 0 4px 12px var(--accent-glow);
   min-height: 44px;
 }
 
 .action-run-btn:hover {
-  background: var(--accent-light);
+  border-color: var(--accent-subtle-border);
+  background: var(--panel-hover);
   transform: translateY(-1px);
 }
 
@@ -3250,5 +3250,4 @@ h3 .counter-badge {
 .action-run-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  box-shadow: none;
 }
