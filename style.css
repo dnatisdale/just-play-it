@@ -608,6 +608,9 @@ h1 .dot {
   display: grid;
   grid-template-columns: 1fr;
   gap: 20px;
+  max-width: 720px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .layout-col {
@@ -2821,9 +2824,10 @@ h3 .counter-badge {
   }
 
   .main-layout {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 24px;
     align-items: start;
+    max-width: 680px;
   }
 
   /* Make the player card sticky so scrolling the library doesn't hide playback controls */
@@ -2855,7 +2859,7 @@ h3 .counter-badge {
 
 @media (min-width: 1024px) {
   .main-layout {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 32px;
   }
 }
