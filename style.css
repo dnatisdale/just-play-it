@@ -1223,11 +1223,11 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .select-action:not(:disabled) {
-  background: var(--orange) url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 18px center !important;
+  background: var(--accent) url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 18px center !important;
   background-size: 18px !important;
   color: #fff !important;
   border-color: transparent !important;
-  box-shadow: 0 4px 15px var(--orange-glow) !important;
+  box-shadow: 0 4px 15px var(--accent-glow) !important;
   font-weight: 600 !important;
   border-radius: 999px !important;
   opacity: 1;
@@ -1236,7 +1236,7 @@ input[type="range"]::-moz-range-thumb {
 
 .select-action:not(:disabled):focus {
   border-color: #fff !important;
-  box-shadow: 0 0 0 3px rgba(255, 156, 43, 0.4), 0 8px 32px var(--orange-glow) !important;
+  box-shadow: 0 0 0 3px var(--accent-subtle-border), 0 8px 32px var(--accent-glow) !important;
 }
 
 .accent-label {
