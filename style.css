@@ -1167,7 +1167,6 @@ input[type="range"]::-moz-range-thumb {
 .input-block input[type="file"],
 .url-row input,
 .save-row input,
-.save-row button,
 .load-row select,
 .load-row button,
 .load-row-group select,
@@ -3226,9 +3225,9 @@ h3 .counter-badge {
 }
 
 .action-run-btn {
-  background: var(--input-bg);
+  background: var(--glass);
   color: var(--text);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   border-radius: 999px;
   padding: 10px 20px;
   font-weight: 500;
@@ -3238,8 +3237,8 @@ h3 .counter-badge {
 }
 
 .action-run-btn:hover {
-  border-color: var(--accent-subtle-border);
   background: var(--panel-hover);
+  border-color: var(--accent-subtle-border);
   transform: translateY(-1px);
 }
 
