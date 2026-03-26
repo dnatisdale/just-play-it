@@ -118,6 +118,7 @@ let currentTrackIndex = -1;
 let pendingRestoreTime = null;
 let sleepTimerInterval = null;
 let sleepTimerTimeout = null;
+let sleepTimerMinutes = 0;
 let shuffleEnabled = false;
 let repeatMode = "off";
 let savedPlaylists = {};
@@ -2011,18 +2012,24 @@ function deleteNamedPlaylist() {
 
 function setSleepTimer(minutes) {
   clearSleepTimer();
+  sleepTimerMinutes = minutes || 0;
 
   if (!minutes || minutes <= 0) {
     sleepTimerStatus.textContent = "No sleep timer set.";
     localStorage.removeItem(STORAGE_KEYS.sleepTimerEnd);
-    sleepTimerSelect.value = "0";
+    if (sleepTimerBtn) {
+      sleepTimerBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Sleep: Off`;
+    }
     showToast("Sleep timer off.");
     return;
   }
 
   const endTime = Date.now() + minutes * 60 * 1000;
   localStorage.setItem(STORAGE_KEYS.sleepTimerEnd, String(endTime));
-  sleepTimerSelect.value = String(minutes);
+  
+  if (sleepTimerBtn) {
+    sleepTimerBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Sleep: ${minutes} min`;
+  }
 
   sleepTimerTimeout = window.setTimeout(
     () => {
@@ -2069,7 +2076,10 @@ function updateSleepTimerStatus() {
       sleepTimerStatus.textContent = "";
       sleepTimerStatus.classList.add("hidden");
     }
-    sleepTimerSelect.value = "0";
+    sleepTimerMinutes = 0;
+    if (sleepTimerBtn) {
+      sleepTimerBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Sleep: Off`;
+    }
     return;
   }
 
@@ -2106,7 +2116,10 @@ function restoreSleepTimer() {
   }, remainingMs);
 
   sleepTimerInterval = window.setInterval(updateSleepTimerStatus, 1000);
-  sleepTimerSelect.value = String(approxMinutes);
+  sleepTimerMinutes = approxMinutes;
+  if (sleepTimerBtn) {
+    sleepTimerBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Sleep: ${approxMinutes} min`;
+  }
   updateSleepTimerStatus();
 }
 
@@ -2394,11 +2407,6 @@ if (folderInput) {
 savePlaylistBtn.addEventListener("click", saveNamedPlaylist);
 
 // Enable Action dropdown once a playlist is selected; reset it after each use
-function updatePlaylistActionUI() {
-  if (!playlistActionSelect) return;
-  playlistActionSelect.disabled = !selectedPlaylistKey;
-  playlistActionSelect.value = "";
-}
 
 // Playlist Action cycling
 let currentAction = "load"; // default
