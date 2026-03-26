@@ -1209,6 +1209,36 @@ input[type="range"]::-moz-range-thumb {
   box-shadow: 0 0 0 3px var(--accent-subtle), 0 8px 24px rgba(148, 4, 20, 0.2) !important;
 }
 
+/* Action dropdown — matches orange select style when enabled */
+.select-action {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: var(--input-bg) url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 18px center !important;
+  background-size: 16px !important;
+  padding-right: 48px !important;
+  opacity: 0.4;
+  cursor: not-allowed;
+  transition: all var(--transition);
+}
+
+.select-action:not(:disabled) {
+  background: var(--orange) url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 18px center !important;
+  background-size: 18px !important;
+  color: #fff !important;
+  border-color: transparent !important;
+  box-shadow: 0 4px 15px var(--orange-glow) !important;
+  font-weight: 600 !important;
+  border-radius: 999px !important;
+  opacity: 1;
+  cursor: pointer;
+}
+
+.select-action:not(:disabled):focus {
+  border-color: #fff !important;
+  box-shadow: 0 0 0 3px rgba(255, 156, 43, 0.4), 0 8px 32px var(--orange-glow) !important;
+}
+
 .accent-label {
   color: #fff !important;
 }

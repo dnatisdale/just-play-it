@@ -1,4 +1,4 @@
-const BUILD_TIME = "BUILD V.78 <span class=\"accent-dash\">—</span> 25MAR2026 <span class=\"accent-dash\">—</span> 15:55";
+const BUILD_TIME = "BUILD V.79 <span class=\"accent-dash\">—</span> 25MAR2026 <span class=\"accent-dash\">—</span> 18:30";
 const audio = document.getElementById("audio");
 const fileInput = document.getElementById("fileInput");
 const urlInput = document.getElementById("urlInput");
@@ -2374,51 +2374,35 @@ if (folderInput) {
 }
 
 
+
 savePlaylistBtn.addEventListener("click", saveNamedPlaylist);
 
+// Enable Action dropdown once a playlist is selected; reset it after each use
 function updatePlaylistActionUI() {
-  if (!playlistActionSelect || !playlistActionBtn) return;
+  if (!playlistActionSelect) return;
   const selected = savedPlaylistsSelect.value;
-  const isSelected = !!selected;
-  const action = playlistActionSelect.value;
-  const isBuiltin = isSelected && savedPlaylists[selected] && savedPlaylists[selected].isBuiltin;
-  
-  if (!isSelected) {
-    playlistActionBtn.disabled = true;
-    playlistActionBtn.textContent = "Select Playlist";
-    playlistActionBtn.className = "ghost-btn";
-    return;
-  }
-  
-  if (isBuiltin && action !== "load") {
-    playlistActionBtn.disabled = true;
-    playlistActionBtn.textContent = action === "rename" ? "Cannot rename builtin playlists" : "Cannot delete builtin playlists";
-    playlistActionBtn.className = "ghost-btn";
-    return;
-  }
-  
-  playlistActionBtn.disabled = false;
-  if (action === "load") {
-    playlistActionBtn.textContent = "Press to Load";
-    playlistActionBtn.className = "ghost-btn primary-action-btn";
-  } else if (action === "rename") {
-    playlistActionBtn.textContent = "Press to Rename";
-    playlistActionBtn.className = "ghost-btn";
-  } else if (action === "delete") {
-    playlistActionBtn.textContent = "Press to Delete";
-    playlistActionBtn.className = "ghost-btn danger-btn";
-  }
+  playlistActionSelect.disabled = !selected;
+  // Reset to placeholder after each operation
+  playlistActionSelect.value = "";
 }
 
+// Action dropdown: execute immediately on selection
 if (playlistActionSelect) {
-  playlistActionSelect.addEventListener("change", updatePlaylistActionUI);
-}
-if (playlistActionBtn) {
-  playlistActionBtn.addEventListener("click", async () => {
+  playlistActionSelect.addEventListener("change", async () => {
     const action = playlistActionSelect.value;
+    const selected = savedPlaylistsSelect.value;
+    const isBuiltin = selected && savedPlaylists[selected] && savedPlaylists[selected].isBuiltin;
+
+    if (isBuiltin && action !== "load") {
+      showToast(`Cannot ${action} a built-in playlist.`);
+      playlistActionSelect.value = "";
+      return;
+    }
+
     if (action === "load") await loadNamedPlaylist();
     else if (action === "rename") renameNamedPlaylist();
     else if (action === "delete") deleteNamedPlaylist();
+
     updatePlaylistActionUI();
   });
 }

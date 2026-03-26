@@ -196,7 +196,7 @@
           </div>
           
           <div id="sidebarBuildInfo" style="text-align: center; font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; color: #6b7280; text-transform: uppercase; opacity: 0.8; padding-bottom: 8px;">
-            BUILD V.77 <span class="accent-dash">—</span> 25MAR2026 <span class="accent-dash">—</span> 15:35
+            BUILD V.79 <span class="accent-dash">—</span> 25MAR2026 <span class="accent-dash">—</span> 18:30
           </div>
         </div>
       </div><!-- End sidebar-body -->
@@ -381,7 +381,21 @@
 
           <div class="saved-playlist-box" id="savedPlaylistBox" title="No saved playlist selected.">
             <div id="savedPlaylistStatus" class="playlist-status-sub hidden">No playlist selected</div>
-            <div class="save-row">
+
+            <div class="load-row-group" style="display: grid; gap: 8px;">
+              <select id="savedPlaylistsSelect" class="select-pop" aria-label="Saved playlists">
+                <option value="" disabled selected hidden>— Select a playlist from list —</option>
+              </select>
+
+              <select id="playlistActionSelect" class="select-pop select-action" aria-label="Playlist action" disabled>
+                <option value="" disabled selected hidden>— Action —</option>
+                <option value="load">Load</option>
+                <option value="rename">Rename</option>
+                <option value="delete">Delete</option>
+              </select>
+            </div>
+
+            <div class="save-row" style="margin-top: 8px;">
               <input
                 id="playlistNameInput"
                 type="text"
@@ -390,21 +404,6 @@
                 autocomplete="off"
               />
               <button id="savePlaylistBtn" type="button">Save</button>
-            </div>
-
-            <div class="load-row-group" style="display: grid; gap: 8px;">
-              <select id="savedPlaylistsSelect" class="select-pop" aria-label="Saved playlists">
-                <option value="" disabled selected hidden>— Choose a saved playlist —</option>
-              </select>
-              
-              <div class="action-dropdown-row" style="display: grid; gap: 8px;">
-                <select id="playlistActionSelect" aria-label="Playlist action">
-                  <option value="load" selected>Load</option>
-                  <option value="rename">Rename</option>
-                  <option value="delete">Delete</option>
-                </select>
-                <button id="playlistActionBtn" type="button" class="ghost-btn" disabled style="font-weight: 700;">Select Playlist</button>
-              </div>
             </div>
           </div>
         </section>
@@ -457,7 +456,7 @@
         </div>
       </main>
       <footer id="mainBuildInfo" class="main-footer" style="padding: 32px 16px 12px; text-align: center; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; opacity: 0.7;">
-        BUILD V.77 <span class="accent-dash">—</span> 25MAR2026 <span class="accent-dash">—</span> 15:35
+        BUILD V.79 <span class="accent-dash">—</span> 25MAR2026 <span class="accent-dash">—</span> 18:30
       </footer>
     </div>
 
