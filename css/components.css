@@ -949,6 +949,7 @@ input[type="range"]::-moz-range-thumb {
   background: var(--input-bg) !important;
   border: 1px solid var(--border-strong) !important;
   font-weight: 600 !important;
+  font-size: 0.85rem !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   transition: all var(--transition);
 }

@@ -208,7 +208,6 @@ function updateSelectionBadge() {
   
   if (addBtn) {
     addBtn.disabled = count === 0;
-    addBtn.style.opacity = count === 0 ? "0.5" : "1";
     addBtn.textContent = count > 0
       ? `Add ${count} Track${count !== 1 ? "s" : ""} to Playlist`
       : "Add to Playlist";
