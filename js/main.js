@@ -687,11 +687,12 @@ async function initApp() {
   setupMediaSessionActions();
   await updateStorageUsage();
   // ── Unified Toggle Function ──
+  // ── Unified Toggle Function ──
   window.toggleSection = (headerId, containerId, textId, iconId, forceExpand = false) => {
     const header = typeof headerId === 'string' ? document.getElementById(headerId) : headerId;
     const container = typeof containerId === 'string' ? document.getElementById(containerId) : containerId;
-    const textEl = document.getElementById(textId);
-    const iconEl = document.getElementById(iconId);
+    const textEl = typeof textId === 'string' ? document.getElementById(textId) : textId;
+    const iconEl = typeof iconId === 'string' ? document.getElementById(iconId) : iconId;
 
     if (!header || !container) return;
 
@@ -710,23 +711,28 @@ async function initApp() {
     if (iconEl) iconEl.style.transform = targetVisible ? "rotate(180deg)" : "";
   };
 
+  // Wire up the main Section Headers
   if (currentPlaylistHeaderBtn) {
-    currentPlaylistHeaderBtn.addEventListener("click", () => {
-      toggleSection("currentPlaylistHeaderBtn", "playlistContainer", "playlistCollapseText", "playlistCollapseIcon");
-    });
+    currentPlaylistHeaderBtn.onclick = () => {
+      toggleSection(
+        currentPlaylistHeaderBtn, 
+        playlistContainer, 
+        document.getElementById("playlistCollapseText"), 
+        document.getElementById("playlistCollapseIcon")
+      );
+    };
   }
-  if (libraryHeader) {
-    libraryHeader.addEventListener("click", () => {
-      toggleSection("libraryHeader", "libraryContainer", "libraryCollapseText", "libraryCollapseIcon");
-    });
-  }
-  
-  // Also handle the specific Library Header ID if used elsewhere
-  const libHeaderEl = document.getElementById("libraryHeader");
-  if (libHeaderEl && libHeaderEl !== libraryHeader) {
-     libHeaderEl.addEventListener("click", () => {
-      toggleSection("libraryHeader", "libraryContainer", "libraryCollapseText", "libraryCollapseIcon");
-    });
+
+  const libraryHeaderEl = document.getElementById("libraryHeader");
+  if (libraryHeaderEl) {
+    libraryHeaderEl.onclick = () => {
+      toggleSection(
+        libraryHeaderEl, 
+        document.getElementById("libraryContainer"), 
+        document.getElementById("libraryCollapseText"), 
+        document.getElementById("libraryCollapseIcon")
+      );
+    };
   }
 
   const addLibraryBtn = document.getElementById("addLibraryToPlaylistBtn");
