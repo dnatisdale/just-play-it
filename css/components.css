@@ -1228,15 +1228,22 @@ h3 .dot {
 }
 
 .collapse-toggle-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
+  gap: 6px;
   border-radius: 999px;
-  padding: 6px 12px !important;
-  border-color: var(--orange-glow) !important;
+  padding: 5px 12px !important;
+  border: 1px solid var(--orange-glow) !important;
   background: var(--panel-3) !important;
   color: var(--orange) !important;
+  font-family: "Inter", system-ui, sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   transition: all var(--transition);
+  cursor: pointer;
+  line-height: 1;
 }
 
 .collapse-toggle-btn:hover {
@@ -1256,7 +1263,7 @@ h3 .dot {
   stroke-width: 3.5px; /* Thicker for better visibility */
 }
 
-.collapse-toggle-btn[aria-expanded="false"] .collapse-icon {
+[aria-expanded="false"] .collapse-icon {
   transform: rotate(-90deg);
 }
 

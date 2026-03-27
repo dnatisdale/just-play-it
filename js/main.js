@@ -686,36 +686,27 @@ async function initApp() {
   updateNowPlaying(playlist[currentTrackIndex] || null);
   setupMediaSessionActions();
   await updateStorageUsage();
-  // Library Toggle (Main Page Card)
-  const toggleLibraryBtn = document.getElementById("toggleLibraryBtn");
-  const libraryContainer = document.getElementById("libraryContainer");
-  const libraryHeader = document.getElementById("libraryHeader");
+  // ── Section Toggles (Playlist & Library) ──
+  const setupToggle = (headerId, containerId, textId, iconId) => {
+    const header = document.getElementById(headerId);
+    const container = document.getElementById(containerId);
+    const textEl = document.getElementById(textId);
+    const iconEl = document.getElementById(iconId);
 
-  const toggleLibrary = () => {
-    if (!libraryContainer || !toggleLibraryBtn) return;
-    const isVisible = !libraryContainer.classList.contains("collapsed");
-    libraryContainer.classList.toggle("collapsed");
-    toggleLibraryBtn.setAttribute("aria-expanded", !isVisible);
-    
-    const libText = document.getElementById("libraryCollapseText");
-    if (libText) {
-      libText.textContent = isVisible ? "Show" : "Hide";
-    }
-    const libIcon = document.getElementById("libraryCollapseIcon");
-    if (libIcon) {
-      libIcon.style.transform = isVisible ? "" : "rotate(180deg)";
-    }
+    if (!header || !container) return;
+
+    header.addEventListener("click", () => {
+      const isVisible = !container.classList.contains("collapsed");
+      container.classList.toggle("collapsed");
+      header.setAttribute("aria-expanded", !isVisible);
+      
+      if (textEl) textEl.textContent = isVisible ? "Show" : "Hide";
+      if (iconEl) iconEl.style.transform = isVisible ? "" : "rotate(180deg)";
+    });
   };
 
-  if (toggleLibraryBtn) {
-    toggleLibraryBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      toggleLibrary();
-    });
-  }
-  if (libraryHeader) {
-    libraryHeader.addEventListener("click", toggleLibrary);
-  }
+  setupToggle("currentPlaylistHeaderBtn", "playlistContainer", "playlistCollapseText", "playlistCollapseIcon");
+  setupToggle("libraryHeader", "libraryContainer", "libraryCollapseText", "libraryCollapseIcon");
 
   const addLibraryBtn = document.getElementById("addLibraryToPlaylistBtn");
   if (addLibraryBtn) {
