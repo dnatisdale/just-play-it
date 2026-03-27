@@ -1,0 +1,526 @@
+// ── Error Logging ─────────────────────────────────────
+function addErrorLog(message, type = "General") {
+  try {
+    const logs = JSON.parse(localStorage.getItem(STORAGE_KEYS.errorLogs) || "[]");
+    const entry = {
+      timestamp: new Date().toISOString(),
+      type,
+      message,
+      version: "V.78",
+      url: window.location.href,
+      userAgent: navigator.userAgent
+    };
+    logs.unshift(entry); // Newest first
+    if (logs.length > 50) logs.pop(); // Keep last 50
+    localStorage.setItem(STORAGE_KEYS.errorLogs, JSON.stringify(logs));
+    console.log(`[ErrorLog] [${type}] ${message}`);
+  } catch (e) {
+    console.warn("Failed to save error log", e);
+  }
+}
+
+function showErrorLog() {
+  const logs = JSON.parse(localStorage.getItem(STORAGE_KEYS.errorLogs) || "[]");
+  if (logs.length === 0) {
+    showToast("No errors logged yet.");
+    return;
+  }
+  
+  let content = "--- JUST PLAY IT. ERROR LOG ---\n\n";
+  logs.forEach(log => {
+    content += `[${log.timestamp}] [${log.type}]\n${log.message}\n\n`;
+  });
+  
+  // Use a simple prompt/alert to show the log for now, 
+  // or a more sophisticated modal later.
+  console.log(content);
+  
+  // Create a temporary overlay to show logs
+  const overlay = document.createElement("div");
+  overlay.style = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:10000; padding:20px; overflow-y:auto; color:#fff; font-family:monospace; font-size:12px; white-space:pre-wrap;";
+  overlay.innerHTML = `
+    <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+      <h2 style="margin:0;">Technical Error Log</h2>
+      <button onclick="this.parentElement.parentElement.remove()" style="background:#cc3300; color:#fff; border:none; padding:8px 16px; border-radius:4px; font-weight:bold; cursor:pointer;">Close</button>
+    </div>
+    <button id="copyLogBtn" style="background:#3182ce; color:#fff; border:none; padding:8px 16px; border-radius:4px; font-weight:bold; cursor:pointer; margin-bottom:20px;">Copy to Clipboard</button>
+    <div>${content}</div>
+  `;
+  document.body.appendChild(overlay);
+  
+  document.getElementById("copyLogBtn").onclick = () => {
+    navigator.clipboard.writeText(content).then(() => showToast("Log copied to clipboard"));
+  };
+}
+
+// Global error handlers
+window.onerror = (message, source, lineno, colno, error) => {
+  addErrorLog(`${message} at ${source}:${lineno}:${colno}`, "GlobalError");
+};
+
+window.onunhandledrejection = (event) => {
+  addErrorLog(`Promise rejected: ${event.reason}`, "UnhandledPromise");
+};
+
+// ── Theme ──────────────────────────────────────────────
+function getSystemTheme() {
+  return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  const meta = document.getElementById("themeColorMeta");
+  if (meta) {
+    meta.content = theme === "light" ? "#f6f4f1" : "#0b0d12";
+  }
+  if (themeIcon) themeIcon.innerHTML = theme === "light" ? ICONS.sun : ICONS.moon;
+  if (themeLabel) themeLabel.textContent = theme === "light" ? "Light mode" : "Dark mode";
+}
+
+function initTheme() {
+  // Always default to dark mode unless the user explicitly saved 'light'
+  const saved = localStorage.getItem(STORAGE_KEYS.theme);
+  const theme = saved === "light" ? "light" : "dark";
+  applyTheme(theme);
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute("data-theme") || getSystemTheme();
+  const next = current === "light" ? "dark" : "light";
+  applyTheme(next);
+  localStorage.setItem(STORAGE_KEYS.theme, next);
+}
+
+// ── Cover art helpers ──────────────────────────────────
+function setCoverArtLoaded(track) {
+  // Replace folder-icon content with the vinyl record image
+  coverArtEl.innerHTML = `<img src="icons/icon-512.png" alt="">`;
+  coverArtEl.classList.remove("cover-art-load");
+  coverArtEl.setAttribute("aria-label", track ? track.title : "Now playing");
+  coverArtEl.title = "";
+  coverArtEl.style.cursor = "default";
+}
+
+function setCoverArtEmpty() {
+  coverArtEl.innerHTML = `<span class="cover-art-hint">Load</span>`;
+  coverArtEl.classList.add("cover-art-load");
+  coverArtEl.classList.remove("spinning");
+  coverArtEl.setAttribute("aria-label", "Load audio files");
+  coverArtEl.title = "Click to load audio files";
+  coverArtEl.style.cursor = "pointer";
+}
+
+function updateSpinning() {
+  const isPlaying = !audio.paused && playlist.length > 0 && currentTrackIndex >= 0;
+  coverArtEl.classList.toggle("spinning", isPlaying);
+  // Brand logo in topbar does NOT spin with playback — it only does one startup spin via CSS
+}
+
+function formatTime(seconds) {
+  if (!Number.isFinite(seconds)) return "0:00";
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, "0")}`;
+}
+
+function formatBytes(bytes) {
+  if (!Number.isFinite(bytes) || bytes < 0) return "0 B";
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  let value = bytes;
+  let index = 0;
+
+  while (value >= 1024 && index < units.length - 1) {
+    value /= 1024;
+    index += 1;
+  }
+
+  const decimals = value >= 10 || index === 0 ? 0 : 1;
+  return `${value.toFixed(decimals)} ${units[index]}`;
+}
+
+function getFileNameFromUrl(url) {
+  try {
+    const parsed = new URL(url);
+    const path = parsed.pathname.split("/").filter(Boolean);
+    const lastPart = path[path.length - 1] || "Stream";
+    return decodeURIComponent(lastPart);
+  } catch {
+    return "URL Audio";
+  }
+}
+
+function getTrackEmoji(track) {
+  return "";
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function getTrackSourceLabel(track) {
+  if (!track) return "";
+  if (track.sourceType === "file") return "Stored on device";
+  if (track.id && String(track.id).startsWith("builtin-")) return ""; // Hidden as requested
+  return "Audio from URL";
+}
+
+function setPlayerStatus(text) {
+  if (playerCard) playerCard.title = text;
+}
+
+// ── Sidebar Sequential Reordering ──────────────────────
+
+function initSidebarOrder() {
+  const saved = localStorage.getItem(STORAGE_KEYS.sidebarOrder);
+  if (saved) {
+    try {
+      const order = JSON.parse(saved);
+      applySidebarOrder(order);
+    } catch (e) {
+      console.error("Failed to load sidebar order:", e);
+    }
+  }
+
+  const resetSidebarOrderBtn = document.getElementById("resetSidebarOrderBtn");
+  if (resetSidebarOrderBtn) {
+    resetSidebarOrderBtn.addEventListener("click", () => {
+      localStorage.removeItem(STORAGE_KEYS.sidebarOrder);
+      showToast("Sidebar layout reset to default.");
+      setTimeout(() => window.location.reload(), 1200);
+    });
+  }
+}
+
+function applySidebarOrder(orderArray) {
+  const body = document.querySelector(".sidebar-body");
+  if (!body || !orderArray) return;
+  
+  orderArray.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) body.appendChild(el);
+  });
+  
+  // Ensure "Support" and "Utility" areas remain at the end of the scroll list
+  // The Support section could also be reordered if converted to sidebar-section
+  // but for now we keep it at the top as requested, then the rest scroll.
+  // Wait, the user said "Put it all back on the regular Sidebar list".
+  
+  const supportSection = document.getElementById("sidebar-section-support");
+  if (supportSection) body.appendChild(supportSection);
+  
+  // Re-append the rest of the order to put support at the top if we want it there
+  // Actually, to put Support at the top and Utility at the bottom:
+  if (supportSection) body.prepend(supportSection);
+
+  const utilitySection = document.getElementById("sidebar-section-utility");
+  if (utilitySection) body.appendChild(utilitySection);
+}
+
+function initSidebarRearrangeMode() {
+  const rearrangeSidebarBtn = document.getElementById("rearrangeSidebarBtn");
+  const sidebarBody = document.querySelector(".sidebar-body");
+  if (!rearrangeSidebarBtn || !sidebarBody) return;
+
+  rearrangeSidebarBtn.addEventListener("click", () => {
+    isRearrangeMode = !isRearrangeMode;
+    rearrangeQueue = [];
+    
+    if (isRearrangeMode) {
+      rearrangeSidebarBtn.textContent = "Cancel Rearrange";
+      rearrangeSidebarBtn.classList.add("active");
+      sidebarBody.classList.add("rearrange-active");
+      showToast("REARRANGE MODE: Click sections in the order you want them.");
+      
+      // Reset any previous state
+      sidebarBody.querySelectorAll(".sidebar-section").forEach(s => s.classList.remove("ordered"));
+      sidebarBody.querySelectorAll(".reorder-badge").forEach(b => b.remove());
+    } else {
+      rearrangeSidebarBtn.textContent = "Rearrange Sections";
+      rearrangeSidebarBtn.classList.remove("active");
+      sidebarBody.classList.remove("rearrange-active");
+      sidebarBody.querySelectorAll(".sidebar-section").forEach(s => s.classList.remove("ordered"));
+      sidebarBody.querySelectorAll(".reorder-badge").forEach(b => b.remove());
+    }
+  });
+
+  sidebarBody.addEventListener("click", (e) => {
+    if (!isRearrangeMode) return;
+    
+    const section = e.target.closest(".sidebar-section");
+    if (!section) return;
+
+    // Toggle off if already ordered
+    if (section.classList.contains("ordered")) {
+      section.classList.remove("ordered");
+      const badge = section.querySelector(".reorder-badge");
+      if (badge) badge.remove();
+      
+      const idx = rearrangeQueue.indexOf(section.id);
+      if (idx !== -1) rearrangeQueue.splice(idx, 1);
+      
+      // Re-index remaining badges
+      sidebarBody.querySelectorAll(".reorder-badge").forEach(b => {
+        const sId = b.parentElement.id;
+        b.textContent = rearrangeQueue.indexOf(sId) + 1;
+      });
+      return;
+    }
+    
+    rearrangeQueue.push(section.id);
+    section.classList.add("ordered");
+    
+    // Add badge
+    const badge = document.createElement("div");
+    badge.className = "reorder-badge";
+    badge.textContent = rearrangeQueue.length;
+    section.appendChild(badge);
+    
+    // Check if we finished selecting all moveable sections
+    const total = sidebarBody.querySelectorAll(".sidebar-section").length;
+    if (rearrangeQueue.length === total && total > 0) {
+      applySidebarOrder(rearrangeQueue);
+      localStorage.setItem(STORAGE_KEYS.sidebarOrder, JSON.stringify(rearrangeQueue));
+      
+      // Exit mode automatically
+      isRearrangeMode = false;
+      if (rearrangeSidebarBtn) {
+        rearrangeSidebarBtn.textContent = "Rearrange Sections";
+        rearrangeSidebarBtn.classList.remove("active");
+      }
+      sidebarBody.classList.remove("rearrange-active");
+      
+      setTimeout(() => {
+        sidebarBody.querySelectorAll(".sidebar-section").forEach(s => s.classList.remove("ordered"));
+        sidebarBody.querySelectorAll(".reorder-badge").forEach(b => b.remove());
+      }, 1200);
+      
+      showToast("Layout updated & saved!");
+    }
+  });
+}
+
+function showToast(message, duration = 2400) {
+  toastEl.textContent = message;
+  toastEl.classList.add("show");
+
+  if (toastTimeout) {
+    clearTimeout(toastTimeout);
+  }
+
+  toastTimeout = window.setTimeout(() => {
+    toastEl.classList.remove("show");
+  }, duration);
+}
+
+async function updateBadgeCounts() {
+  // Playlist count
+    if (playlistBadge) {
+      const listCount = Array.isArray(playlist) ? playlist.length : 0;
+      playlistBadge.textContent = listCount;
+      playlistBadge.classList.toggle("hidden", listCount === 0);
+      
+      if (nowPlayingPlaylistBadge) {
+        nowPlayingPlaylistBadge.textContent = listCount;
+        nowPlayingPlaylistBadge.classList.toggle("hidden", listCount === 0);
+      }
+      if (nowPlayingPlaylistInfo) {
+        nowPlayingPlaylistInfo.classList.toggle("hidden", listCount === 0);
+      }
+    }
+
+  // Saved playlists count
+  if (savedPlaylistsBadge) {
+    const savedCount = Object.keys(savedPlaylists || {}).length;
+    savedPlaylistsBadge.textContent = savedCount;
+    savedPlaylistsBadge.classList.toggle("hidden", savedCount === 0);
+  }
+
+  // Sidebar badge: total library files (Stored + Built-in)
+  if (menuBadge) {
+    try {
+      const records = db ? await getAllTrackBlobs() : [];
+      let builtinCount = 0;
+      Object.values(savedPlaylists).forEach(pl => {
+        if (pl.isBuiltin) builtinCount += (pl.tracks || []).length;
+      });
+      const totalCount = records.length + builtinCount;
+      menuBadge.textContent = totalCount;
+      menuBadge.classList.toggle("hidden", totalCount === 0);
+    } catch (err) {
+      console.error("Badge update error:", err);
+      menuBadge.classList.add("hidden");
+    }
+  }
+}
+
+function updateSelectionBadge() {
+  const selectionBadge = document.getElementById("selectionBadge");
+  if (!selectionBadge) return;
+  const count = selectedLibraryTracks.size;
+  selectionBadge.textContent = count;
+  selectionBadge.classList.toggle("hidden", count === 0);
+}
+
+function revokeCurrentObjectUrl() {
+  if (currentObjectUrl) {
+    URL.revokeObjectURL(currentObjectUrl);
+    currentObjectUrl = null;
+  }
+}
+
+function updatePlaylistNameDisplay() {
+  const name = currentPlaylistName || "CURRENT PLAYLIST";
+  if (nowPlayingPlaylistName) {
+    nowPlayingPlaylistName.textContent = name;
+  }
+  
+  if (nowPlayingPlaylistInfo) {
+    nowPlayingPlaylistInfo.classList.toggle("has-playlist", !!currentPlaylistName);
+  }
+
+  // Sync selectedPlaylistKey if it matches a real playlist
+  if (savedPlaylistsSelect) {
+    savedPlaylistsSelect.value = ""; // Always show placeholder heading
+  }
+
+  localStorage.setItem(STORAGE_KEYS.currentPlaylistName, currentPlaylistName);
+}
+
+function normalizeTrack(track) {
+  if (!track || !track.sourceType || !track.id || !track.title) return null;
+
+  const normalized = {
+    id: track.id,
+    title: track.title,
+    sourceType: track.sourceType,
+    disabled: !!track.disabled,
+    duration: track.duration,
+  };
+
+  if (track.sourceType === "url") {
+    // REPAIR BRIDGE: If this is a builtin track, sync its 'src' with the latest 
+    // metadata from builtin-playlists.json. This fixes stale/broken URLs in localStorage.
+    if (track.id.startsWith("builtin-") && typeof savedPlaylists === "object") {
+      for (const playlistName in savedPlaylists) {
+        const pl = savedPlaylists[playlistName];
+        if (pl.isBuiltin && Array.isArray(pl.tracks)) {
+          const found = pl.tracks.find(t => t.id === track.id);
+          if (found && found.src) {
+            normalized.src = found.src;
+            break;
+          }
+        }
+      }
+    }
+
+    // Fallback if not repaired or search yielded nothing
+    if (!normalized.src) {
+      if (!track.src) return null;
+      normalized.src = track.src;
+    }
+  }
+
+  return normalized;
+}
+
+function updateNowPlaying(track) {
+  if (!track) {
+    trackTitleEl.textContent = "Nothing loaded yet";
+    trackMetaEl.textContent = "Tap the record icon or add a file below";
+    setCoverArtEmpty();
+    setPlayerStatus("Ready when you are.");
+    updateMediaSession();
+
+    return;
+  }
+
+  trackTitleEl.textContent = track.title;
+  const label = getTrackSourceLabel(track);
+  trackMetaEl.textContent = label;
+  trackMetaEl.classList.toggle("hidden", !label);
+  setCoverArtLoaded(track);
+
+  if (shuffleEnabled && repeatMode === "one") {
+    setPlayerStatus("Shuffle is on. Repeat one is also on.");
+  } else if (shuffleEnabled) {
+    setPlayerStatus("Shuffle is on.");
+  } else if (repeatMode === "all") {
+    setPlayerStatus("Repeat all is on.");
+  } else if (repeatMode === "one") {
+    setPlayerStatus("Repeating this track.");
+  } else {
+    setPlayerStatus("Normal playback.");
+  }
+
+  updateMediaSession();
+
+}
+
+
+function savePlaylistState() {
+  const safePlaylist = playlist
+    .map((track) => normalizeTrack(track))
+    .filter(Boolean);
+
+  localStorage.setItem(STORAGE_KEYS.playlist, JSON.stringify(safePlaylist));
+  localStorage.setItem(
+    STORAGE_KEYS.currentTrackIndex,
+    String(currentTrackIndex),
+  );
+}
+
+function savePlaybackState() {
+  localStorage.setItem(
+    STORAGE_KEYS.currentTrackIndex,
+    String(currentTrackIndex),
+  );
+
+  if (currentTrackIndex >= 0 && currentTrackIndex < playlist.length) {
+    localStorage.setItem(
+      STORAGE_KEYS.currentTime,
+      String(audio.currentTime || 0),
+    );
+  } else {
+    localStorage.removeItem(STORAGE_KEYS.currentTime);
+  }
+}
+
+function saveVolume() {
+  localStorage.setItem(STORAGE_KEYS.volume, String(audio.volume));
+}
+
+function loadVolume() {
+  // Volume is controlled by the device hardware — keep audio at full and restore
+  // only if a saved value exists (legacy support); slider no longer in the DOM.
+  const saved = Number(localStorage.getItem(STORAGE_KEYS.volume));
+  audio.volume = Number.isFinite(saved) && saved > 0 ? Math.min(1, saved) : 1;
+  if (volumeSlider) volumeSlider.value = String(audio.volume);
+}
+
+function loadModes() {
+  shuffleEnabled = localStorage.getItem(STORAGE_KEYS.shuffle) === "true";
+  repeatMode = localStorage.getItem(STORAGE_KEYS.repeat) || "off";
+  updateModeButtons();
+}
+
+function saveModes() {
+  localStorage.setItem(STORAGE_KEYS.shuffle, String(shuffleEnabled));
+  localStorage.setItem(STORAGE_KEYS.repeat, repeatMode);
+}
+
+function updateModeButtons() {
+  // Shuffle — sidebar button
+  if (shuffleBtnLabel) shuffleBtnLabel.textContent = `Shuffle: ${shuffleEnabled ? "On" : "Off"}`;
+  if (shuffleBtn) shuffleBtn.classList.toggle("active", shuffleEnabled);
+
+  // Repeat — main page button (SVG icon + text)
+  const repeatLabels = { off: "Off", all: "All", one: "One" };
+  repeatBtn.innerHTML = `${ICONS.repeat} <span>Repeat: ${repeatLabels[repeatMode] || "Off"}</span>`;
+  repeatBtn.classList.toggle("active", repeatMode !== "off");
+}
+

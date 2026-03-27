@@ -1,4 +1,4 @@
-const CACHE_NAME = "just-play-it-build-1000-26MAR2026-v80";
+const CACHE_NAME = "just-play-it-build-1001-26MAR2026-v81";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
@@ -9,7 +9,21 @@ const ASSETS_TO_CACHE = [
   "./builtin-playlists.json",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
-  "./audio/Basketball_Court.mp3"
+  "./audio/Basketball_Court.mp3",
+  // CSS modules
+  "./css/tokens.css",
+  "./css/base.css",
+  "./css/components.css",
+  "./css/sidebar.css",
+  "./css/responsive.css",
+  // JS modules
+  "./js/constants.js",
+  "./js/utils.js",
+  "./js/db.js",
+  "./js/library.js",
+  "./js/playlist.js",
+  "./js/player.js",
+  "./js/main.js"
 ];
 
 self.addEventListener("install", (event) => {
@@ -35,7 +49,11 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-const CORE_FILES = ["index.html", "style.css", "app.jsx", "manifest.json", "builtin-playlists.json", "privacy.html", "/"];
+const CORE_FILES = [
+  "index.html", "style.css", "app.jsx", "manifest.json", "builtin-playlists.json", "privacy.html", "/",
+  "css/tokens.css", "css/base.css", "css/components.css", "css/sidebar.css", "css/responsive.css",
+  "js/constants.js", "js/utils.js", "js/db.js", "js/library.js", "js/playlist.js", "js/player.js", "js/main.js"
+];
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
