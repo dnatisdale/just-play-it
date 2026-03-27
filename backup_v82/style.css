@@ -1,0 +1,12 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Oswald:wght@700&family=Big+Shoulders+Display:wght@900&family=Saira+Extra+Condensed:wght@900&display=swap");
+
+/* ═══════════════════════════════════════════
+   JUST PLAY IT. — Main Stylesheet
+   Split into logical modules for maintainability
+═══════════════════════════════════════════ */
+
+@import url("css/tokens.css");      /* Design tokens: colors, radii, shadows, transitions */
+@import url("css/base.css");        /* Splash screen, reset, body, app shell */
+@import url("css/components.css");  /* Topbar, buttons, cards, player, playlist, add-audio, toast */
+@import url("css/sidebar.css");     /* Sidebar panel, library list, QR code, rearrange mode */
+@import url("css/responsive.css");  /* Media queries, scrollbar, responsive layout */

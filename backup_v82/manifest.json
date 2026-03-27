@@ -1,0 +1,61 @@
+{
+  "name": "JUST PLAY IT.",
+  "short_name": "JUST PLAY IT.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0b0d12",
+  "theme_color": "#0b0d12",
+  "description": "A simple installable audio player for local files and audio URLs. No sign-in required.",
+  "categories": ["music", "utilities"],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Shuffle Music",
+      "url": "./?shuffle=true",
+      "description": "Start playback with shuffle enabled",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "social-preview/standard-preview-600x300.png",
+      "sizes": "600x300",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Mobile Player View"
+    },
+    {
+      "src": "social-preview/alternative-wide-1200x600.png",
+      "sizes": "1200x600",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Desktop Player View"
+    }
+  ],
+  "file_handlers": [
+    {
+      "action": "./",
+      "accept": {
+        "audio/mpeg": [".mp3"],
+        "audio/wav": [".wav"],
+        "audio/ogg": [".ogg"],
+        "audio/mp4": [".m4a", ".mp4"],
+        "audio/aac": [".aac"],
+        "audio/flac": [".flac"]
+      }
+    }
+  ]
+}

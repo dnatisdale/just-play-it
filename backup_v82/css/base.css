@@ -1,0 +1,155 @@
+/* ═══════════════════════════════════════════
+   SPLASH SCREEN
+═══════════════════════════════════════════ */
+
+.splash-screen {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 30000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.6s cubic-bezier(0.445, 0.05, 0.55, 0.95), visibility 0.6s ease;
+}
+
+.splash-screen.fade-out {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.splash-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.accent-dash {
+  color: var(--accent);
+  padding: 0 4px;
+  font-weight: 800;
+}
+
+/* ───── Splash logo glow ───── */
+.splash-logo-wrap {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 0 40px rgba(148, 4, 20, 0.7), 0 0 80px rgba(148, 4, 20, 0.3);
+  margin-bottom: 32px;
+  animation: basketball-bounce 2.2s cubic-bezier(0.215, 0.610, 0.355, 1.000) forwards;
+}
+
+@keyframes basketball-bounce {
+  0% { transform: translateY(-600px); animation-timing-function: ease-in; opacity: 0; }
+  25% { transform: translateY(0); animation-timing-function: ease-out; opacity: 1; }
+  40% { transform: translateY(-160px); animation-timing-function: ease-in; }
+  55% { transform: translateY(0); animation-timing-function: ease-out; }
+  70% { transform: translateY(-70px); animation-timing-function: ease-in; }
+  85% { transform: translateY(0); animation-timing-function: ease-out; }
+  92% { transform: translateY(-20px); animation-timing-function: ease-in; }
+  100% { transform: translateY(0); animation-timing-function: ease-out; }
+}
+
+.splash-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  animation: splash-spin 1.2s linear infinite;
+}
+
+@keyframes splash-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.splash-moto-wrap {
+  width: min(80vw, 320px);
+  display: flex;
+  justify-content: center;
+}
+
+.splash-moto-logo {
+  width: 100%;
+  height: auto;
+  filter: invert(1); /* Logo is black, splash is black — invert to make it white */
+  opacity: 0.95;
+  animation: slow-bounce 3.5s cubic-bezier(0.445, 0.05, 0.55, 0.95) forwards;
+}
+
+@keyframes slow-bounce {
+  0% { transform: translateY(-120px); opacity: 0; }
+  15% { transform: translateY(0); opacity: 1; } /* 1 */
+  30% { transform: translateY(-60px); }
+  42% { transform: translateY(0); } /* 2 */
+  54% { transform: translateY(-30px); }
+  66% { transform: translateY(0); } /* 3 */
+  76% { transform: translateY(-12px); }
+  86% { transform: translateY(0); } /* 4 */
+  93% { transform: translateY(-4px); }
+  100% { transform: translateY(0); opacity: 1; } /* 5 */
+}
+
+/* ═══════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════ */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden; /* Prevent horizontal scroll on body */
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+body {
+  min-height: 100vh;
+  padding-bottom: 100px;
+}
+
+/* We use a fixed pseudo-element for the gradient instead of background-attachment: fixed 
+   because background-attachment: fixed causes massive repaint lag and jerky scrolling on mobile! */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image: var(--bg-gradient);
+  pointer-events: none;
+  transition: background-image 0.3s ease;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+  transition: background var(--transition), color var(--transition),
+    transform var(--transition), box-shadow var(--transition),
+    border-color var(--transition), opacity var(--transition);
+}
+
+/* ═══════════════════════════════════════════
+   APP SHELL
+═══════════════════════════════════════════ */
+
+.app-shell {
+  width: 100%;
+  max-width: 680px; /* Narrower single column for better progressive fit */
+  margin: 0 auto;
+  padding: 24px 16px 60px;
+}
+
