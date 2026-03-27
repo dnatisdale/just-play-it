@@ -291,28 +291,7 @@ if (toggleEditBtn) {
   });
 }
 
-if (currentPlaylistHeaderBtn) {
-  currentPlaylistHeaderBtn.addEventListener("click", () => {
-    const isExpanded = currentPlaylistHeaderBtn.getAttribute("aria-expanded") === "true";
-    currentPlaylistHeaderBtn.setAttribute("aria-expanded", String(!isExpanded));
-    if (playlistContainer) playlistContainer.classList.toggle("collapsed", isExpanded);
-    
-    const collapseText = document.getElementById("playlistCollapseText");
-    if (collapseText) {
-      collapseText.textContent = isExpanded ? "Show" : "Hide";
-    }
-    const collapseIcon = document.getElementById("playlistCollapseIcon");
-    if (collapseIcon) {
-      collapseIcon.style.transform = isExpanded ? "" : "rotate(180deg)";
-    }
-  });
-  currentPlaylistHeaderBtn.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      currentPlaylistHeaderBtn.click();
-    }
-  });
-}
+
 
 savedPlaylistsSelect.addEventListener("change", () => {
   const selected = savedPlaylistsSelect.value;
@@ -713,21 +692,21 @@ async function initApp() {
     if (iconEl) iconEl.style.transform = targetVisible ? "rotate(180deg)" : "";
   };
 
-  // Wire up THE CURRENT PLAYLIST header
-  const playlistHdr = document.getElementById("currentPlaylistHeaderBtn");
-  if (playlistHdr) {
-    playlistHdr.addEventListener("click", () => {
-      toggleSection("currentPlaylistHeaderBtn", "playlistContainer", "playlistCollapseText", "playlistCollapseIcon");
+  // ── Unified Toggle Handling ──
+  const wireUpToggle = (headerId, containerId, textId, iconId) => {
+    const hdr = document.getElementById(headerId);
+    if (!hdr) return;
+    hdr.addEventListener("click", () => toggleSection(headerId, containerId, textId, iconId));
+    hdr.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        hdr.click();
+      }
     });
-  }
+  };
 
-  // Wire up THE DEVICE LIBRARY header
-  const libraryHdr = document.getElementById("libraryHeader");
-  if (libraryHdr) {
-    libraryHdr.addEventListener("click", () => {
-      toggleSection("libraryHeader", "libraryContainer", "libraryCollapseText", "libraryCollapseIcon");
-    });
-  }
+  wireUpToggle("currentPlaylistHeaderBtn", "playlistContainer", "playlistCollapseText", "playlistCollapseIcon");
+  wireUpToggle("libraryHeader", "libraryContainer", "libraryCollapseText", "libraryCollapseIcon");
 
   const addLibraryBtn = document.getElementById("addLibraryToPlaylistBtn");
   if (addLibraryBtn) {
