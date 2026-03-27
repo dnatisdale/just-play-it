@@ -1,4 +1,4 @@
-const CACHE_NAME = "just-play-it-build-1001-26MAR2026-v81";
+const CACHE_NAME = "just-play-it-build-1002-27MAR2026-v82";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
@@ -9,7 +9,7 @@ const ASSETS_TO_CACHE = [
   "./builtin-playlists.json",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
-  "./audio/Basketball_Court.mp3",
+  "./audio/basketball_court.mp3",
   // CSS modules
   "./css/tokens.css",
   "./css/base.css",
