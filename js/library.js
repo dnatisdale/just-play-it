@@ -138,6 +138,8 @@ async function renderSidebarLibrary() {
       deviceLibraryList.appendChild(item);
     });
   }
+
+  updateSelectionBadge();
 }
 
 // ── Delete a single stored device track and clean up playlists ──
@@ -192,4 +194,98 @@ async function deleteStoredTrack(id, title) {
     console.error("Could not delete track:", error);
     showToast("Could not delete file. Try again.");
   }
+}
+
+function updateSelectionBadge() {
+  const badge = document.getElementById("selectionBadge");
+  const addBtn = document.getElementById("addLibraryToPlaylistBtn");
+  const count = selectedLibraryTracks.size;
+  
+  if (badge) {
+    badge.textContent = count;
+    badge.classList.toggle("hidden", count === 0);
+  }
+  
+  if (addBtn) {
+    addBtn.disabled = count === 0;
+    addBtn.style.opacity = count === 0 ? "0.5" : "1";
+    addBtn.textContent = count > 0
+      ? `Add ${count} Track${count !== 1 ? "s" : ""} to Playlist`
+      : "Add to Playlist";
+  }
+}
+
+async function addSelectedToPlaylist() {
+  if (selectedLibraryTracks.size === 0) return;
+
+  // Build lookup maps for personal uploads and builtins
+  let records = [];
+  try { 
+    records = await getAllTrackBlobs(); 
+  } catch (e) {
+    console.error("Could not fetch library records:", e);
+  }
+
+  const recordMap = new Map(records.map(r => [r.id, r]));
+
+  const builtinMap = new Map();
+  Object.values(savedPlaylists).forEach(pl => {
+    if (pl.isBuiltin) {
+      (pl.tracks || []).forEach(t => builtinMap.set(t.id, t));
+    }
+  });
+
+  const existingIds = new Set(playlist.map(t => t.id));
+  const toAdd = [];
+  const skipped = [];
+
+  for (const id of selectedLibraryTracks) {
+    if (existingIds.has(id)) { 
+      skipped.push(id); 
+      continue; 
+    }
+    
+    if (recordMap.has(id)) {
+      const r = recordMap.get(id);
+      toAdd.push({ 
+        id: r.id, 
+        title: r.title, 
+        sourceType: "file", 
+        duration: r.duration 
+      });
+    } else if (builtinMap.has(id)) {
+      const t = builtinMap.get(id);
+      toAdd.push({ ...t }); // builtins already have sourceType:"url"
+    }
+  }
+
+  if (toAdd.length === 0 && skipped.length > 0) {
+    showToast(`${skipped.length} track${skipped.length !== 1 ? "s" : ""} already in playlist.`);
+    return;
+  }
+
+  playlist.push(...toAdd);
+  currentPlaylistName = "";
+  updatePlaylistNameDisplay();
+
+  const wasEmpty = playlist.length === toAdd.length;
+  if (wasEmpty || currentTrackIndex === -1) {
+    await loadTrack(0, true);
+  } else {
+    renderPlaylist();
+    savePlaylistState();
+  }
+  await updateBadgeCounts();
+
+  // Clear selection after adding
+  selectedLibraryTracks.clear();
+  updateSelectionBadge();
+  await renderSidebarLibrary();
+
+  const msg = toAdd.length > 0
+    ? `${toAdd.length} track${toAdd.length !== 1 ? "s" : ""} added.${skipped.length > 0 ? ` (${skipped.length} already in playlist)` : ""}`
+    : `Already in playlist.`;
+    
+  showToast(msg);
+  setPlayerStatus(msg);
 }

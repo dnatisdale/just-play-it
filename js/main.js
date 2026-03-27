@@ -706,6 +706,11 @@ async function initApp() {
     });
   }
 
+  const addLibraryBtn = document.getElementById("addLibraryToPlaylistBtn");
+  if (addLibraryBtn) {
+    addLibraryBtn.addEventListener("click", addSelectedToPlaylist);
+  }
+
   // Initialize sidebar reordering logic
   initSidebarRearrangeMode();
 
