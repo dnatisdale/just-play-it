@@ -1256,7 +1256,7 @@ h3 .dot {
   stroke-width: 3.5px; /* Thicker for better visibility */
 }
 
-.playlist-header[aria-expanded="false"] .collapse-icon {
+.collapse-toggle-btn[aria-expanded="false"] .collapse-icon {
   transform: rotate(-90deg);
 }
 
