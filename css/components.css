@@ -1131,7 +1131,21 @@ input::placeholder {
 ═══════════════════════════════════════════ */
 
 .section-head {
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+}
+
+.standardized-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: baseline !important; /* aligns "CURRENT PLAYLIST" and "Show" on the same floor */
+  gap: 16px;
+  cursor: pointer;
+  padding: 2px 0;
+}
+
+.standardized-header h3 {
+  margin: 0 !important;
+  flex: 1;
 }
 
 .section-head h3,
