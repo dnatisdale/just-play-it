@@ -686,27 +686,48 @@ async function initApp() {
   updateNowPlaying(playlist[currentTrackIndex] || null);
   setupMediaSessionActions();
   await updateStorageUsage();
-  // ── Section Toggles (Playlist & Library) ──
-  const setupToggle = (headerId, containerId, textId, iconId) => {
-    const header = document.getElementById(headerId);
-    const container = document.getElementById(containerId);
+  // ── Unified Toggle Function ──
+  window.toggleSection = (headerId, containerId, textId, iconId, forceExpand = false) => {
+    const header = typeof headerId === 'string' ? document.getElementById(headerId) : headerId;
+    const container = typeof containerId === 'string' ? document.getElementById(containerId) : containerId;
     const textEl = document.getElementById(textId);
     const iconEl = document.getElementById(iconId);
 
     if (!header || !container) return;
 
-    header.addEventListener("click", () => {
+    let targetVisible;
+    if (forceExpand) {
+      targetVisible = true;
+      container.classList.remove("collapsed");
+    } else {
       const isVisible = !container.classList.contains("collapsed");
+      targetVisible = !isVisible;
       container.classList.toggle("collapsed");
-      header.setAttribute("aria-expanded", !isVisible);
-      
-      if (textEl) textEl.textContent = isVisible ? "Show" : "Hide";
-      if (iconEl) iconEl.style.transform = isVisible ? "" : "rotate(180deg)";
-    });
+    }
+
+    header.setAttribute("aria-expanded", targetVisible);
+    if (textEl) textEl.textContent = targetVisible ? "Hide" : "Show";
+    if (iconEl) iconEl.style.transform = targetVisible ? "rotate(180deg)" : "";
   };
 
-  setupToggle("currentPlaylistHeaderBtn", "playlistContainer", "playlistCollapseText", "playlistCollapseIcon");
-  setupToggle("libraryHeader", "libraryContainer", "libraryCollapseText", "libraryCollapseIcon");
+  if (currentPlaylistHeaderBtn) {
+    currentPlaylistHeaderBtn.addEventListener("click", () => {
+      toggleSection("currentPlaylistHeaderBtn", "playlistContainer", "playlistCollapseText", "playlistCollapseIcon");
+    });
+  }
+  if (libraryHeader) {
+    libraryHeader.addEventListener("click", () => {
+      toggleSection("libraryHeader", "libraryContainer", "libraryCollapseText", "libraryCollapseIcon");
+    });
+  }
+  
+  // Also handle the specific Library Header ID if used elsewhere
+  const libHeaderEl = document.getElementById("libraryHeader");
+  if (libHeaderEl && libHeaderEl !== libraryHeader) {
+     libHeaderEl.addEventListener("click", () => {
+      toggleSection("libraryHeader", "libraryContainer", "libraryCollapseText", "libraryCollapseIcon");
+    });
+  }
 
   const addLibraryBtn = document.getElementById("addLibraryToPlaylistBtn");
   if (addLibraryBtn) {
@@ -753,16 +774,10 @@ async function initApp() {
   if (nowPlayingPlaylistInfo) {
     nowPlayingPlaylistInfo.addEventListener("click", (e) => {
       e.stopPropagation();
-      const plistHeader = document.querySelector(".playlist-header");
+      const plistHeader = document.querySelector(".standardized-header");
       
-      // Auto expand if collapsed
-      if (currentPlaylistHeaderBtn && currentPlaylistHeaderBtn.getAttribute("aria-expanded") === "false") {
-        currentPlaylistHeaderBtn.setAttribute("aria-expanded", "true");
-        if (playlistContainer) playlistContainer.classList.remove("collapsed");
-        
-        const collapseText = document.getElementById("playlistCollapseText");
-        if (collapseText) collapseText.textContent = "Hide";
-      }
+      // Auto expand if collapsed (Ensure text and icon sync)
+      toggleSection("currentPlaylistHeaderBtn", "playlistContainer", "playlistCollapseText", "playlistCollapseIcon", true);
 
       if (plistHeader) {
         plistHeader.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -782,13 +797,7 @@ async function initApp() {
       e.stopPropagation();
       
       // Auto expand if collapsed
-      if (currentPlaylistHeaderBtn && currentPlaylistHeaderBtn.getAttribute("aria-expanded") === "false") {
-        currentPlaylistHeaderBtn.setAttribute("aria-expanded", "true");
-        if (playlistContainer) playlistContainer.classList.remove("collapsed");
-        
-        const collapseText = document.getElementById("playlistCollapseText");
-        if (collapseText) collapseText.textContent = "Hide";
-      }
+      toggleSection("currentPlaylistHeaderBtn", "playlistContainer", "playlistCollapseText", "playlistCollapseIcon", true);
 
       if (currentPlaylistHeaderBtn) {
         // Bring the Current Playlist label to the very top
