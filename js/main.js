@@ -687,14 +687,16 @@ async function initApp() {
   setupMediaSessionActions();
   await updateStorageUsage();
   // ── Unified Toggle Function ──
-  // ── Unified Toggle Function ──
   window.toggleSection = (headerId, containerId, textId, iconId, forceExpand = false) => {
     const header = typeof headerId === 'string' ? document.getElementById(headerId) : headerId;
     const container = typeof containerId === 'string' ? document.getElementById(containerId) : containerId;
-    const textEl = typeof textId === 'string' ? document.getElementById(textId) : textId;
-    const iconEl = typeof iconId === 'string' ? document.getElementById(iconId) : iconId;
+    const textEl = document.getElementById(textId);
+    const iconEl = document.getElementById(iconId);
 
-    if (!header || !container) return;
+    if (!header || !container) {
+      console.warn("Toggle failed: missing header or container", { headerId, containerId });
+      return;
+    }
 
     let targetVisible;
     if (forceExpand) {
@@ -711,28 +713,20 @@ async function initApp() {
     if (iconEl) iconEl.style.transform = targetVisible ? "rotate(180deg)" : "";
   };
 
-  // Wire up the main Section Headers
-  if (currentPlaylistHeaderBtn) {
-    currentPlaylistHeaderBtn.onclick = () => {
-      toggleSection(
-        currentPlaylistHeaderBtn, 
-        playlistContainer, 
-        document.getElementById("playlistCollapseText"), 
-        document.getElementById("playlistCollapseIcon")
-      );
-    };
+  // Wire up THE CURRENT PLAYLIST header
+  const playlistHdr = document.getElementById("currentPlaylistHeaderBtn");
+  if (playlistHdr) {
+    playlistHdr.addEventListener("click", () => {
+      toggleSection("currentPlaylistHeaderBtn", "playlistContainer", "playlistCollapseText", "playlistCollapseIcon");
+    });
   }
 
-  const libraryHeaderEl = document.getElementById("libraryHeader");
-  if (libraryHeaderEl) {
-    libraryHeaderEl.onclick = () => {
-      toggleSection(
-        libraryHeaderEl, 
-        document.getElementById("libraryContainer"), 
-        document.getElementById("libraryCollapseText"), 
-        document.getElementById("libraryCollapseIcon")
-      );
-    };
+  // Wire up THE DEVICE LIBRARY header
+  const libraryHdr = document.getElementById("libraryHeader");
+  if (libraryHdr) {
+    libraryHdr.addEventListener("click", () => {
+      toggleSection("libraryHeader", "libraryContainer", "libraryCollapseText", "libraryCollapseIcon");
+    });
   }
 
   const addLibraryBtn = document.getElementById("addLibraryToPlaylistBtn");
