@@ -686,24 +686,35 @@ async function initApp() {
   updateNowPlaying(playlist[currentTrackIndex] || null);
   setupMediaSessionActions();
   await updateStorageUsage();
-   // Sidebar Library Toggle
+  // Library Toggle (Main Page Card)
   const toggleLibraryBtn = document.getElementById("toggleLibraryBtn");
-  const libraryCollapsible = document.getElementById("libraryCollapsible");
-  if (toggleLibraryBtn && libraryCollapsible) {
-    toggleLibraryBtn.addEventListener("click", () => {
-      const isVisible = !libraryCollapsible.classList.contains("collapsed");
-      libraryCollapsible.classList.toggle("collapsed");
-      toggleLibraryBtn.setAttribute("aria-expanded", !isVisible);
-      
-      const libText = document.getElementById("libraryCollapseText");
-      if (libText) {
-        libText.textContent = isVisible ? "Show" : "Hide";
-      }
-      const libIcon = document.getElementById("libraryCollapseIcon");
-      if (libIcon) {
-        libIcon.style.transform = isVisible ? "" : "rotate(180deg)";
-      }
+  const libraryContainer = document.getElementById("libraryContainer");
+  const libraryHeader = document.getElementById("libraryHeader");
+
+  const toggleLibrary = () => {
+    if (!libraryContainer || !toggleLibraryBtn) return;
+    const isVisible = !libraryContainer.classList.contains("collapsed");
+    libraryContainer.classList.toggle("collapsed");
+    toggleLibraryBtn.setAttribute("aria-expanded", !isVisible);
+    
+    const libText = document.getElementById("libraryCollapseText");
+    if (libText) {
+      libText.textContent = isVisible ? "Show" : "Hide";
+    }
+    const libIcon = document.getElementById("libraryCollapseIcon");
+    if (libIcon) {
+      libIcon.style.transform = isVisible ? "" : "rotate(180deg)";
+    }
+  };
+
+  if (toggleLibraryBtn) {
+    toggleLibraryBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleLibrary();
     });
+  }
+  if (libraryHeader) {
+    libraryHeader.addEventListener("click", toggleLibrary);
   }
 
   const addLibraryBtn = document.getElementById("addLibraryToPlaylistBtn");
