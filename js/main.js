@@ -280,6 +280,14 @@ importPlaylistsInput.addEventListener("change", async (event) => {
 });
 
 jumpToCurrentBtn.addEventListener("click", jumpToCurrentTrack);
+if (clearPlaylistBtn) {
+  clearPlaylistBtn.addEventListener("click", () => {
+    if (confirm("Clear your current playlist workspace? (This will not delete your files from the device).")) {
+      clearPlaylist();
+      showToast("Playlist cleared.");
+    }
+  });
+}
 
 if (toggleEditBtn) {
   toggleEditBtn.addEventListener("click", () => {
