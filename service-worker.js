@@ -1,4 +1,4 @@
-const CACHE_NAME = "just-play-it-build-1002-27MAR2026-v87";
+const CACHE_NAME = "just-play-it-build-1002-27MAR2026-v88";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
