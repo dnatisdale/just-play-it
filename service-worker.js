@@ -1,10 +1,11 @@
-const CACHE_NAME = "just-play-it-build-1002-27MAR2026-v86";
+const CACHE_NAME = "just-play-it-build-1002-27MAR2026-v87";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
   "./style.css",
   "./app.jsx",
   "./privacy.html",
+  "./guide.html",
   "./manifest.json",
   "./builtin-playlists.json",
   "./icons/icon-192.png",
@@ -50,7 +51,7 @@ self.addEventListener("activate", (event) => {
 });
 
 const CORE_FILES = [
-  "index.html", "style.css", "app.jsx", "manifest.json", "builtin-playlists.json", "privacy.html", "/",
+  "index.html", "style.css", "app.jsx", "manifest.json", "builtin-playlists.json", "privacy.html", "guide.html", "/",
   "css/tokens.css", "css/base.css", "css/components.css", "css/sidebar.css", "css/responsive.css",
   "js/constants.js", "js/utils.js", "js/db.js", "js/library.js", "js/playlist.js", "js/player.js", "js/main.js"
 ];

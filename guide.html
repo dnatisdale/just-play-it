@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b0d12" id="themeColorMeta" />
+    <meta name="description" content="JUST PLAY IT. Playlist Building Guide" />
+    <title>Playlist Guide – JUST PLAY IT.</title>
+    
+    <link rel="icon" href="icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="icons/icon-192.png" />
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Oswald:wght@700&family=Big+Shoulders+Display:wght@900&family=Saira+Extra+Condensed:wght@900&display=swap" rel="stylesheet" />
+    
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      .guide-container {
+        max-width: 680px;
+        margin: 0 auto;
+        padding: 60px 20px 80px;
+      }
+      .guide-header {
+        text-align: center;
+        margin-bottom: 40px;
+      }
+      .guide-header h1 {
+        font-family: "Big Shoulders Display", "Oswald", sans-serif;
+        font-size: 3rem;
+        margin: 0 0 10px;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        color: var(--text);
+      }
+      .guide-header p {
+        color: var(--muted);
+        font-size: 0.95rem;
+        font-weight: 500;
+        margin: 0;
+      }
+      .guide-card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 32px 36px;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(20px);
+        position: relative;
+        overflow: hidden;
+      }
+      .guide-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--accent-glow), transparent);
+        pointer-events: none;
+      }
+      .guide-card h2 {
+        font-family: "Big Shoulders Display", "Oswald", sans-serif;
+        font-size: 1.6rem;
+        text-transform: uppercase;
+        margin: 32px 0 14px;
+        color: var(--accent-light);
+        letter-spacing: 0.01em;
+      }
+      .guide-card h2:first-child {
+        margin-top: 0;
+      }
+      .guide-card p, .guide-card ul {
+        font-size: 0.98rem;
+        line-height: 1.65;
+        color: var(--text-2);
+        margin-bottom: 16px;
+        margin-top: 0;
+      }
+      .guide-card ul {
+        padding-left: 24px;
+      }
+      .guide-card li {
+        margin-bottom: 10px;
+      }
+      .guide-card strong {
+        color: var(--text);
+      }
+      .tip-box {
+        background: rgba(255, 140, 0, 0.1);
+        border-left: 4px solid var(--accent);
+        padding: 16px 20px;
+        margin: 24px 0;
+        border-radius: 4px;
+      }
+      .tip-box strong {
+        color: var(--accent-light);
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.05em;
+        display: block;
+        margin-bottom: 4px;
+      }
+      .back-btn-wrap {
+        margin-top: 32px;
+        text-align: center;
+      }
+      .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 14px 28px;
+        border-radius: 999px;
+        background: var(--glass);
+        border: 1px solid var(--border-strong);
+        color: var(--text);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all var(--transition);
+        backdrop-filter: blur(8px);
+        box-shadow: var(--shadow-sm);
+      }
+      .back-btn:hover {
+        background: var(--glass-border);
+        border-color: var(--accent-subtle-border);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.2), 0 0 15px var(--accent-glow);
+      }
+      .back-btn:active {
+        transform: translateY(0);
+      }
+      
+      @media (max-width: 560px) {
+        .guide-container {
+          padding: 40px 16px 60px;
+        }
+        .guide-card {
+          padding: 24px 20px;
+        }
+        .guide-header h1 {
+          font-size: 2.4rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="guide-container">
+      <div class="guide-header">
+        <h1>Playlist Guide<span class="dot" style="width: 0.22em; height: 0.22em; color: var(--accent);"></span></h1>
+        <p>Master your music library offline.</p>
+      </div>
+
+      <div class="guide-card">
+        <p>Building a playlist in <strong>JUST PLAY IT.</strong> is designed to be flexible. The "Current Playlist" is your active workspace—whatever you see there will be saved when you hit the <strong>SAVE</strong> button.</p>
+
+        <h2>1. Fresh Start (New Local Playlist)</h2>
+        <p><em>Best for: When you just downloaded new albums or tracks to your device.</em></p>
+        <ul>
+          <li><strong>Clear the deck:</strong> Tap <strong>Edit</strong> in the "Current Playlist" section and select <strong>Clear All</strong> to start fresh.</li>
+          <li><strong>Add Tracks:</strong> Scroll to the <strong>ADD AUDIO.</strong> section. Click <strong>Pick File(s)</strong> or <strong>Pick Folder</strong> to select your music.</li>
+          <li><strong>Review:</strong> Reorder songs using the drag handles (in Edit mode).</li>
+          <li><strong>Save:</strong> In the <strong>SAVED PLAYLISTS.</strong> block, type a name and click <strong>SAVE</strong>.</li>
+        </ul>
+
+        <h2>2. Build from the Device Library</h2>
+        <p><em>Best for: Creating a "Best Of" list using songs already stored on your device.</em></p>
+        <ul>
+          <li><strong>Open Library:</strong> Tap <strong>DEVICE LIBRARY.</strong> to expand the section.</li>
+          <li><strong>Select Songs:</strong> Tap the circular <strong>Selector Buttons</strong> on the right of each track.</li>
+          <li><strong>Add to Workspace:</strong> Click the orange <strong>Add Tracks to Playlist</strong> button.</li>
+          <li><strong>Save:</strong> Name it and hit <strong>SAVE</strong> in the playlists block.</li>
+        </ul>
+
+        <h2>3. The "Mix-Tape" (Music + Streams)</h2>
+        <p><em>Best for: Mixing your local files with high-quality web streams.</em></p>
+        <ul>
+          <li><strong>Load Base:</strong> Add some local files or load an existing list.</li>
+          <li><strong>Add Stream:</strong> Paste a direct audio URL (e.g., a `.mp3` link) into the URL box and click <strong>ADD</strong>.</li>
+          <li><strong>Finalize:</strong> Enter a new name and click <strong>SAVE</strong>.</li>
+        </ul>
+
+        <div class="tip-box">
+          <strong>Pro Tip</strong>
+          To update a playlist, load it first, add your new songs, then <strong>SAVE</strong> using the <strong>EXACT SAME NAME</strong> to overwrite it.
+        </div>
+
+        <h2>4. Managing Your Playlists</h2>
+        <ul>
+          <li><strong>Load:</strong> Select a playlist, set Action to <strong>Load</strong>, and click <strong>GO</strong>.</li>
+          <li><strong>Rename:</strong> Select a playlist, set Action to <strong>Rename</strong>, click <strong>GO</strong>, and enter the new name.</li>
+          <li><strong>Delete:</strong> Select a playlist, set Action to <strong>Delete</strong>, and click <strong>GO</strong> to remove it.</li>
+        </ul>
+      </div>
+
+      <div class="back-btn-wrap">
+        <a href="index.html" class="back-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          Back to Player
+        </a>
+      </div>
+    </div>
+    
+    <script>
+      // Sync theme with main app preference
+      const saved = localStorage.getItem("justPlayItTheme");
+      const theme = saved === "light" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", theme);
+      const meta = document.getElementById("themeColorMeta");
+      if (meta) {
+        meta.content = theme === "light" ? "#f6f4f1" : "#0b0d12";
+      }
+    </script>
+  </body>
+</html>
