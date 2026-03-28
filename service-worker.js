@@ -1,4 +1,4 @@
-const CACHE_NAME = "just-play-it-build-1002-27MAR2026-v82";
+const CACHE_NAME = "just-play-it-build-1002-27MAR2026-v86";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
@@ -59,6 +59,10 @@ self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
 
   const url = new URL(event.request.url);
+
+  // ── FILTER: Ignore non-HTTP schemes (chrome-extension, data, etc.) ──
+  if (!url.protocol.startsWith("http")) return;
+
   const isCoreFile = CORE_FILES.some(f => url.pathname.endsWith(f) || url.pathname === "/");
 
   if (isCoreFile) {
@@ -66,11 +70,12 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       caches.match(event.request).then((cachedResponse) => {
         const fetchPromise = fetch(event.request).then((networkResponse) => {
+          if (!networkResponse || networkResponse.status !== 200) return networkResponse;
           const cacheCopy = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cacheCopy));
           return networkResponse;
         }).catch(err => {
-          reportError(`Fetch failed for ${url.pathname}: ${err.message}`);
+          // reportError(`Fetch failed for ${url.pathname}: ${err.message}`);
           throw err;
         });
         return cachedResponse || fetchPromise;
@@ -87,14 +92,26 @@ self.addEventListener("fetch", (event) => {
           return cachedResponse;
         }
 
+        // If not in cache, just fetch it
         return fetch(event.request).then((response) => {
           if (response.status === 200) {
-            const cacheCopy = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cacheCopy)).catch(e => reportError(`Cache put failed: ${e.message}`));
+            // ── OPT-OUT: Do NOT automatically cache large audio files on-the-fly ──
+            // Caching large media via clone().put() can cause significant stalling/memory pressure.
+            const contentType = response.headers.get("Content-Type") || "";
+            const isAudio = contentType.includes("audio") || url.pathname.endsWith(".mp3") || url.pathname.endsWith(".ogg");
+            
+            if (!isAudio) {
+              const cacheCopy = response.clone();
+              caches.open(CACHE_NAME).then((cache) => {
+                cache.put(event.request, cacheCopy).catch(e => {
+                  // Ignore 'Request scheme' errors silently here as it's just a background put
+                });
+              });
+            }
           }
           return response;
         }).catch(err => {
-          reportError(`Fetch failed for ${url.pathname}: ${err.message}`);
+          // reportError(`Fetch failed for ${url.pathname}: ${err.message}`);
           throw err;
         });
       })
