@@ -1,0 +1,27 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      ".firebaserc",
+      ".gitignore",
+      "netlify.toml",
+      "firebase-debug.log",
+      "check_pixels.py",
+      "replace.js",
+      "Logic_Map.pdf",
+      "Logic_Map.md",
+      "backup_v79/**",
+      "backup_v82/**",
+      "docs-images/**",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
