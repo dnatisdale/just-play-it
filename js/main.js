@@ -527,24 +527,91 @@ window.addEventListener("beforeunload", () => {
   revokeCurrentObjectUrl();
 });
 
+// ── Service Worker Registration & Update Detection ─────────────────────────
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("./service-worker.js").then((reg) => {
-      // Check for updates periodically (every hour) instead of every load
+      // Check for updates every hour (avoids hammering the server on every page load)
       setInterval(() => reg.update(), 60 * 60 * 1000);
+
+      // A new SW has been found and finished installing — it is now WAITING.
+      // Do NOT activate it yet; instead show the update banner and let the user decide.
+      function onUpdateFound() {
+        const newWorker = reg.installing;
+        if (!newWorker) return;
+
+        newWorker.addEventListener("statechange", () => {
+          if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+            // There is a new version waiting — show the non-intrusive banner.
+            showUpdateBanner(reg);
+          }
+        });
+      }
+
+      reg.addEventListener("updatefound", onUpdateFound);
+
+      // If a new worker is already waiting when the page loads (e.g. user returned
+      // to a tab that had been open during a deployment), show the banner immediately.
+      if (reg.waiting && navigator.serviceWorker.controller) {
+        showUpdateBanner(reg);
+      }
     }).catch((error) => {
       console.error("Service worker registration failed:", error);
     });
   });
 
-  // Notify the user when an update is available instead of silent reloading
+  // After the user clicks "Update Now" the new SW calls skipWaiting(), which
+  // triggers controllerchange. At that point we do a clean page reload.
   let refreshing = false;
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
     if (!refreshing) {
       refreshing = true;
-      showToast("App updated in background. Refresh to use latest version.", 6000);
-      // Optional: Add a real UI button for refreshing if we want to be more explicit
+      window.location.reload();
     }
+  });
+}
+
+/**
+ * Show an in-app "New version available" banner.
+ * Only one instance can exist at a time.
+ * @param {ServiceWorkerRegistration} reg
+ */
+function showUpdateBanner(reg) {
+  // Don't create a second banner if one already exists
+  if (document.getElementById("updateBanner")) return;
+
+  const banner = document.createElement("div");
+  banner.id = "updateBanner";
+  banner.setAttribute("role", "status");
+  banner.setAttribute("aria-live", "polite");
+  banner.innerHTML = `
+    <div class="update-banner-inner">
+      <span class="update-banner-icon" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      </span>
+      <span class="update-banner-text">A new version is available.</span>
+      <button id="updateNowBtn" class="update-banner-btn primary" type="button">Update now</button>
+      <button id="updateLaterBtn" class="update-banner-btn secondary" type="button">Later</button>
+    </div>
+  `;
+  document.body.appendChild(banner);
+
+  // Animate in after next frame
+  requestAnimationFrame(() => banner.classList.add("is-visible"));
+
+  document.getElementById("updateNowBtn").addEventListener("click", () => {
+    banner.classList.remove("is-visible");
+    // Tell the waiting service worker to skip waiting and take control.
+    // The controllerchange listener above will then reload the page cleanly.
+    const waitingWorker = reg.waiting;
+    if (waitingWorker) {
+      waitingWorker.postMessage({ type: "SKIP_WAITING" });
+    }
+  });
+
+  document.getElementById("updateLaterBtn").addEventListener("click", () => {
+    banner.classList.remove("is-visible");
+    setTimeout(() => banner.remove(), 400);
   });
 }
 
@@ -639,11 +706,12 @@ if (downloadQrBtn) {
 }
 
 function updateBuildInfo() {
+  // BUILD_LABEL is defined in js/version.js — the single source of truth.
+  const label = typeof BUILD_LABEL !== "undefined" ? BUILD_LABEL : "—";
   const sidebarInfo = document.getElementById("sidebarBuildInfo");
   const mainInfo = document.getElementById("mainBuildInfo");
-  const buildText = BUILD_TIME;
-  if (sidebarInfo) sidebarInfo.innerHTML = buildText;
-  if (mainInfo) mainInfo.innerHTML = buildText;
+  if (sidebarInfo) sidebarInfo.textContent = label;
+  if (mainInfo) mainInfo.textContent = label;
 }
 
 async function initApp() {

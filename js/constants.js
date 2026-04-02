@@ -1,4 +1,7 @@
-const BUILD_TIME = "BUILD V.89 <span class=\"accent-dash\">—</span> 27MAR2026 <span class=\"accent-dash\">—</span> 19:45";
+// ── Version ────────────────────────────────────────────────
+// BUILD_LABEL, APP_VERSION, APP_BUILD_DATE, APP_BUILD_TIME
+// are defined in js/version.js (loaded first in index.html).
+// Do NOT define them here — edit js/version.js instead.
 const audio = document.getElementById("audio");
 const fileInput = document.getElementById("fileInput");
 const urlInput = document.getElementById("urlInput");

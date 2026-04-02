@@ -6,7 +6,7 @@ function addErrorLog(message, type = "General") {
       timestamp: new Date().toISOString(),
       type,
       message,
-      version: "V.78",
+      version: typeof APP_VERSION !== "undefined" ? APP_VERSION : "unknown",
       url: window.location.href,
       userAgent: navigator.userAgent
     };

@@ -1,4 +1,15 @@
-const CACHE_NAME = "just-play-it-build-1002-27MAR2026-v89";
+// ────────────────────────────────────────────────────────────
+// JUST PLAY IT. — Service Worker
+//
+// IMPORTANT: When you bump the version, change CACHE_VERSION
+// below to match the new version number. This is the ONE place
+// to edit in the service worker; the canonical version string
+// lives in js/version.js.
+// ────────────────────────────────────────────────────────────
+
+const CACHE_VERSION = "V.90-02APR2026";
+const CACHE_NAME = `just-play-it-${CACHE_VERSION}`;
+
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
@@ -18,6 +29,7 @@ const ASSETS_TO_CACHE = [
   "./css/sidebar.css",
   "./css/responsive.css",
   // JS modules
+  "./js/version.js",
   "./js/constants.js",
   "./js/utils.js",
   "./js/db.js",
@@ -27,13 +39,18 @@ const ASSETS_TO_CACHE = [
   "./js/main.js"
 ];
 
+// ── Install ──────────────────────────────────────────────────
+// NOTE: We do NOT call self.skipWaiting() here automatically.
+// The new SW will wait until the user clicks "Update Now" in
+// the app, which sends a SKIP_WAITING message.
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE)),
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
   );
-  self.skipWaiting();
+  // Do NOT skipWaiting here — let the user trigger the update.
 });
 
+// ── Activate ─────────────────────────────────────────────────
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -50,10 +67,25 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
+// ── Message handler ──────────────────────────────────────────
+// The main app sends SKIP_WAITING when the user clicks "Update Now".
+// We also notify all open clients with the new cache version so they
+// can update the visible build label after reload.
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+
+  if (event.data && event.data.type === "GET_VERSION") {
+    event.source.postMessage({ type: "SW_VERSION", version: CACHE_VERSION });
+  }
+});
+
+// ── Fetch ────────────────────────────────────────────────────
 const CORE_FILES = [
   "index.html", "style.css", "app.jsx", "manifest.json", "builtin-playlists.json", "privacy.html", "guide.html", "/",
   "css/tokens.css", "css/base.css", "css/components.css", "css/sidebar.css", "css/responsive.css",
-  "js/constants.js", "js/utils.js", "js/db.js", "js/library.js", "js/playlist.js", "js/player.js", "js/main.js"
+  "js/version.js", "js/constants.js", "js/utils.js", "js/db.js", "js/library.js", "js/playlist.js", "js/player.js", "js/main.js"
 ];
 
 self.addEventListener("fetch", (event) => {
@@ -76,7 +108,6 @@ self.addEventListener("fetch", (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cacheCopy));
           return networkResponse;
         }).catch(err => {
-          // reportError(`Fetch failed for ${url.pathname}: ${err.message}`);
           throw err;
         });
         return cachedResponse || fetchPromise;
@@ -97,22 +128,18 @@ self.addEventListener("fetch", (event) => {
         return fetch(event.request).then((response) => {
           if (response.status === 200) {
             // ── OPT-OUT: Do NOT automatically cache large audio files on-the-fly ──
-            // Caching large media via clone().put() can cause significant stalling/memory pressure.
             const contentType = response.headers.get("Content-Type") || "";
             const isAudio = contentType.includes("audio") || url.pathname.endsWith(".mp3") || url.pathname.endsWith(".ogg");
             
             if (!isAudio) {
               const cacheCopy = response.clone();
               caches.open(CACHE_NAME).then((cache) => {
-                cache.put(event.request, cacheCopy).catch(e => {
-                  // Ignore 'Request scheme' errors silently here as it's just a background put
-                });
+                cache.put(event.request, cacheCopy).catch(() => {});
               });
             }
           }
           return response;
         }).catch(err => {
-          // reportError(`Fetch failed for ${url.pathname}: ${err.message}`);
           throw err;
         });
       })
@@ -165,9 +192,3 @@ async function reportError(message) {
     });
   });
 }
-
-self.addEventListener("message", (event) => {
-  if (event.data && event.data.type === "SKIP_WAITING") {
-    self.skipWaiting();
-  }
-});
