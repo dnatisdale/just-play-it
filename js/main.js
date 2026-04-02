@@ -673,6 +673,7 @@ async function initApp() {
   updateNowPlaying(playlist[currentTrackIndex] || null);
   setupMediaSessionActions();
   await updateStorageUsage();
+  await renderSidebarLibrary();
   // ── Unified Toggle Function ──
   window.toggleSection = (headerId, containerId, textId, iconId, forceExpand = false) => {
     const header = typeof headerId === 'string' ? document.getElementById(headerId) : headerId;

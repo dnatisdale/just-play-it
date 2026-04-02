@@ -65,7 +65,7 @@ const downloadQrBtn = document.getElementById("downloadQrBtn");
 const viewErrorLogBtn = document.getElementById("viewErrorLogBtn");
 
 // Badges
-const menuBadge = document.getElementById("menuBadge");
+const libraryBadge = document.getElementById("libraryBadge");
 const savedPlaylistsBadge = document.getElementById("savedPlaylistsBadge");
 const playlistBadge = document.getElementById("playlistBadge");
 const nowPlayingPlaylistName = document.getElementById("nowPlayingPlaylistName");

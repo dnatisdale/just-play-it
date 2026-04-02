@@ -340,8 +340,8 @@ async function updateBadgeCounts() {
     savedPlaylistsBadge.classList.toggle("hidden", savedCount === 0);
   }
 
-  // Sidebar badge: total library files (Stored + Built-in)
-  if (menuBadge) {
+  // Library badge: total library files (Stored + Built-in) → shown on DEVICE LIBRARY. header
+  if (libraryBadge) {
     try {
       const records = db ? await getAllTrackBlobs() : [];
       let builtinCount = 0;
@@ -349,11 +349,11 @@ async function updateBadgeCounts() {
         if (pl.isBuiltin) builtinCount += (pl.tracks || []).length;
       });
       const totalCount = records.length + builtinCount;
-      menuBadge.textContent = totalCount;
-      menuBadge.classList.toggle("hidden", totalCount === 0);
+      libraryBadge.textContent = totalCount;
+      libraryBadge.classList.toggle("hidden", totalCount === 0);
     } catch (err) {
-      console.error("Badge update error:", err);
-      menuBadge.classList.add("hidden");
+      console.error("Library badge update error:", err);
+      libraryBadge.classList.add("hidden");
     }
   }
 }
