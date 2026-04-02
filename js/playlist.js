@@ -342,26 +342,55 @@ async function loadTrack(index, shouldPlay = false) {
     return;
   }
 
-  audio.src = source;
-  isTransitioning = false; // Safe to allow auto-resume again from here
+ audio.src = source;
 
-  updateNowPlaying(track);
-  renderPlaylist();
-  savePlaylistState();
+updateNowPlaying(track);
+renderPlaylist();
+savePlaylistState();
 
-  if (shouldPlay) {
-    try {
-      await audio.play();
-      updatePlayPauseButton();
-      setPlayerStatus(`Playing: ${track.title}`);
-    } catch (error) {
-      console.error("Playback failed:", error);
-      setPlayerStatus("Playback could not start.");
-      showToast("Playback could not start.");
-    }
-  } else {
+if (shouldPlay) {
+  try {
+    // Wait until the new source is actually ready enough to start
+    await new Promise((resolve, reject) => {
+      const onCanPlay = () => {
+        cleanup();
+        resolve();
+      };
+
+      const onError = () => {
+        cleanup();
+        reject(new Error("Audio source failed while loading."));
+      };
+
+      const cleanup = () => {
+        audio.removeEventListener("canplay", onCanPlay);
+        audio.removeEventListener("error", onError);
+      };
+
+      audio.addEventListener("canplay", onCanPlay, { once: true });
+      audio.addEventListener("error", onError, { once: true });
+
+      // If already ready enough, resolve immediately
+      if (audio.readyState >= 3) {
+        cleanup();
+        resolve();
+      }
+    });
+
+    await audio.play();
+    isTransitioning = false;
     updatePlayPauseButton();
+    setPlayerStatus(`Playing: ${track.title}`);
+  } catch (error) {
+    isTransitioning = false;
+    console.error("Playback failed:", error);
+    setPlayerStatus("Playback could not start.");
+    showToast("Playback could not start.");
   }
+} else {
+  isTransitioning = false;
+  updatePlayPauseButton();
+}
 }
 
 async function addFileTracks(files) {

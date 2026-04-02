@@ -408,7 +408,13 @@ audio.addEventListener("pause", () => {
     setTimeout(async () => {
       // Do NOT auto-resume if we are in the middle of loading a new track.
       // This prevents the race condition that causes "Playback could not start."
-      if (!userPaused && !audio.ended && !isTransitioning) {
+	  if (
+  !userPaused &&
+  !audio.ended &&
+  !isTransitioning &&
+  audio.src &&
+  playlist[currentTrackIndex]
+) {
         try {
           await audio.play();
           resumeRetries = 0; // Successfully resumed
@@ -422,10 +428,10 @@ audio.addEventListener("pause", () => {
     }, 2000);
   } else if (!userPaused && audio.ended) {
     // Already handled by 'ended' listener, do nothing here
-  } else if (audio.currentTime > 0 && !audio.ended) {
-    setPlayerStatus("Playback paused.");
-    resumeRetries = 0; // Reset if it was a legitimate manual pause
-  }
+  } else if (audio.currentTime > 0 && !audio.ended && !isTransitioning) {
+  setPlayerStatus("Playback paused.");
+  resumeRetries = 0;
+}
 });
 
 // Audio Error Handling
