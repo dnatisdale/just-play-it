@@ -408,8 +408,8 @@ function updatePlaylistNameDisplay() {
     nowPlayingPlaylistInfo.classList.toggle("has-playlist", !!currentPlaylistName);
   }
 
-  // Sync selectedPlaylistKey if it matches a real playlist
-  if (savedPlaylistsSelect) {
+  // Sync selectedPlaylistKey if it matches a real playlist (Phase 2 legacy guard)
+  if (typeof savedPlaylistsSelect !== 'undefined' && savedPlaylistsSelect) {
     savedPlaylistsSelect.value = ""; // Always show placeholder heading
   }
 

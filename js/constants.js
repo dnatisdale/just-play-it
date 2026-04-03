@@ -138,3 +138,6 @@ let userPaused = false;
 let isTransitioning = false;
 let selectedPlaylistKey = ""; // Tracks the active saved playlist WITHOUT showing it in the select
 
+// Legacy / Phase 2 migration guard for dropdown elements removed from DOM
+const savedPlaylistsSelect = document.getElementById("savedPlaylistsSelect");
+
