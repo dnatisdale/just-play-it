@@ -114,6 +114,16 @@ function switchView(targetViewId) {
     }
   });
 
+  // FAB visibility: Only show in Library tab
+  const importFab = document.getElementById("importFab");
+  if (importFab) {
+    if (targetViewId === "view-library") {
+      importFab.classList.remove("hidden");
+    } else {
+      importFab.classList.add("hidden");
+    }
+  }
+
   // Update nav buttons
   document.querySelectorAll(".nav-item").forEach(btn => {
     if (btn.dataset.target === targetViewId) {

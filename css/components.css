@@ -2042,21 +2042,32 @@ h3 .counter-badge {
 
 .fab-add {
   position: fixed;
-  bottom: 84px;
+  bottom: 84px; /* Above bottom nav (64px + 20px padding) */
   right: 20px;
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: #940414;
+  background: var(--accent); /* Use token for #940414 */
   color: #fff;
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6px 16px rgba(148, 4, 20, 0.4);
+  box-shadow: var(--shadow-lg);
   cursor: pointer;
-  z-index: 8000;
-  transition: transform var(--transition), box-shadow var(--transition);
+  z-index: 11000; /* Above bottom nav (9000) and sidebar (9500) if needed */
+  transition: transform var(--transition), box-shadow var(--transition), opacity 0.2s ease, visibility 0.2s ease;
+  
+  /* Only visible by default if Library is the active tab (handled by JS toggling .hidden) */
+  opacity: 1;
+  visibility: visible;
+}
+
+.fab-add.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: scale(0.5);
 }
 
 .fab-add:hover {
