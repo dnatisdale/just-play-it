@@ -89,9 +89,38 @@ const CORE_FILES = [
 ];
 
 self.addEventListener("fetch", (event) => {
-  if (event.request.method !== "GET") return;
-
   const url = new URL(event.request.url);
+
+  // ── PWA SHARE_TARGET INTERCEPT ──
+  if (event.request.method === "POST" && url.pathname.endsWith("import-share")) {
+    event.respondWith((async () => {
+      try {
+        const formData = await event.request.formData();
+        const files = formData.getAll("audioFiles");
+        const cache = await caches.open("shared-files-temp");
+        
+        for (const file of files) {
+          const headers = new Headers({
+            "X-File-Name": encodeURIComponent(file.name),
+            "X-File-Size": file.size.toString(),
+            "X-File-Type": file.type || "audio/*",
+          });
+          const safeId = crypto.randomUUID();
+          await cache.put(
+            new Request(`shared-temp/${safeId}`), 
+            new Response(file, { headers })
+          );
+        }
+        // Redirect to the app root relative to the current location
+        return Response.redirect("./?shared=true", 303);
+      } catch (err) {
+        return Response.redirect("./?shared=error", 303);
+      }
+    })());
+    return;
+  }
+
+  if (event.request.method !== "GET") return;
 
   // ── FILTER: Ignore non-HTTP schemes (chrome-extension, data, etc.) ──
   if (!url.protocol.startsWith("http")) return;

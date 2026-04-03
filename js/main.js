@@ -14,14 +14,7 @@ coverArtEl.addEventListener("click", () => {
 });
 
 
-addUrlBtn.addEventListener("click", () => addUrlTrack(urlInput.value));
-
-urlInput.addEventListener("keydown", (event) => {
-  if (event.key === "Enter") {
-    event.preventDefault();
-    addUrlTrack(urlInput.value);
-  }
-});
+// URL input removed in Phase 1
 
 playPauseBtn.addEventListener("click", async () => {
   if (!audio.src) return playCurrent();
@@ -88,9 +81,6 @@ function openSidebar() {
   menuBtn.classList.add("is-open");
   menuBtn.setAttribute("aria-expanded", "true");
   document.body.style.overflow = "hidden";
-  // Refresh both storage text and per-file list every time the sidebar opens
-  updateStorageUsage();
-  renderSidebarLibrary();
 }
 
 function closeSidebar() {
@@ -113,82 +103,78 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// ── Drag & drop ──────────────────────────────────────────────
-const AUDIO_EXTS = /\.(mp3|m4a|aac|ogg|oga|wav|flac|opus|weba|webm|caf)$/i;
-
-function isAudioFile(file) {
-  return file.type.startsWith("audio/") || AUDIO_EXTS.test(file.name);
-}
-
-let dragDepth = 0;
-
-function isFileDrag(event) {
-  return (
-    event.dataTransfer &&
-    Array.from(event.dataTransfer.types).includes("Files")
-  );
-}
-
-document.addEventListener("dragenter", (event) => {
-  if (!isFileDrag(event)) return;
-  dragDepth++;
-  if (dragDepth === 1) {
-    dragOverlay.classList.add("active");
-    dragOverlay.setAttribute("aria-hidden", "false");
-  }
-});
-
-document.addEventListener("dragleave", (event) => {
-  if (!isFileDrag(event) && dragDepth <= 0) return;
-  dragDepth--;
-  if (dragDepth <= 0) {
-    dragDepth = 0;
-    dragOverlay.classList.remove("active");
-    dragOverlay.setAttribute("aria-hidden", "true");
-  }
-});
-
-document.addEventListener("dragover", (event) => {
-  if (!isFileDrag(event)) return;
-  event.preventDefault();
-  event.dataTransfer.dropEffect = "copy";
-});
-
-document.addEventListener("drop", async (event) => {
-  event.preventDefault();
-  dragDepth = 0;
-  dragOverlay.classList.remove("active");
-  dragOverlay.setAttribute("aria-hidden", "true");
-  if (dropZone) dropZone.classList.remove("drag-hover");
-
-  const files = Array.from(event.dataTransfer.files).filter(isAudioFile);
-  if (files.length === 0) {
-    showToast("No audio files found in the drop.");
-    return;
-  }
-  await addFileTracks(files);
-});
-
-// Drop zone interactive behaviours
-if (dropZone) {
-  dropZone.addEventListener("click", () => fileInput.click());
-  dropZone.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      fileInput.click();
+// ── Bottom Navigation & View Switching ────────────────────────
+function switchView(targetViewId) {
+  // Update view sections
+  document.querySelectorAll(".view-section").forEach(view => {
+    if (view.id === targetViewId) {
+      view.classList.add("active");
+    } else {
+      view.classList.remove("active");
     }
   });
-  dropZone.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    dropZone.classList.add("drag-hover");
+
+  // Update nav buttons
+  document.querySelectorAll(".nav-item").forEach(btn => {
+    if (btn.dataset.target === targetViewId) {
+      btn.classList.add("active");
+    } else {
+      btn.classList.remove("active");
+    }
   });
-  dropZone.addEventListener("dragleave", () =>
-    dropZone.classList.remove("drag-hover"),
-  );
-  dropZone.addEventListener("drop", () =>
-    dropZone.classList.remove("drag-hover"),
-  );
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
+
+document.querySelectorAll(".nav-item").forEach(btn => {
+  btn.addEventListener("click", () => {
+    switchView(btn.dataset.target);
+  });
+});
+
+// ── FAB & Bottom Sheet (Import Audio) ────────────────────────
+const importFab = document.getElementById("importFab");
+const importBottomSheet = document.getElementById("importBottomSheet");
+const fabOverlay = document.getElementById("fabOverlay");
+const fabCancel = document.getElementById("fabCancel");
+const fabPickFiles = document.getElementById("fabPickFiles");
+// input file handling is still attached from original variables
+
+function openImportSheet() {
+  importBottomSheet.classList.remove("hidden");
+  fabOverlay.classList.remove("hidden");
+  // slight delay for transition
+  requestAnimationFrame(() => {
+    importBottomSheet.classList.add("is-open");
+    fabOverlay.classList.add("is-active");
+  });
+}
+
+function closeImportSheet() {
+  importBottomSheet.classList.remove("is-open");
+  fabOverlay.classList.remove("is-active");
+  setTimeout(() => {
+    importBottomSheet.classList.add("hidden");
+    fabOverlay.classList.add("hidden");
+  }, 300);
+}
+
+if (importFab) {
+  importFab.addEventListener("click", openImportSheet);
+}
+if (fabOverlay) {
+  fabOverlay.addEventListener("click", closeImportSheet);
+}
+if (fabCancel) {
+  fabCancel.addEventListener("click", closeImportSheet);
+}
+if (fabPickFiles) {
+  fabPickFiles.addEventListener("click", () => {
+    closeImportSheet();
+    fileInput.click();
+  });
+}
+
 
 // ── Folder picker ────────────────────────────────────────
 if (folderInput) {
@@ -199,6 +185,7 @@ if (folderInput) {
     } else {
       await addFileTracks(files);
     }
+    closeImportSheet();
     folderInput.value = "";
   });
 }
@@ -207,53 +194,7 @@ if (folderInput) {
 
 savePlaylistBtn.addEventListener("click", saveNamedPlaylist);
 
-// Enable Action dropdown once a playlist is selected; reset it after each use
-
-// Playlist Action cycling
-let currentAction = "load"; // default
-if (playlistActionBtn) {
-  playlistActionBtn.addEventListener("click", () => {
-    if (currentAction === "load") currentAction = "rename";
-    else if (currentAction === "rename") currentAction = "delete";
-    else currentAction = "load";
-    
-    playlistActionBtn.textContent = `— Action: ${currentAction.charAt(0).toUpperCase() + currentAction.slice(1)} —`;
-  });
-}
-
-if (runActionBtn) {
-  runActionBtn.addEventListener("click", async () => {
-    const selected = selectedPlaylistKey;
-    if (!selected) {
-      showToast("Select a playlist first.");
-      return;
-    }
-    const isBuiltin = savedPlaylists[selected] && savedPlaylists[selected].isBuiltin;
-    if (isBuiltin && currentAction !== "load") {
-      showToast(`Cannot ${currentAction} a built-in playlist.`);
-      return;
-    }
-
-    if (currentAction === "load") await loadNamedPlaylist();
-    else if (currentAction === "rename") renameNamedPlaylist();
-    else if (currentAction === "delete") deleteNamedPlaylist();
-  });
-}
-
-function updatePlaylistActionUI() {
-  if (!playlistActionBtn || !runActionBtn) return;
-  const hasSelection = !!selectedPlaylistKey;
-  playlistActionBtn.disabled = !hasSelection;
-  runActionBtn.disabled = !hasSelection;
-  
-  if (!hasSelection) {
-    playlistActionBtn.style.opacity = "0.5";
-    runActionBtn.style.opacity = "0.5";
-  } else {
-    playlistActionBtn.style.opacity = "1";
-    runActionBtn.style.opacity = "1";
-  }
-}
+// Playlist Action cycling and dropdown selection removed for Phase 2 card-based design
 let clearConfirmTimeout = null;
 clearDeviceLibraryBtn.addEventListener("click", async () => {
   if (clearDeviceLibraryBtn.classList.contains("confirming")) {
@@ -301,23 +242,7 @@ if (toggleEditBtn) {
 
 
 
-savedPlaylistsSelect.addEventListener("change", () => {
-  const selected = savedPlaylistsSelect.value;
-  selectedPlaylistKey = selected;
-  // Always reset visible value so placeholder heading shows
-  savedPlaylistsSelect.value = "";
-
-  if (selected) {
-    localStorage.setItem(STORAGE_KEYS.selectedSavedPlaylist, selected);
-    if (savedPlaylistBox) savedPlaylistBox.title = `Selected: ${selected}`;
-    showToast(`Selected: ${selected}`);
-  } else {
-    localStorage.removeItem(STORAGE_KEYS.selectedSavedPlaylist);
-    if (savedPlaylistBox) savedPlaylistBox.title = "No saved playlist selected.";
-  }
-
-  updatePlaylistActionUI();
-});
+// savedPlaylistsSelect dropdown handling removed in Phase 2
 
 audio.addEventListener("loadedmetadata", () => {
   durationEl.textContent = formatTime(audio.duration);
@@ -379,9 +304,7 @@ if (sleepTimerBtn) {
   });
 }
 
-if (pickFilesBtn) {
-  pickFilesBtn.addEventListener("click", () => fileInput.click());
-}
+// pickFilesBtn removed in favor of fabPickFiles
 
 audio.addEventListener("play", () => {
   updatePlayPauseButton();
@@ -719,8 +642,8 @@ function updateBuildInfo() {
   const label = typeof BUILD_LABEL !== "undefined" ? BUILD_LABEL : "—";
   const sidebarInfo = document.getElementById("sidebarBuildInfo");
   const mainInfo = document.getElementById("mainBuildInfo");
-  if (sidebarInfo) sidebarInfo.textContent = label;
-  if (mainInfo) mainInfo.textContent = label;
+  if (sidebarInfo) sidebarInfo.innerHTML = label;
+  if (mainInfo) mainInfo.innerHTML = label;
 }
 
 async function initApp() {
@@ -740,15 +663,46 @@ async function initApp() {
   loadVolume();
   loadModes();
   await loadSavedPlaylists();
-  // Restore previously selected playlist key (without showing it in the select UI)
+  
+  // ── Handle Shared Files from Android share_target ──
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.has("shared") && urlParams.get("shared") === "true") {
+    try {
+      const cache = await caches.open("shared-files-temp");
+      const requests = await cache.keys();
+      const files = [];
+
+      for (const req of requests) {
+        // Use endsWith locally to check for our temporary file prefix
+        if (req.url.includes("shared-temp/")) {
+          const resp = await cache.match(req);
+          if (resp) {
+            const blob = await resp.blob();
+            const fileName = decodeURIComponent(resp.headers.get("X-File-Name") || "shared-audio");
+            const file = new File([blob], fileName, { type: resp.headers.get("X-File-Type") || "audio/*" });
+            files.push(file);
+            await cache.delete(req);
+          }
+        }
+      }
+
+      if (files.length > 0) {
+        await addFileTracks(files);
+        showToast(`Imported ${files.length} shared file${files.length !== 1 ? "s" : ""}.`);
+        // Clean URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    } catch (err) {
+      console.error("Failed to retrieve shared files from cache:", err);
+    }
+  }
+
+  // Restore previously selected playlist key
   const restoredKey = localStorage.getItem(STORAGE_KEYS.selectedSavedPlaylist);
   if (restoredKey && savedPlaylists[restoredKey]) {
     selectedPlaylistKey = restoredKey;
   }
-  // Always show placeholder in select; enable Action if key is restored
-  savedPlaylistsSelect.value = "";
-  savedPlaylistsSelect.classList.add("has-selection"); // Always orange
-  updatePlaylistActionUI();
+  
   loadPlaylistFromStorage();
   restoreSleepTimer();
   renderPlaylist();

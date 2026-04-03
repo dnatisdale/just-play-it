@@ -945,82 +945,6 @@ input[type="range"]::-moz-range-thumb {
   border: 1px solid var(--accent) !important;
 }
 
-.select-pop {
-  background: var(--input-bg) !important;
-  border: 1px solid var(--border-strong) !important;
-  font-weight: 600 !important;
-  font-size: 0.85rem !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  transition: all var(--transition);
-}
-
-.select-pop:hover {
-  border-color: var(--accent-light) !important;
-  background: var(--panel-3) !important;
-  box-shadow: 0 6px 16px rgba(148, 4, 20, 0.1);
-}
-
-.select-pop.has-selection,
-#savedPlaylistsSelect.has-selection {
-  background: var(--orange) url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 18px center !important;
-  background-size: 18px !important;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  color: #fff !important;
-  border-color: transparent !important;
-  box-shadow: 0 4px 15px var(--orange-glow) !important;
-  font-weight: 600 !important;
-  border-radius: 999px !important;
-  padding-right: 48px !important;
-}
-
-.select-pop.has-selection:focus,
-#savedPlaylistsSelect.has-selection:focus {
-  border-color: #fff !important;
-  box-shadow: 0 0 0 3px rgba(255, 156, 43, 0.4), 0 8px 32px var(--orange-glow) !important;
-}
-
-[data-theme="light"] .select-pop.has-selection,
-[data-theme="light"] #savedPlaylistsSelect.has-selection {
-  color: #fff !important;
-}
-
-.select-pop:focus {
-  border-color: var(--accent) !important;
-  box-shadow: 0 0 0 3px var(--accent-subtle), 0 8px 24px rgba(148, 4, 20, 0.2) !important;
-}
-
-/* Action dropdown — matches orange select style when enabled */
-.select-action {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background: var(--input-bg) url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 18px center !important;
-  background-size: 16px !important;
-  padding-right: 48px !important;
-  opacity: 0.4;
-  cursor: not-allowed;
-  transition: all var(--transition);
-}
-
-.select-action:not(:disabled) {
-  background: var(--accent) url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 18px center !important;
-  background-size: 18px !important;
-  color: #fff !important;
-  border-color: transparent !important;
-  box-shadow: 0 4px 15px var(--accent-glow) !important;
-  font-weight: 600 !important;
-  border-radius: 999px !important;
-  opacity: 1;
-  cursor: pointer;
-}
-
-.select-action:not(:disabled):focus {
-  border-color: #fff !important;
-  box-shadow: 0 0 0 3px var(--accent-subtle-border), 0 8px 32px var(--accent-glow) !important;
-}
-
 .accent-label {
   color: #fff !important;
 }
@@ -2037,4 +1961,152 @@ h3 .counter-badge {
   .update-banner-btn {
     flex: 1;
   }
+}
+
+/* ═══════════════════════════════════════════
+   BOTTOM NAVIGATION & VIEW SWITCHING
+═══════════════════════════════════════════ */
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+  backdrop-filter: blur(20px) saturate(180%);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 9000;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+  transition: color var(--transition), transform var(--transition);
+}
+
+.nav-item svg {
+  width: 22px;
+  height: 22px;
+  margin-bottom: 2px;
+  transition: transform var(--transition);
+}
+
+.nav-item.active {
+  color: var(--accent);
+}
+
+.nav-item.active svg {
+  transform: translateY(-2px);
+}
+
+.nav-item:hover {
+  color: var(--text);
+}
+
+.view-section {
+  display: none;
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+.view-section.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════════════════════════════════════
+   RED FAB & BOTTOM SHEET
+═══════════════════════════════════════════ */
+
+.fab-add {
+  position: fixed;
+  bottom: 84px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #940414;
+  color: #fff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 16px rgba(148, 4, 20, 0.4);
+  cursor: pointer;
+  z-index: 8000;
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.fab-add:hover {
+  transform: scale(1.08) translateY(-2px);
+  box-shadow: 0 8px 24px rgba(148, 4, 20, 0.5);
+}
+
+.fab-add:active {
+  transform: scale(0.95);
+}
+
+.fab-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+  z-index: 10000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.fab-overlay.is-active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.bottom-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--panel);
+  border-top-left-radius: var(--radius);
+  border-top-right-radius: var(--radius);
+  border-top: 1px solid var(--border);
+  padding: 24px 16px env(safe-area-inset-bottom, 16px);
+  z-index: 10001;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.bottom-sheet.is-open {
+  transform: translateY(0);
+}
+
+.bottom-sheet-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 500px;
+  margin: 0 auto;
 }

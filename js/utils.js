@@ -162,6 +162,24 @@ function escapeHtml(str) {
     .replaceAll("'", "&#039;");
 }
 
+/**
+ * Phase 3: Clean up ugly filenames for display.
+ * Strips extensions and replaces separators with spaces.
+ */
+function cleanTrackName(filename) {
+  if (!filename) return "Unknown Track";
+  // Strip extension
+  let name = filename.replace(/\.(mp3|wav|ogg|m4a|mp4|aac|flac)$/i, "");
+  // Strip common numeric prefixes like "01", "01_", "01 - ", "1. "
+  name = name.replace(/^\d+[\s._-]*[-.]?[\s._-]*/, "");
+  // Replace underscores and dashes with spaces
+  name = name.replace(/[_-]/g, " ");
+  // Clean up multiple spaces
+  name = name.replace(/\s+/g, " ").trim();
+  // Capitalize first letter of each word
+  return name.split(" ").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
+}
+
 function getTrackSourceLabel(track) {
   if (!track) return "";
   if (track.sourceType === "file") return "Stored on device";

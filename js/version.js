@@ -7,8 +7,8 @@
 
 const APP_VERSION = "V.92";
 const APP_BUILD_DATE = "03APR2026";
-const APP_BUILD_TIME = "10:25";
+const APP_BUILD_TIME = "20:47";
 
 // Derived composite string used in the UI
-// Format: "BUILD V.92 — 03APR2026 — 10:25"
-const BUILD_LABEL = `${APP_VERSION} — ${APP_BUILD_DATE} — ${APP_BUILD_TIME}`;
+// Format: "BUILD V.92 — 03APR2026 — 20:47"
+const BUILD_LABEL = `${APP_VERSION} <span class="accent-dash">—</span> ${APP_BUILD_DATE} <span class="accent-dash">—</span> ${APP_BUILD_TIME}`;

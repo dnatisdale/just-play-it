@@ -30,7 +30,13 @@ async function renderSidebarLibrary() {
   });
 
   if (records.length === 0 && uniqueBuiltins.length === 0) {
-    deviceLibraryList.innerHTML = `<p class="library-empty-state">Your library is empty.</p>`;
+    deviceLibraryList.innerHTML = `
+      <div class="library-empty-state">
+        <div class="empty-icon">${ICONS.record}</div>
+        <p>Your library is empty.</p>
+        <span class="empty-hint">Use the red + button below to add local audio files.</span>
+      </div>
+    `;
     return;
   }
 
@@ -77,9 +83,13 @@ async function renderSidebarLibrary() {
 
       const info = document.createElement("div");
       info.className = "library-item-info";
+      
+      const cleanName = cleanTrackName(record.title || "");
+      const rawName = record.title || "Unknown File";
+      
       info.innerHTML = `
-        <span class="library-item-name" title="${escapeHtml(name)}">${escapeHtml(name)}</span>
-        <span class="library-item-size">${metaText}</span>
+        <span class="library-item-name" title="${escapeHtml(rawName)}">${escapeHtml(cleanName)}</span>
+        <span class="library-item-size">${metaText} • ${escapeHtml(rawName)}</span>
       `;
 
       const deleteBtn = document.createElement("button");

@@ -29,14 +29,10 @@ const playerCard = document.querySelector(".player-card");
 
 const volumeSlider = document.getElementById("volumeSlider");
 const sleepTimerBtn = document.getElementById("sleepTimerBtn");
-const playlistActionBtn = document.getElementById("playlistActionBtn");
-const runActionBtn = document.getElementById("runActionBtn");
-const pickFilesBtn = document.getElementById("pickFilesBtn");
 const sleepTimerStatus = document.getElementById("sleepTimerStatus");
 
 const playlistNameInput = document.getElementById("playlistNameInput");
 const savePlaylistBtn = document.getElementById("savePlaylistBtn");
-const savedPlaylistsSelect = document.getElementById("savedPlaylistsSelect");
 const clearDeviceLibraryBtn = document.getElementById("clearDeviceLibraryBtn");
 const exportPlaylistsBtn = document.getElementById("exportPlaylistsBtn");
 const importPlaylistsInput = document.getElementById("importPlaylistsInput");
@@ -75,9 +71,7 @@ const nowPlayingPlaylistName = document.getElementById("nowPlayingPlaylistName")
 const nowPlayingPlaylistBadge = document.getElementById("nowPlayingPlaylistBadge");
 const nowPlayingPlaylistInfo = document.getElementById("nowPlayingPlaylistInfo");
 
-// Drag & drop / add-audio elements
-const dragOverlay = document.getElementById("dragOverlay");
-const dropZone = document.getElementById("dropZone");
+const dragOverlay = document.getElementById("dragOverlay"); // Kept just in case any safety fallback references it
 const folderInput = document.getElementById("folderInput");
 const deviceLibraryList = document.getElementById("deviceLibraryList");
 

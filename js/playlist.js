@@ -29,16 +29,11 @@ async function loadSavedPlaylists() {
     savedPlaylists = {};
   }
 
-  refreshSavedPlaylistsSelect();
+  renderPlaylistsView();
 
-  const selected =
-    localStorage.getItem(STORAGE_KEYS.selectedSavedPlaylist) || "";
+  const selected = localStorage.getItem(STORAGE_KEYS.selectedSavedPlaylist) || "";
   if (selected && savedPlaylists[selected]) {
-    savedPlaylistsSelect.value = selected;
-    savedPlaylistStatus.textContent = `Selected${savedPlaylists[selected].isBuiltin ? " builtin" : " saved"} playlist: ${selected}`;
-  }
-  if (typeof updatePlaylistActionUI === "function") {
-    updatePlaylistActionUI();
+    selectedPlaylistKey = selected;
   }
 }
 
@@ -47,36 +42,98 @@ function persistSavedPlaylists() {
     STORAGE_KEYS.savedPlaylists,
     JSON.stringify(savedPlaylists),
   );
-  refreshSavedPlaylistsSelect();
+  renderPlaylistsView();
 }
 
-function refreshSavedPlaylistsSelect() {
-  const previousValue = savedPlaylistsSelect.value;
-  savedPlaylistsSelect.innerHTML = `<option value="" disabled selected hidden>— Select a playlist from list —</option>`;
-
-  Object.keys(savedPlaylists)
-    .sort((a, b) => {
-      // Put builtins at the top
-      const aBuiltin = savedPlaylists[a].isBuiltin;
-      const bBuiltin = savedPlaylists[b].isBuiltin;
-      if (aBuiltin && !bBuiltin) return -1;
-      if (!aBuiltin && bBuiltin) return 1;
-      return a.localeCompare(b);
-    })
-    .forEach((name) => {
-      const option = document.createElement("option");
-      option.value = name;
-      option.textContent = name;
-      savedPlaylistsSelect.appendChild(option);
-    });
-
-  if (previousValue && savedPlaylists[previousValue]) {
-    savedPlaylistsSelect.value = previousValue;
+function renderPlaylistsView() {
+  const container = document.getElementById("playlistsListContainer");
+  if (!container) return;
+  
+  container.innerHTML = "";
+  
+  const entries = Object.keys(savedPlaylists).sort((a, b) => {
+    const aBuiltin = savedPlaylists[a].isBuiltin;
+    const bBuiltin = savedPlaylists[b].isBuiltin;
+    if (aBuiltin && !bBuiltin) return -1;
+    if (!aBuiltin && bBuiltin) return 1;
+    return a.localeCompare(b);
+  });
+  
+  if (entries.length === 0) {
+    container.innerHTML = `<p class="library-empty-state">No saved playlists. Create one above!</p>`;
+    return;
   }
   
-  if (savedPlaylistsSelect) {
-    savedPlaylistsSelect.classList.toggle("has-selection", !!savedPlaylistsSelect.value);
-  }
+  entries.forEach((name) => {
+    const pl = savedPlaylists[name];
+    const isBuiltin = !!pl.isBuiltin;
+    const trackCount = Array.isArray(pl.tracks) ? pl.tracks.length : 0;
+    
+    // Calculate total duration roughly
+    let totalSeconds = 0;
+    if (Array.isArray(pl.tracks)) {
+      pl.tracks.forEach(t => {
+        if (t.duration && Number.isFinite(t.duration)) {
+          totalSeconds += t.duration;
+        }
+      });
+    }
+    
+    const timeStr = totalSeconds > 0 ? formatTime(totalSeconds) : "";
+    const metaStr = `${trackCount} track${trackCount !== 1 ? "s" : ""} ${timeStr ? "• " + timeStr : ""}`;
+    
+    const card = document.createElement("div");
+    card.className = "library-item " + (isBuiltin ? "builtin-item" : "");
+    card.style.cursor = "pointer";
+    
+    // Clicking the text/body of the card loads the playlist
+    const info = document.createElement("div");
+    info.className = "library-item-info";
+    info.innerHTML = `
+      <span class="library-item-name" style="font-size: 1.05rem; font-weight: 600;">${escapeHtml(name)}</span>
+      <span class="library-item-size">${metaStr}${isBuiltin ? " • Built-In" : ""}</span>
+    `;
+    info.addEventListener("click", () => {
+      selectedPlaylistKey = name;
+      localStorage.setItem(STORAGE_KEYS.selectedSavedPlaylist, name);
+      loadNamedPlaylist();
+      showToast(`Loaded: ${name}`);
+      document.querySelector('.nav-item[href="#view-player"]')?.click();
+    });
+    
+    card.appendChild(info);
+    
+    // Add deletion button for non-built-in lists
+    if (!isBuiltin) {
+      const deleteBtn = document.createElement("button");
+      deleteBtn.type = "button";
+      deleteBtn.className = "library-delete-btn";
+      deleteBtn.innerHTML = ICONS.trash;
+      deleteBtn.setAttribute("aria-label", `Delete playlist ${escapeHtml(name)}`);
+      
+      let confirmTimeout = null;
+      deleteBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (deleteBtn.classList.contains("confirming")) {
+          clearTimeout(confirmTimeout);
+          selectedPlaylistKey = name;
+          deleteNamedPlaylist();
+        } else {
+          deleteBtn.classList.add("confirming");
+          deleteBtn.textContent = "Sure?";
+          confirmTimeout = setTimeout(() => {
+            if (deleteBtn.classList.contains("confirming")) {
+              deleteBtn.classList.remove("confirming");
+              deleteBtn.innerHTML = ICONS.trash;
+            }
+          }, 3000);
+        }
+      });
+      card.appendChild(deleteBtn);
+    }
+    
+    container.appendChild(card);
+  });
 }
 
 function loadPlaylistFromStorage() {
@@ -419,37 +476,55 @@ async function loadTrack(index, shouldPlay = false) {
   }
 }
 
-
 async function addFileTracks(files) {
   const fileArray = Array.from(files);
   const newTracks = [];
   const skipped = [];
+  const forced = [];
 
-  // Build a set of existing titles to prevent duplicates
-  const existingTitles = new Set(playlist.map((t) => t.title));
+  // Get current library metadata for deeper duplicate check
+  let libraryRecords = [];
+  try {
+    libraryRecords = await getAllTrackMetadata();
+  } catch (e) {
+    console.warn("Could not load library for duplicate check", e);
+  }
 
   for (const file of fileArray) {
-    if (existingTitles.has(file.name)) {
-      skipped.push(file.name);
-      continue; // Skip already-added file
+    // Triple Check: Name + Size + (LastModified if available)
+    const duplicate = libraryRecords.find(r => 
+      r.title === file.name && 
+      r.size === file.size &&
+      (!file.lastModified || r.lastModified === file.lastModified)
+    );
+
+    if (duplicate) {
+      const choice = confirm(`"${file.name}" is already in your library.\n\nImport it anyway as a new copy?`);
+      if (!choice) {
+        skipped.push(file.name);
+        continue;
+      }
+      forced.push(file.name);
     }
 
     const id = crypto.randomUUID();
     const duration = await getAudioDuration(file);
+    
+    // Save to DB (keep raw filename as the technical 'title' for recovery)
+    // but we'll use cleanTrackName for the playlist display.
     await saveTrackBlob(id, file, duration);
 
     newTracks.push({
       id,
-      title: file.name,
+      title: cleanTrackName(file.name),
+      rawFilename: file.name, // Keep for metadata display
       sourceType: "file",
       duration: duration
     });
-
-    existingTitles.add(file.name); // Prevent duplicates within the same batch
   }
 
   if (skipped.length > 0) {
-    showToast(`Skipped ${skipped.length} duplicate${skipped.length === 1 ? "" : "s"}.`);
+    showToast(`Skipped ${skipped.length} existing files.`);
   }
 
   if (newTracks.length === 0) return;
@@ -464,20 +539,9 @@ async function addFileTracks(files) {
   } else {
     renderPlaylist();
     savePlaylistState();
-    // After adding tracks to an existing playlist, we should still update badge counts
-    updateBadgeCounts();
   }
-
-  await updateStorageUsage();
-  await renderSidebarLibrary();
   await updateBadgeCounts();
-
-  setPlayerStatus(
-    `${newTracks.length} file${newTracks.length === 1 ? "" : "s"} added and stored.`,
-  );
-  showToast(
-    `Loaded ${newTracks.length} file${newTracks.length === 1 ? "" : "s"}.`,
-  );
+  await renderSidebarLibrary();
 }
 
 function addUrlTrack(url) {
