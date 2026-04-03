@@ -66,10 +66,19 @@ async function renderSidebarLibrary() {
 
   // Section 1: Your Tracks (Personal Uploads)
   if (records.length > 0) {
-    const yourTracksLabel = document.createElement("div");
-    yourTracksLabel.className = "library-section-title";
-    yourTracksLabel.textContent = "Your Tracks";
-    deviceLibraryList.appendChild(yourTracksLabel);
+    // Collapsible header
+    const yourTracksHeader = document.createElement("div");
+    yourTracksHeader.className = "library-section-header";
+    yourTracksHeader.innerHTML = `
+      <span class="library-section-title-text">YOUR TRACKS</span>
+      <button class="sidebar-collapse-toggle" type="button" aria-expanded="true" data-section="your-tracks">Hide</button>
+    `;
+    deviceLibraryList.appendChild(yourTracksHeader);
+
+    // Collapsible content wrapper
+    const yourTracksContent = document.createElement("div");
+    yourTracksContent.className = "library-section-content";
+    yourTracksContent.id = "lib-section-your-tracks";
 
     records.forEach((record) => {
       const size = formatBytes(record.size || record.blob?.size || 0);
@@ -118,16 +127,36 @@ async function renderSidebarLibrary() {
       item.appendChild(info);
       item.appendChild(deleteBtn);
       item.appendChild(createSelector(record.id));
-      deviceLibraryList.appendChild(item);
+      yourTracksContent.appendChild(item);
+    });
+
+    deviceLibraryList.appendChild(yourTracksContent);
+
+    // Wire up toggle
+    const yourTracksToggle = yourTracksHeader.querySelector("button");
+    yourTracksToggle.addEventListener("click", () => {
+      const isExpanded = yourTracksContent.style.display !== "none";
+      yourTracksContent.style.display = isExpanded ? "none" : "";
+      yourTracksToggle.textContent = isExpanded ? "Show" : "Hide";
+      yourTracksToggle.setAttribute("aria-expanded", String(!isExpanded));
     });
   }
 
   // Section 2: Tracks Built-In
   if (uniqueBuiltins.length > 0) {
-    const builtinsLabel = document.createElement("div");
-    builtinsLabel.className = "library-section-title";
-    builtinsLabel.textContent = "Tracks Built-In";
-    deviceLibraryList.appendChild(builtinsLabel);
+    // Collapsible header
+    const builtinsHeader = document.createElement("div");
+    builtinsHeader.className = "library-section-header";
+    builtinsHeader.innerHTML = `
+      <span class="library-section-title-text">TRACKS BUILT-IN</span>
+      <button class="sidebar-collapse-toggle" type="button" aria-expanded="true" data-section="built-in">Hide</button>
+    `;
+    deviceLibraryList.appendChild(builtinsHeader);
+
+    // Collapsible content wrapper
+    const builtinsContent = document.createElement("div");
+    builtinsContent.className = "library-section-content";
+    builtinsContent.id = "lib-section-built-in";
 
     uniqueBuiltins.forEach((track) => {
       const durationStr = track.duration ? formatTime(track.duration) : "";
@@ -140,12 +169,22 @@ async function renderSidebarLibrary() {
           <span class="library-item-size">${metaText}</span>
         </div>
       `;
-      // Delete button - spacer for grid consistency
+      // Spacer for grid consistency
       const spacer = document.createElement("div");
       item.appendChild(spacer);
-      
       item.appendChild(createSelector(track.id));
-      deviceLibraryList.appendChild(item);
+      builtinsContent.appendChild(item);
+    });
+
+    deviceLibraryList.appendChild(builtinsContent);
+
+    // Wire up toggle
+    const builtinsToggle = builtinsHeader.querySelector("button");
+    builtinsToggle.addEventListener("click", () => {
+      const isExpanded = builtinsContent.style.display !== "none";
+      builtinsContent.style.display = isExpanded ? "none" : "";
+      builtinsToggle.textContent = isExpanded ? "Show" : "Hide";
+      builtinsToggle.setAttribute("aria-expanded", String(!isExpanded));
     });
   }
 

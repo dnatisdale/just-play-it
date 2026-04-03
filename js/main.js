@@ -726,9 +726,6 @@ async function initApp() {
   updatePlayPauseButton();
   updateNowPlaying(playlist[currentTrackIndex] || null);
   setupMediaSessionActions();
-  await updateStorageUsage();
-  await renderSidebarLibrary();
-
   await renderSidebarLibrary();
 
   // ── Unified Toggle Function ──
@@ -771,9 +768,10 @@ async function initApp() {
     });
   };
 
-  wireUpToggle("currentPlaylistHeaderBtn", "playlistContainer", "playlistCollapseText", "playlistCollapseIcon");
+  wireUpToggle("queueHeaderBtn", "currentPlaylistCard", null, null);
   wireUpToggle("libraryHeader", "libraryContainer", "libraryCollapseText", "libraryCollapseIcon");
   wireUpToggle("supportHeaderBtn", "supportContainer", null, null);
+  wireUpToggle("shareHeaderBtn", "shareContainer", null, null);
 
   const addLibraryBtn = document.getElementById("addLibraryToPlaylistBtn");
   if (addLibraryBtn) {

@@ -81,6 +81,26 @@
   display: block;
 }
 
+/* Collapsible section header row in Library tab */
+.library-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 16px 4px 4px;
+  padding: 0 4px 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.library-section-title-text {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+}
+
+
+
 .library-selector-btn {
   width: 20px;
   height: 20px;
@@ -511,4 +531,24 @@
   flex: 1;
 }
 
-/* ═══════════════════════════════════════════
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--panel-solid);
+  flex-shrink: 0;
+}
+
+.build-version-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: 0.8;
+  letter-spacing: 0.05em;
+  text-align: center;
+}
+
+.build-version-tag .accent-dash {
+  color: var(--accent);
+  margin: 0 4px;
+}
