@@ -129,8 +129,8 @@
 
         <div id="sidebar-section-queue" class="sidebar-section">
           <div class="sidebar-section-header">
-            <span class="sidebar-section-label" style="margin:0; padding:0;">Current Queue</span>
-            <button id="queueHeaderBtn" class="sidebar-collapse-toggle" type="button" aria-expanded="true" aria-controls="playlistContainer">Hide</button>
+            <span class="sidebar-section-label" style="margin:0; padding:0;">Current Queue <span id="playlistBadge" class="counter-badge hidden">0</span></span>
+            <button id="currentPlaylistHeaderBtn" class="sidebar-collapse-toggle" type="button" aria-expanded="true" aria-controls="playlistContainer">Hide</button>
           </div>
 
           <section id="currentPlaylistCard" class="library-card sidebar-collapsible-content expanded" style="margin-top: 8px;">
@@ -302,7 +302,7 @@
             <!-- Create new playlist sticky header -->
             <div style="padding: 0 16px 16px; border-bottom: 1px solid var(--border);">
               <div class="save-row" style="display: flex; gap: 8px;">
-                <input id="playlistNameInput" type="text" placeholder="✨ New playlist name..." maxlength="60" autocomplete="off" style="flex: 1;" />
+                <input id="playlistNameInput" type="text" placeholder="New list name..." maxlength="60" autocomplete="off" style="flex: 1;" />
                 <button id="savePlaylistBtn" type="button" style="padding: 0 20px;">CREATE</button>
               </div>
               <div id="savedPlaylistStatus" class="playlist-status-sub hidden" style="margin-top: 8px;"></div>

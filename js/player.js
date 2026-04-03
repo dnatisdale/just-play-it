@@ -198,21 +198,15 @@ function saveNamedPlaylist() {
   const name = playlistNameInput.value.trim();
 
   if (!name) {
-    savedPlaylistStatus.textContent = "Please enter a playlist name first.";
     showToast("Enter a playlist name first.");
     return;
   }
 
+  // ALLOW empty playlists if user is "Creating" a new one from the Playlists Tab.
+  // If we are on the Player Tab, it will save whatever is in the queue.
   const normalizedTracks = playlist
     .map((track) => normalizeTrack(track))
     .filter(Boolean);
-
-  if (normalizedTracks.length === 0) {
-    savedPlaylistStatus.textContent =
-      "There is nothing to save in this playlist.";
-    showToast("There is nothing to save.");
-    return;
-  }
 
   savedPlaylists[name] = {
     name,
@@ -223,17 +217,21 @@ function saveNamedPlaylist() {
   currentPlaylistName = name;
   updatePlaylistNameDisplay();
   persistSavedPlaylists();
-  savedPlaylistsSelect.value = name;
-  localStorage.setItem(STORAGE_KEYS.selectedSavedPlaylist, name);
-  if (savedPlaylistBox) savedPlaylistBox.title = `Saved playlist: ${name}`;
   
-  // Sync the action button state
-  if (typeof updatePlaylistActionUI === "function") {
-    updatePlaylistActionUI();
-  }
+  // Clear input for better UX (Bug C)
+  playlistNameInput.value = "";
+  
+  // Sync selected key for later use (e.g. rename/delete)
+  selectedPlaylistKey = name;
+  localStorage.setItem(STORAGE_KEYS.selectedSavedPlaylist, name);
+  
+  if (savedPlaylistBox) savedPlaylistBox.title = `Recently saved: ${name}`;
+  
+  // ENSURE badges update so UX feels responsive
+  updateBadgeCounts();
 
-  setPlayerStatus(`Saved playlist "${name}".`);
-  showToast(`Saved playlist "${name}".`);
+  setPlayerStatus(`Created playlist "${name}".`);
+  showToast(`Created playlist "${name}".`);
 }
 
 async function loadNamedPlaylist() {

@@ -753,10 +753,6 @@ async function initApp() {
   restoreSleepTimer();
   renderPlaylist();
   updatePlayPauseButton();
-  loadPlaylistFromStorage();
-  restoreSleepTimer();
-  renderPlaylist();
-  updatePlayPauseButton();
   updateNowPlaying(playlist[currentTrackIndex] || null);
   setupMediaSessionActions();
   await renderSidebarLibrary();
@@ -807,7 +803,7 @@ async function initApp() {
     });
   };
 
-  wireUpToggle("queueHeaderBtn", "currentPlaylistCard", null, null);
+  wireUpToggle("currentPlaylistHeaderBtn", "currentPlaylistCard", "playlistCollapseText", "playlistCollapseIcon");
   wireUpToggle("libraryHeader", "libraryContainer", "libraryCollapseText", "libraryCollapseIcon");
   wireUpToggle("supportHeaderBtn", "supportContainer", null, null);
   wireUpToggle("shareHeaderBtn", "shareContainer", null, null);
@@ -819,11 +815,6 @@ async function initApp() {
 
   // Initialize sidebar reordering logic
   initSidebarRearrangeMode();
-
-  // Final count update
-  updateBadgeCounts();
-  updateQrCode();
-  updateBuildInfo();
 
   // ── Populate Default Playlist Select ──
   const defSelect = document.getElementById("defaultPlaylistSelect");
@@ -844,6 +835,11 @@ async function initApp() {
       showToast(defSelect.value ? `Default: ${defSelect.value}` : "Auto-load disabled.");
     });
   }
+
+  // Final count update before view switches
+  await updateBadgeCounts();
+  updateQrCode();
+  updateBuildInfo();
 
   if (currentTrackIndex >= 0) {
     await loadTrack(currentTrackIndex, false);
@@ -870,9 +866,10 @@ async function initApp() {
         currentTrackIndex = 0;
         await loadTrack(0, false);
         renderPlaylist();
-        updateBadgeCounts();
       }
     }
+    // Re-update badges after loading default startup list
+    await updateBadgeCounts();
   }
 
   // ── Set Initial View ──
