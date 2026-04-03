@@ -39,6 +39,10 @@ const importPlaylistsInput = document.getElementById("importPlaylistsInput");
 const savedPlaylistStatus = document.getElementById("savedPlaylistStatus");
 const jumpToCurrentBtn = document.getElementById("jumpToCurrentBtn");
 const toggleEditBtn = document.getElementById("toggleEditBtn");
+const selectionActionBar = document.getElementById("selectionActionBar");
+const clearSelectionBtn = document.getElementById("clearSelectionBtn");
+const addLibraryToPlaylistBtn = document.getElementById("addLibraryToPlaylistBtn");
+
 
 // Containers for tooltips (decluttering)
 const savedPlaylistBox = document.getElementById("savedPlaylistBox");

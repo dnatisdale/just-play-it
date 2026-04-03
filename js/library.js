@@ -246,22 +246,35 @@ async function deleteStoredTrack(id, title) {
 }
 
 function updateSelectionBadge() {
-  const badge = document.getElementById("selectionBadge");
-  const addBtn = document.getElementById("addLibraryToPlaylistBtn");
   const count = selectedLibraryTracks.size;
   
-  if (badge) {
-    badge.textContent = count;
-    badge.classList.toggle("hidden", count === 0);
+  if (selectionActionBar) {
+    if (count > 0) {
+      selectionActionBar.classList.remove("hidden");
+    } else {
+      selectionActionBar.classList.add("hidden");
+    }
   }
-  
-  if (addBtn) {
-    addBtn.disabled = count === 0;
-    addBtn.textContent = count > 0
-      ? `Add ${count} Track${count !== 1 ? "s" : ""} to Playlist`
+
+  if (addLibraryToPlaylistBtn) {
+    addLibraryToPlaylistBtn.textContent = count > 0
+      ? `Add ${count} Track${count !== 1 ? "s" : ""} to a Playlist`
       : "Add to Playlist";
   }
 }
+
+// Wire up the clear selection button once
+if (clearSelectionBtn) {
+  clearSelectionBtn.addEventListener("click", () => {
+    selectedLibraryTracks.clear();
+    // Un-select any visual checkmarks
+    document.querySelectorAll(".library-selector-btn.selected").forEach(btn => {
+      btn.classList.remove("selected");
+    });
+    updateSelectionBadge();
+  });
+}
+
 
 async function addSelectedToPlaylist() {
   if (selectedLibraryTracks.size === 0) return;

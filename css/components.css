@@ -2121,3 +2121,80 @@ h3 .counter-badge {
   max-width: 500px;
   margin: 0 auto;
 }
+
+/* ── Contextual Action Bar (CAB) ── */
+.selection-action-bar {
+  position: fixed;
+  bottom: 84px; /* Fixed above the bottom-nav */
+  left: 50%;
+  transform: translateX(-50%) translateY(120%);
+  width: calc(100% - 32px);
+  max-width: 480px;
+  background: var(--panel-solid);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-strong);
+  border-radius: 50px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: var(--shadow-lg), 0 0 20px rgba(0, 0, 0, 0.4);
+  z-index: 9999;
+  transition: transform 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28), opacity 0.3s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.selection-action-bar:not(.hidden) {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.selection-action-main {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  flex: 1;
+  margin-left: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 4px 12px var(--accent-glow);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.selection-action-main:active {
+  transform: scale(0.96);
+  opacity: 0.9;
+}
+
+.selection-action-clear {
+  background: var(--glass-border);
+  color: var(--text);
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.selection-action-clear:hover {
+  background: var(--border-strong);
+}
+
+.selection-action-clear:active {
+  transform: scale(0.9);
+}
+
