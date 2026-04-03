@@ -133,6 +133,9 @@ function switchView(targetViewId) {
     }
   });
 
+  // Ensure sidebar closes when switching via nav (though nav is usually outside sidebar)
+  if (sidebar.classList.contains("is-open")) closeSidebar();
+
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -717,10 +720,17 @@ async function initApp() {
   restoreSleepTimer();
   renderPlaylist();
   updatePlayPauseButton();
+  loadPlaylistFromStorage();
+  restoreSleepTimer();
+  renderPlaylist();
+  updatePlayPauseButton();
   updateNowPlaying(playlist[currentTrackIndex] || null);
   setupMediaSessionActions();
   await updateStorageUsage();
   await renderSidebarLibrary();
+
+  await renderSidebarLibrary();
+
   // ── Unified Toggle Function ──
   window.toggleSection = (headerId, containerId, textId, iconId, forceExpand = false) => {
     const header = typeof headerId === 'string' ? document.getElementById(headerId) : headerId;
@@ -763,6 +773,7 @@ async function initApp() {
 
   wireUpToggle("currentPlaylistHeaderBtn", "playlistContainer", "playlistCollapseText", "playlistCollapseIcon");
   wireUpToggle("libraryHeader", "libraryContainer", "libraryCollapseText", "libraryCollapseIcon");
+  wireUpToggle("supportHeaderBtn", "supportContainer", "supportCollapseText", "supportCollapseIcon");
 
   const addLibraryBtn = document.getElementById("addLibraryToPlaylistBtn");
   if (addLibraryBtn) {
@@ -773,35 +784,63 @@ async function initApp() {
   initSidebarRearrangeMode();
 
   // Final count update
-  await updateBadgeCounts();
+  updateBadgeCounts();
   updateQrCode();
   updateBuildInfo();
+
+  // ── Populate Default Playlist Select ──
+  const defSelect = document.getElementById("defaultPlaylistSelect");
+  if (defSelect) {
+    const sortedNames = Object.keys(savedPlaylists).sort();
+    sortedNames.forEach(name => {
+      const opt = document.createElement("option");
+      opt.value = name;
+      opt.textContent = name;
+      defSelect.appendChild(opt);
+    });
+    
+    const savedDefault = localStorage.getItem(STORAGE_KEYS.defaultPlaylist);
+    if (savedDefault) defSelect.value = savedDefault;
+
+    defSelect.addEventListener("change", () => {
+      localStorage.setItem(STORAGE_KEYS.defaultPlaylist, defSelect.value);
+      showToast(defSelect.value ? `Default: ${defSelect.value}` : "Auto-load disabled.");
+    });
+  }
 
   if (currentTrackIndex >= 0) {
     await loadTrack(currentTrackIndex, false);
   } else if (playlist.length === 0) {
-    // If playlist is empty, try to auto-load library files
-    const records = db ? await getAllTrackMetadata() : [];
-    if (records.length > 0) {
-      playlist = records.map(r => ({
-        id: r.id,
-        title: r.title,
-        sourceType: "file"
-      }));
-      currentTrackIndex = 0;
-      await loadTrack(0, false);
-      renderPlaylist();
-      updateBadgeCounts();
+    // Priority for startup:
+    // 1. User's saved Default Playlist
+    // 2. "Remember the Lord" (App default)
+    // 3. All Library files (fallback)
+    
+    const userDefault = localStorage.getItem(STORAGE_KEYS.defaultPlaylist);
+    const starterName = (userDefault && savedPlaylists[userDefault]) ? userDefault : "Remember the Lord";
+
+    if (savedPlaylists[starterName]) {
+      selectedPlaylistKey = starterName;
+      await loadNamedPlaylist();
     } else {
-      // If library is also empty, load "Remember the Lord" as a sample starter
-      const starterName = "Remember the Lord";
-      if (savedPlaylists[starterName]) {
-        selectedPlaylistKey = starterName;
-        localStorage.setItem(STORAGE_KEYS.selectedSavedPlaylist, starterName);
-        await loadNamedPlaylist();
+      const records = db ? await getAllTrackMetadata() : [];
+      if (records.length > 0) {
+        playlist = records.map(r => ({
+          id: r.id,
+          title: r.title,
+          sourceType: "file"
+        }));
+        currentTrackIndex = 0;
+        await loadTrack(0, false);
+        renderPlaylist();
+        updateBadgeCounts();
       }
     }
   }
+
+  // ── Set Initial View ──
+  // Do this after startup logic but before UI jumps
+  switchView("view-player");
 
   // Header text/badge jumps
   const nowPlayingPlaylistInfo = document.getElementById("nowPlayingPlaylistInfo");

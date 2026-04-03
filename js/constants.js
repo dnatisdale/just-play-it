@@ -101,7 +101,8 @@ const STORAGE_KEYS = {
   currentPlaylistName: "justPlayItCurrentPlaylistName",
   theme: "justPlayItTheme",
   sidebarOrder: "justPlayItSidebarOrder",
-  errorLogs: "justPlayItErrorLogs"
+  errorLogs: "justPlayItErrorLogs",
+  defaultPlaylist: "justPlayItDefaultPlaylist"
 };
 
 
