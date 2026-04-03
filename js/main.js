@@ -130,6 +130,16 @@ function switchView(targetViewId) {
     }
   }
 
+  // Selection Action Bar management (Contextual Bar visibility)
+  const cab = document.getElementById("selectionActionBar");
+  if (cab) {
+    if (targetViewId === "view-library" && selectedLibraryTracks.size > 0) {
+      cab.classList.remove("hidden");
+    } else {
+      cab.classList.add("hidden");
+    }
+  }
+
   // Generalize expansion of any subset collapsible panels in the library view (Bug 6)
   if (targetViewId === "view-library") {
     // Reset all library collapsible content wrappers

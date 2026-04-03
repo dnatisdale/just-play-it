@@ -216,51 +216,7 @@
       <main class="main-layout" id="mainContent">
       <!-- ── VIEWS FOR BOTTOM NAV ── -->
 
-      <!-- 1. LIBRARY VIEW -->
-      <section id="view-library" class="view-section">
-        <section class="library-card card-pop" id="libraryMainCard" style="margin-bottom: 20px;">
-          <div class="section-head standardized-header" id="libraryHeader">
-            <h3>LIBRARY <span id="libraryBadge" class="counter-badge hidden">0</span></h3>
-          </div>
-
-          <div id="libraryContainer" class="playlist-container expanded">
-            <div id="libraryCollapsible" class="inner-collapse">
-              <div id="deviceLibraryList" class="device-library-list" style="max-height: none;"></div>
-              <!-- selection badge visually separated now, can be removed from DOM or hidden eternally -->
-              <span id="selectionBadge" aria-hidden="true" style="display:none">0</span>
-            </div>
-          </div>
-        </section>
-      </section>
-
-      <!-- 2. PLAYLISTS VIEW -->
-      <section id="view-playlists" class="view-section">
-        <section class="library-card" style="padding: 0;">
-          <div class="section-head" style="padding: 16px;">
-            <h3>PLAYLISTS <span class="counter-badge" id="savedPlaylistsBadge">0</span></h3>
-          </div>
-          
-          <div class="saved-playlist-box" id="savedPlaylistBox">
-            <!-- Create new playlist sticky header -->
-            <div style="padding: 0 16px 16px; border-bottom: 1px solid var(--border);">
-              <div class="save-row" style="display: flex; gap: 8px;">
-                <input id="playlistNameInput" type="text" placeholder="✨ New playlist name..." maxlength="60" autocomplete="off" style="flex: 1;" />
-                <button id="savePlaylistBtn" type="button" style="padding: 0 20px;">CREATE</button>
-              </div>
-              <div id="savedPlaylistStatus" class="playlist-status-sub hidden" style="margin-top: 8px;"></div>
-            </div>
-
-            <!-- List container for JS rendering -->
-            <div id="playlistsListContainer" style="padding: 16px; display: flex; flex-direction: column; gap: 8px;">
-              <!-- Cards will go here -->
-            </div>
-            
-
-          </div>
-        </section>
-      </section>
-
-      <!-- 3. PLAYER VIEW -->
+      <!-- 1. PLAYER VIEW -->
       <section id="view-player" class="view-section active">
         <section class="player-card">
           <div class="now-playing-header">
@@ -331,7 +287,51 @@
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 
               Sleep: Off
             </button>
+          </div>
+        </section>
+      </section>
 
+      <!-- 2. PLAYLIST VIEW -->
+      <section id="view-playlists" class="view-section">
+        <section class="library-card" style="padding: 0;">
+          <div class="section-head" style="padding: 16px;">
+            <h3>PLAYLIST <span class="counter-badge" id="savedPlaylistsBadge">0</span></h3>
+          </div>
+          
+          <div class="saved-playlist-box" id="savedPlaylistBox">
+            <!-- Create new playlist sticky header -->
+            <div style="padding: 0 16px 16px; border-bottom: 1px solid var(--border);">
+              <div class="save-row" style="display: flex; gap: 8px;">
+                <input id="playlistNameInput" type="text" placeholder="✨ New playlist name..." maxlength="60" autocomplete="off" style="flex: 1;" />
+                <button id="savePlaylistBtn" type="button" style="padding: 0 20px;">CREATE</button>
+              </div>
+              <div id="savedPlaylistStatus" class="playlist-status-sub hidden" style="margin-top: 8px;"></div>
+            </div>
+
+            <!-- List container for JS rendering -->
+            <div id="playlistsListContainer" style="padding: 16px; display: flex; flex-direction: column; gap: 8px;">
+              <!-- Cards will go here -->
+            </div>
+            
+
+          </div>
+        </section>
+      </section>
+
+      <!-- 3. LIBRARY VIEW -->
+      <section id="view-library" class="view-section">
+        <section class="library-card card-pop" id="libraryMainCard" style="margin-bottom: 20px;">
+          <div class="section-head standardized-header" id="libraryHeader">
+            <h3>LIBRARY <span id="libraryBadge" class="counter-badge hidden">0</span></h3>
+          </div>
+
+          <div id="libraryContainer" class="playlist-container expanded">
+            <div id="libraryCollapsible" class="inner-collapse">
+              <div id="deviceLibraryList" class="device-library-list" style="max-height: none;"></div>
+              <!-- selection badge visually separated now, can be removed from DOM or hidden eternally -->
+              <span id="selectionBadge" aria-hidden="true" style="display:none">0</span>
+            </div>
+          </div>
         </section>
       </section>
 
@@ -406,13 +406,13 @@
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
           <span>Player</span>
         </button>
+        <button class="nav-item" data-target="view-playlists">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          <span>Playlist</span>
+        </button>
         <button class="nav-item" data-target="view-library">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
           <span>Library</span>
-        </button>
-        <button class="nav-item" data-target="view-playlists">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-          <span>Playlists</span>
         </button>
         <button class="nav-item" data-target="view-settings">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>

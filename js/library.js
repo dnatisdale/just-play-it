@@ -247,9 +247,10 @@ async function deleteStoredTrack(id, title) {
 
 function updateSelectionBadge() {
   const count = selectedLibraryTracks.size;
+  const activeTab = document.querySelector(".nav-item.active")?.dataset.target;
   
   if (selectionActionBar) {
-    if (count > 0) {
+    if (count > 0 && activeTab === "view-library") {
       selectionActionBar.classList.remove("hidden");
     } else {
       selectionActionBar.classList.add("hidden");
@@ -258,8 +259,8 @@ function updateSelectionBadge() {
 
   if (addLibraryToPlaylistBtn) {
     addLibraryToPlaylistBtn.textContent = count > 0
-      ? `Add ${count} Track${count !== 1 ? "s" : ""} to a Playlist`
-      : "Add to Playlist";
+      ? `Add ${count} Track${count !== 1 ? "s" : ""} to Current Queue`
+      : "Add to Queue";
   }
 }
 
@@ -321,7 +322,11 @@ async function addSelectedToPlaylist() {
   }
 
   if (toAdd.length === 0 && skipped.length > 0) {
-    showToast(`${skipped.length} track${skipped.length !== 1 ? "s" : ""} already in playlist.`);
+    showToast(`${skipped.length} track${skipped.length !== 1 ? "s" : ""} already in queue.`);
+    // Still clear selection!
+    selectedLibraryTracks.clear();
+    updateSelectionBadge();
+    document.querySelectorAll(".library-selector-btn.selected").forEach(btn => btn.classList.remove("selected"));
     return;
   }
 
@@ -344,8 +349,8 @@ async function addSelectedToPlaylist() {
   await renderSidebarLibrary();
 
   const msg = toAdd.length > 0
-    ? `${toAdd.length} track${toAdd.length !== 1 ? "s" : ""} added.${skipped.length > 0 ? ` (${skipped.length} already in playlist)` : ""}`
-    : `Already in playlist.`;
+    ? `${toAdd.length} track${toAdd.length !== 1 ? "s" : ""} added to Queue.${skipped.length > 0 ? ` (${skipped.length} already there)` : ""}`
+    : `Already in queue.`;
     
   showToast(msg);
   setPlayerStatus(msg);
