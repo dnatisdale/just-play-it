@@ -773,7 +773,7 @@ async function initApp() {
 
   wireUpToggle("currentPlaylistHeaderBtn", "playlistContainer", "playlistCollapseText", "playlistCollapseIcon");
   wireUpToggle("libraryHeader", "libraryContainer", "libraryCollapseText", "libraryCollapseIcon");
-  wireUpToggle("supportHeaderBtn", "supportContainer", "supportCollapseText", "supportCollapseIcon");
+  wireUpToggle("supportHeaderBtn", "supportContainer", null, null);
 
   const addLibraryBtn = document.getElementById("addLibraryToPlaylistBtn");
   if (addLibraryBtn) {

@@ -7,7 +7,7 @@
 // lives in js/version.js.
 // ────────────────────────────────────────────────────────────
 
-const CACHE_VERSION = "V.96-03APR2026-1032";
+const CACHE_VERSION = "V.97-03APR2026-1041";
 const CACHE_NAME = `just-play-it-${CACHE_VERSION}`;
 
 const ASSETS_TO_CACHE = [

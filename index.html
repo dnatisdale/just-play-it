@@ -60,17 +60,14 @@
 
       <div class="sidebar-body">
         <div id="sidebar-section-support" class="sidebar-section">
-          <button id="supportHeaderBtn" class="standardized-header" type="button" aria-expanded="true" aria-controls="supportContainer">
-            <span class="header-title">Support</span>
-            <div class="header-actions">
-              <span id="supportCollapseText" class="header-toggle-text">Hide</span>
-              <span id="supportCollapseIcon" class="header-toggle-icon">▼</span>
-            </div>
-          </button>
+          <div class="sidebar-section-header">
+            <span class="sidebar-section-label" style="margin:0; padding:0;">Support</span>
+            <button id="supportHeaderBtn" class="sidebar-collapse-toggle" type="button" aria-expanded="true" aria-controls="supportContainer">Hide</button>
+          </div>
 
-          <div id="supportContainer" class="section-container expanded">
-            <div style="padding: 12px 16px 8px;">
-              <a href="https://ko-fi.com/justplayit" class="sidebar-row-btn gold-member-btn" id="supportLinkTop" target="_blank" rel="noopener noreferrer" style="text-decoration: none; background: #940414; box-shadow: 0 4px 12px rgba(148, 4, 20, 0.25); border: none;">
+          <div id="supportContainer" class="sidebar-collapsible-content expanded">
+            <div style="padding: 12px 0 8px;">
+              <a href="https://ko-fi.com/justplayit" class="sidebar-row-btn gold-member-btn" id="supportLinkTop" target="_blank" rel="noopener noreferrer" style="text-decoration: none; background: #940414; box-shadow: 0 4px 12px rgba(148, 4, 20, 0.25); border: none; margin-bottom: 8px;">
                 <span class="sidebar-row-icon blink-wrapper">
                   <img src="icons/icon-192.png" width="18" height="18" alt="JPi Logo" class="blink-logo" />
                   <svg class="blink-heart" width="18" height="18" viewBox="0 0 24 24" fill="#ffffff" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.72-8.72 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
@@ -81,7 +78,7 @@
                   <svg class="blink-heart" width="18" height="18" viewBox="0 0 24 24" fill="#ffffff" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.72-8.72 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                 </span>
               </a>
-              <p class="sidebar-storage-text" style="padding: 12px 14px 12px; font-weight: 400; opacity: 1; text-align: center; font-style: italic;">
+              <p class="sidebar-storage-text" style="padding: 4px 14px 12px; font-weight: 400; opacity: 1; text-align: center; font-style: italic;">
                 Help keep the wheels turning and the records spinning.
               </p>
             </div>
