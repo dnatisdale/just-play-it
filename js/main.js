@@ -105,6 +105,12 @@ document.addEventListener("keydown", (e) => {
 
 // ── Bottom Navigation & View Switching ────────────────────────
 function switchView(targetViewId) {
+  // Close import sheet when switching views (Bug 5)
+  const sheet = document.getElementById("importBottomSheet");
+  if (sheet && sheet.classList.contains("is-open")) {
+    closeImportSheet();
+  }
+
   // Update view sections
   document.querySelectorAll(".view-section").forEach(view => {
     if (view.id === targetViewId) {
@@ -122,6 +128,19 @@ function switchView(targetViewId) {
     } else {
       importFab.classList.add("hidden");
     }
+  }
+
+  // Generalize expansion of any subset collapsible panels in the library view (Bug 6)
+  if (targetViewId === "view-library") {
+    // Reset all library collapsible content wrappers
+    document.querySelectorAll(".library-section-content").forEach(el => {
+      el.style.display = ""; // clears inline 'none'
+    });
+    // Reset all library specific toggle buttons to indicate 'Hide' mode now that the contents are visible
+    document.querySelectorAll(".library-section-header .sidebar-collapse-toggle").forEach(btn => {
+      btn.textContent = "Hide";
+      btn.setAttribute("aria-expanded", "true");
+    });
   }
 
   // Update nav buttons
@@ -225,13 +244,17 @@ clearDeviceLibraryBtn.addEventListener("click", async () => {
   }
 });
 
-exportPlaylistsBtn.addEventListener("click", exportPlaylists);
+if (exportPlaylistsBtn) {
+  exportPlaylistsBtn.addEventListener("click", exportPlaylists);
+}
 
-importPlaylistsInput.addEventListener("change", async (event) => {
-  const file = event.target.files?.[0];
-  await importPlaylistsFromFile(file);
-  importPlaylistsInput.value = "";
-});
+if (importPlaylistsInput) {
+  importPlaylistsInput.addEventListener("change", async (event) => {
+    const file = event.target.files?.[0];
+    await importPlaylistsFromFile(file);
+    importPlaylistsInput.value = "";
+  });
+}
 
 jumpToCurrentBtn.addEventListener("click", jumpToCurrentTrack);
 if (clearPlaylistBtn) {
@@ -751,7 +774,13 @@ async function initApp() {
     }
 
     header.setAttribute("aria-expanded", targetVisible);
-    if (textEl) textEl.textContent = targetVisible ? "Hide" : "Show";
+    
+    if (textEl) {
+      textEl.textContent = targetVisible ? "Hide" : "Show";
+    } else if (header.tagName === "BUTTON") {
+      header.textContent = targetVisible ? "Hide" : "Show";
+    }
+
     if (iconEl) iconEl.style.transform = targetVisible ? "rotate(180deg)" : "";
   };
 
@@ -891,6 +920,41 @@ async function initApp() {
   } catch (err) {
     console.warn("Splash screen fade failed:", err);
   }
+
+  // Playback watchdog — detects ghost play state
+  let _lastWatchTime = null;
+  let _watchStallCount = 0;
+
+  setInterval(() => {
+    if (audio.paused || audio.ended || userPaused || isTransitioning) {
+      _lastWatchTime = null;
+      _watchStallCount = 0;
+      return;
+    }
+    if (_lastWatchTime === null) {
+      _lastWatchTime = audio.currentTime;
+      return;
+    }
+    if (audio.currentTime === _lastWatchTime) {
+      _watchStallCount++;
+      if (_watchStallCount >= 2) {
+        // Audio says playing but hasn't moved for ~4s — force UI reset
+        console.warn("Playback watchdog: stall detected, resetting UI");
+        updatePlayPauseButton(); // forces re-read of audio.paused, spinning syncs to state
+        if (_watchStallCount >= 4) {
+          // After ~8s stall, attempt full recovery
+          setPlayerStatus("Playback stalled. Attempting recovery...");
+          loadTrack(currentTrackIndex, true).catch(() => {
+            setPlayerStatus("Playback stalled. Press Play to retry.");
+          });
+          _watchStallCount = 0;
+        }
+      }
+    } else {
+      _lastWatchTime = audio.currentTime;
+      _watchStallCount = 0;
+    }
+  }, 2000);
 }
 
 function jumpToSavedPlaylists() {

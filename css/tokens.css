@@ -76,6 +76,10 @@
   --accent-subtle: rgba(148, 4, 20, 0.07);
   --accent-subtle-border: rgba(148, 4, 20, 0.25);
 
+  --orange: #ff9c2b;
+  --orange-light: #ffb459;
+  --orange-glow: rgba(255, 156, 43, 0.35);
+
   --danger: #c0392b;
   --danger-subtle: rgba(192, 57, 43, 0.06);
   --danger-border: rgba(192, 57, 43, 0.22);
