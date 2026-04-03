@@ -487,6 +487,7 @@ function addUrlTrack(url) {
   try {
     const parsedUrl = new URL(trimmed);
     const hostname = parsedUrl.hostname.toLowerCase();
+    const lowerPath = parsedUrl.pathname.toLowerCase();
     
     // Check for YouTube links
     if (hostname.includes("youtube.com") || hostname.includes("youtu.be")) {

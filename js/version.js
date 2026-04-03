@@ -5,10 +5,10 @@
 //   All other files (service-worker, UI labels) derive from here.
 // ────────────────────────────────────────────────────────────
 
-const APP_VERSION = "V.90";
-const APP_BUILD_DATE = "02APR2026";
-const APP_BUILD_TIME = "14:18";
+const APP_VERSION = "V.92";
+const APP_BUILD_DATE = "03APR2026";
+const APP_BUILD_TIME = "10:25";
 
 // Derived composite string used in the UI
-// Format: "BUILD V.90 — 02APR2026 — 14:18"
+// Format: "BUILD V.92 — 03APR2026 — 10:25"
 const BUILD_LABEL = `${APP_VERSION} — ${APP_BUILD_DATE} — ${APP_BUILD_TIME}`;

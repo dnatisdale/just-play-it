@@ -61,16 +61,40 @@ function getTrackBlob(id) {
   });
 }
 
-function getAllTrackBlobs() {
+/**
+ * Efficiently fetch ONLY track metadata (id, title, size) without loading 
+ * the heavy binary 'blob' property into memory. Essential for scaling.
+ */
+function getAllTrackMetadata() {
   return new Promise((resolve, reject) => {
+    if (!db) {
+      resolve([]);
+      return;
+    }
     const tx = db.transaction(TRACK_STORE, "readonly");
     const store = tx.objectStore(TRACK_STORE);
-    const request = store.getAll();
+    const results = [];
+    const request = store.openCursor();
 
-    request.onsuccess = () =>
-      resolve(Array.isArray(request.result) ? request.result : []);
+    request.onsuccess = (event) => {
+      const cursor = event.target.result;
+      if (cursor) {
+        // Exclude the 'blob' property to save RAM
+        const { blob, ...metadata } = cursor.value;
+        results.push(metadata);
+        cursor.continue();
+      } else {
+        resolve(results);
+      }
+    };
     request.onerror = () => reject(request.error);
   });
+}
+
+// Legacy alias - but now it also only returns metadata for safety
+function getAllTrackBlobs() {
+  console.warn("getAllTrackBlobs called - redirecting to metadata-only for performance.");
+  return getAllTrackMetadata();
 }
 
 function clearAllTrackBlobs() {
@@ -97,9 +121,9 @@ function deleteTrackBlob(id) {
 
 async function updateStorageUsage() {
   try {
-    const records = db ? await getAllTrackBlobs() : [];
+    const records = await getAllTrackMetadata();
     const deviceBytes = records.reduce(
-      (sum, item) => sum + (item.size || item.blob?.size || 0),
+      (sum, item) => sum + (item.size || 0),
       0,
     );
 

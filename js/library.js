@@ -10,7 +10,7 @@ async function renderSidebarLibrary() {
 
   let records;
   try {
-    records = await getAllTrackBlobs();
+    records = await getAllTrackMetadata();
   } catch {
     records = [];
   }
@@ -220,7 +220,7 @@ async function addSelectedToPlaylist() {
   // Build lookup maps for personal uploads and builtins
   let records = [];
   try { 
-    records = await getAllTrackBlobs(); 
+    records = await getAllTrackMetadata(); 
   } catch (e) {
     console.error("Could not fetch library records:", e);
   }

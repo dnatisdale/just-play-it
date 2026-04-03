@@ -817,7 +817,7 @@ async function initApp() {
     await loadTrack(currentTrackIndex, false);
   } else if (playlist.length === 0) {
     // If playlist is empty, try to auto-load library files
-    const records = db ? await getAllTrackBlobs() : [];
+    const records = db ? await getAllTrackMetadata() : [];
     if (records.length > 0) {
       playlist = records.map(r => ({
         id: r.id,
@@ -879,7 +879,6 @@ async function initApp() {
     });
   }
 
-  // ── Splash screen failure protection ──
   try {
     const splash = document.getElementById("splashScreen");
     if (splash) {
@@ -928,9 +927,19 @@ if (scrollToTopBtn) {
   });
 }
 
-try {
-  initApp();
+// ── Entry Point & Crash Protection ─────────────────────────
+// Immediate 5-second safety valve: if ANYTHING hangs, clear splash anyway
+setTimeout(() => {
+  const splash = document.getElementById("splashScreen");
+  if (splash && !splash.classList.contains("fade-out")) {
+    console.warn("Safety valve: clearing splash screen after 5s hang.");
+    splash.classList.add("fade-out");
+  }
+}, 5000);
 
+initApp().then(() => {
+  console.log("Application initialized successfully.");
+  
   // ── File Handling API (Launch Queue) ─────────────────────────
   if ('launchQueue' in window) {
     window.launchQueue.setConsumer(async (launchParams) => {
@@ -956,10 +965,9 @@ try {
       }
     });
   }
-} catch (error) {
+}).catch((error) => {
   console.error("CRITICAL: Application failed to start:", error);
-  // Emergency splash clear so user isn't stuck
   const splash = document.getElementById("splashScreen");
   if (splash) splash.classList.add("fade-out");
-  addErrorLog(`Critical Start Fail: ${error.message}`, "System");
-}
+  addErrorLog(`Critical Start Fail: ${error.stack || error.message || error}`, "System");
+});

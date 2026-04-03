@@ -343,7 +343,7 @@ async function updateBadgeCounts() {
   // Library badge: total library files (Stored + Built-in) → shown on DEVICE LIBRARY. header
   if (libraryBadge) {
     try {
-      const records = db ? await getAllTrackBlobs() : [];
+      const records = db ? await getAllTrackMetadata() : [];
       let builtinCount = 0;
       Object.values(savedPlaylists).forEach(pl => {
         if (pl.isBuiltin) builtinCount += (pl.tracks || []).length;
