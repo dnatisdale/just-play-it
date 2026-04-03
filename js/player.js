@@ -16,6 +16,7 @@ function updatePlayPauseButton() {
 async function playCurrent() {
   if (playlist.length === 0) return;
   userPaused = false; // User explicitly wants to play
+  resumeRetries = 0;  // Clear any stale retry counter
 
   if (currentTrackIndex === -1) {
     await loadTrack(0, true);
@@ -27,14 +28,29 @@ async function playCurrent() {
     return;
   }
 
+  // Mobile fix: if the audio element has fully ended (currentTime === duration),
+  // browsers (especially iOS Safari) reject audio.play() with AbortError/NotAllowedError.
+  // Reset to the beginning first so play() works reliably.
+  if (audio.ended || (audio.duration > 0 && audio.currentTime >= audio.duration - 0.1)) {
+    audio.currentTime = 0;
+  }
+
   try {
     await audio.play();
     updatePlayPauseButton();
     setPlayerStatus(`Playing: ${playlist[currentTrackIndex].title}`);
   } catch (error) {
-    console.error("Playback failed:", error);
-    setPlayerStatus("Playback could not start.");
-    showToast("Playback could not start.");
+    // NotAllowedError means autoplay policy or audio context suspended.
+    // NotSupportedError / AbortError can happen if src changed mid-play.
+    // In all cases, fall back to a full reload of the track.
+    console.warn("audio.play() failed in playCurrent, attempting full reload:", error.name, error.message);
+    try {
+      await loadTrack(currentTrackIndex, true);
+    } catch (reloadError) {
+      console.error("Playback reload also failed:", reloadError);
+      setPlayerStatus("Playback could not start.");
+      showToast("Playback could not start. Try tapping again.");
+    }
   }
 }
 

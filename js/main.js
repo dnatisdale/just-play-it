@@ -396,25 +396,29 @@ audio.addEventListener("pause", () => {
   updatePlayPauseButton();
   updateMediaSession();
 
-  // Mobile: Auto-resume logic for notifications/interruptions
-  // Avoid auto-resuming if the user intentionally paused, if the track ended, 
-  // or if we are at the very end (to avoid fighting with the 'ended' event).
+  // Mobile: Auto-resume logic for notifications/interruptions.
+  // Skip entirely if we are intentionally transitioning to a new track —
+  // the loadTrack function manages play() for transitions itself.
+  if (isTransitioning) {
+    resumeRetries = 0;
+    return;
+  }
+
   const isNearEnd = audio.duration > 0 && (audio.duration - audio.currentTime < 1.0);
-  
+
   if (!userPaused && !audio.ended && !isNearEnd && resumeRetries < 3) {
     resumeRetries++;
     setPlayerStatus(`Playback interrupted. Resuming... (Retry ${resumeRetries}/3)`);
-    
+
     setTimeout(async () => {
-      // Do NOT auto-resume if we are in the middle of loading a new track.
-      // This prevents the race condition that causes "Playback could not start."
-	  if (
-  !userPaused &&
-  !audio.ended &&
-  !isTransitioning &&
-  audio.src &&
-  playlist[currentTrackIndex]
-) {
+      // Re-check everything after the delay — state may have changed
+      if (
+        !userPaused &&
+        !audio.ended &&
+        !isTransitioning &&
+        audio.src &&
+        playlist[currentTrackIndex]
+      ) {
         try {
           await audio.play();
           resumeRetries = 0; // Successfully resumed
@@ -429,10 +433,11 @@ audio.addEventListener("pause", () => {
   } else if (!userPaused && audio.ended) {
     // Already handled by 'ended' listener, do nothing here
   } else if (audio.currentTime > 0 && !audio.ended && !isTransitioning) {
-  setPlayerStatus("Playback paused.");
-  resumeRetries = 0;
-}
+    setPlayerStatus("Playback paused.");
+    resumeRetries = 0;
+  }
 });
+
 
 // Audio Error Handling
 audio.addEventListener("error", (e) => {
@@ -478,6 +483,10 @@ audio.addEventListener("ended", async () => {
     repeatMode === "off" &&
     currentTrackIndex === playlist.length - 1
   ) {
+    // Playlist finished naturally — mark as user-paused so the subsequent
+    // 'pause' event (which always fires after 'ended') does NOT trigger
+    // the auto-resume loop.
+    userPaused = true;
     updatePlayPauseButton();
     setPlayerStatus("Reached the end of the playlist.");
     return;

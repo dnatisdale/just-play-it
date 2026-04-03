@@ -342,56 +342,83 @@ async function loadTrack(index, shouldPlay = false) {
     return;
   }
 
- audio.src = source;
+  audio.src = source;
+  // Explicitly tell the browser to start fetching the new source.
+  // Without this, some mobile browsers (especially iOS Safari) may not begin
+  // loading when audio.src is set on a paused element.
+  audio.load();
 
-updateNowPlaying(track);
-renderPlaylist();
-savePlaylistState();
+  updateNowPlaying(track);
+  renderPlaylist();
+  savePlaylistState();
 
-if (shouldPlay) {
-  try {
-    // Wait until the new source is actually ready enough to start
-    await new Promise((resolve, reject) => {
-      const onCanPlay = () => {
-        cleanup();
-        resolve();
-      };
+  if (shouldPlay) {
+    try {
+      // Wait until the new source is ready enough to start playing.
+      // IMPORTANT: we add a timeout here so this Promise cannot hang forever.
+      // On mobile (iOS especially), after an audio session interruption or
+      // phone-lock, 'canplay' may never fire even though the data exists.
+      // After 12s we resolve optimistically and let audio.play() decide.
+      await new Promise((resolve, reject) => {
+        let timeoutId;
 
-      const onError = () => {
-        cleanup();
-        reject(new Error("Audio source failed while loading."));
-      };
+        const onCanPlay = () => {
+          clearTimeout(timeoutId);
+          cleanup();
+          resolve();
+        };
 
-      const cleanup = () => {
-        audio.removeEventListener("canplay", onCanPlay);
-        audio.removeEventListener("error", onError);
-      };
+        const onError = () => {
+          clearTimeout(timeoutId);
+          cleanup();
+          reject(new Error("Audio source failed while loading."));
+        };
 
-      audio.addEventListener("canplay", onCanPlay, { once: true });
-      audio.addEventListener("error", onError, { once: true });
+        const cleanup = () => {
+          audio.removeEventListener("canplay", onCanPlay);
+          audio.removeEventListener("error", onError);
+        };
 
-      // If already ready enough, resolve immediately
-      if (audio.readyState >= 3) {
-        cleanup();
-        resolve();
+        audio.addEventListener("canplay", onCanPlay, { once: true });
+        audio.addEventListener("error", onError, { once: true });
+
+        // If already ready enough, resolve immediately
+        if (audio.readyState >= 3) {
+          cleanup();
+          resolve();
+          return;
+        }
+
+        // Safety valve: if canplay never fires (iOS suspension, network stall,
+        // background tab throttling), don't hang forever. Resolve after 12s
+        // and let audio.play() make the final call.
+        timeoutId = setTimeout(() => {
+          cleanup();
+          console.warn("loadTrack: canplay timed out — attempting play anyway.");
+          resolve();
+        }, 12000);
+      });
+
+      await audio.play();
+      isTransitioning = false;
+      updatePlayPauseButton();
+      setPlayerStatus(`Playing: ${track.title}`);
+    } catch (error) {
+      isTransitioning = false;
+      console.warn("loadTrack: audio.play() failed:", error.name, error.message);
+      updatePlayPauseButton();
+      // Show a recoverable message — the source IS set, pressing play will retry
+      setPlayerStatus("Tap \u25B6 to resume.");
+      if (!document.hidden) {
+        showToast("Tap \u25B6 to resume playback.");
       }
-    });
-
-    await audio.play();
+    }
+  } else {
     isTransitioning = false;
     updatePlayPauseButton();
-    setPlayerStatus(`Playing: ${track.title}`);
-  } catch (error) {
-    isTransitioning = false;
-    console.error("Playback failed:", error);
-    setPlayerStatus("Playback could not start.");
-    showToast("Playback could not start.");
   }
-} else {
-  isTransitioning = false;
-  updatePlayPauseButton();
 }
-}
+
 
 async function addFileTracks(files) {
   const fileArray = Array.from(files);
