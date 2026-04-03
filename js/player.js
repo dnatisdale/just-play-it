@@ -196,15 +196,16 @@ function skipSeconds(seconds) {
 
 function saveNamedPlaylist() {
   const name = playlistNameInput.value.trim();
+  console.log(`[Action] saveNamedPlaylist intent for: "${name}"`);
 
   if (!name) {
     showToast("Enter a playlist name first.");
     return;
   }
 
-  // ALLOW empty playlists if user is "Creating" a new one from the Playlists Tab.
-  // If we are on the Player Tab, it will save whatever is in the queue.
-  const normalizedTracks = playlist
+  // Phase 4: Root Cause Repair. 
+  // Map current workspace tracks to metadata. If workspace is empty, tracks will be [].
+  const normalizedTracks = (playlist || [])
     .map((track) => normalizeTrack(track))
     .filter(Boolean);
 
@@ -214,45 +215,54 @@ function saveNamedPlaylist() {
     savedAt: new Date().toISOString(),
   };
 
+  console.log(`[State] Saved playlist "${name}" with ${normalizedTracks.length} tracks.`);
+
   currentPlaylistName = name;
   updatePlaylistNameDisplay();
   persistSavedPlaylists();
   
-  // Clear input for better UX (Bug C)
+  // Bug C: Clear input for better UX
   playlistNameInput.value = "";
   
-  // Sync selected key for later use (e.g. rename/delete)
+  // Ensure this name is the selected key for subsequent actions (Rename/Delete)
   selectedPlaylistKey = name;
   localStorage.setItem(STORAGE_KEYS.selectedSavedPlaylist, name);
   
   if (savedPlaylistBox) savedPlaylistBox.title = `Recently saved: ${name}`;
   
-  // ENSURE badges update so UX feels responsive
+  // Bug 2: Ensure counts update EVERYWHERE immediately after save
   updateBadgeCounts();
 
   setPlayerStatus(`Created playlist "${name}".`);
-  showToast(`Created playlist "${name}".`);
+  showToast(`Created "${name}" with ${normalizedTracks.length} tracks.`);
 }
 
 async function loadNamedPlaylist() {
   const name = selectedPlaylistKey;
+  console.log(`[Action] loadNamedPlaylist: "${name}"`);
 
   if (!name || !savedPlaylists[name]) {
+    console.warn("[State] loadNamedPlaylist failed: invalid or missing key", name);
     showToast("Select a playlist first.");
     return;
   }
 
   const saved = savedPlaylists[name];
+  
+  // Source of Truth: Hydrate global workspace 'playlist' from metadata 'savedPlaylists'
   playlist = (saved.tracks || [])
     .map((track) => normalizeTrack(track))
     .filter(Boolean);
 
   currentTrackIndex = playlist.length > 0 ? 0 : -1;
   currentPlaylistName = name;
-  updatePlaylistNameDisplay();
+  
+  console.log(`[State] Hydrated workspace with ${playlist.length} tracks from "${name}"`);
 
+  updatePlaylistNameDisplay();
   savePlaylistState();
   localStorage.setItem(STORAGE_KEYS.selectedSavedPlaylist, name);
+  
   if (savedPlaylistBox) savedPlaylistBox.title = `Loaded playlist: ${name}`;
 
   if (currentTrackIndex >= 0) {
@@ -261,9 +271,10 @@ async function loadNamedPlaylist() {
   } else {
     renderPlaylist();
     updatePlayPauseButton();
+    updateNowPlaying(null); // Explicit empty state
   }
 
-  setPlayerStatus(`Loaded saved playlist: ${name}`);
+  setPlayerStatus(`Loaded playlist: ${name}`);
   await updateBadgeCounts();
   showToast(`Loaded "${name}".`);
   window.scrollTo({ top: 0, behavior: "smooth" });

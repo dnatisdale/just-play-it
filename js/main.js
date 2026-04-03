@@ -753,6 +753,10 @@ async function initApp() {
   restoreSleepTimer();
   renderPlaylist();
   updatePlayPauseButton();
+  
+  // Initial check: determine if we are already hydrated or need to seed
+  console.log(`[Init] Startup state - Workspace size: ${playlist.length}, Index: ${currentTrackIndex}`);
+  
   updateNowPlaying(playlist[currentTrackIndex] || null);
   setupMediaSessionActions();
   await renderSidebarLibrary();
@@ -841,7 +845,8 @@ async function initApp() {
   updateQrCode();
   updateBuildInfo();
 
-  if (currentTrackIndex >= 0) {
+  if (currentTrackIndex >= 0 && playlist.length > 0) {
+    console.log("[Init] Restoring active track:", currentTrackIndex);
     await loadTrack(currentTrackIndex, false);
   } else if (playlist.length === 0) {
     // Priority for startup:
@@ -852,10 +857,13 @@ async function initApp() {
     const userDefault = localStorage.getItem(STORAGE_KEYS.defaultPlaylist);
     const starterName = (userDefault && savedPlaylists[userDefault]) ? userDefault : "Remember the Lord";
 
+    console.log(`[Init] Workspace empty. Attempting to seed with "${starterName}"`);
+
     if (savedPlaylists[starterName]) {
       selectedPlaylistKey = starterName;
-      await loadNamedPlaylist();
+      await loadNamedPlaylist(); // This will call updateBadgeCounts and updateNowPlaying correctly
     } else {
+      console.log("[Init] No starter playlist found. Checking device library as fallback.");
       const records = db ? await getAllTrackMetadata() : [];
       if (records.length > 0) {
         playlist = records.map(r => ({
@@ -866,10 +874,10 @@ async function initApp() {
         currentTrackIndex = 0;
         await loadTrack(0, false);
         renderPlaylist();
+      } else {
+        console.log("[Init] System truly empty. Landing page will remain in 'Nothing loaded yet' state.");
       }
     }
-    // Re-update badges after loading default startup list
-    await updateBadgeCounts();
   }
 
   // ── Set Initial View ──

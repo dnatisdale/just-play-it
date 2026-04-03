@@ -337,6 +337,9 @@ function showToast(message, duration = 2400) {
 
 async function updateBadgeCounts() {
   const listCount = Array.isArray(playlist) ? playlist.length : 0;
+  
+  // Dev Log: Trace sync between workspace and metadata
+  console.log(`[StateSync] updateBadgeCounts - Workspace Count: ${listCount}, Selected: ${currentPlaylistName || "Unsaved"}`);
 
   // 1. Sidebar Queue count
   if (playlistBadge) {
@@ -363,6 +366,7 @@ async function updateBadgeCounts() {
   // 4. Global Hardware Library badge (Stored + Built-in)
   if (libraryBadge) {
     try {
+      // Use short timeout or parallel fetch to avoid blocking UI
       const records = db ? await getAllTrackMetadata() : [];
       let builtinTracksCount = 0;
       Object.values(savedPlaylists).forEach(pl => {
@@ -372,7 +376,7 @@ async function updateBadgeCounts() {
       libraryBadge.textContent = totalCount;
       libraryBadge.classList.toggle("hidden", totalCount === 0);
     } catch (err) {
-      console.error("Library badge update error:", err);
+      console.warn("Library badge update error:", err);
       libraryBadge.classList.add("hidden");
     }
   }
@@ -394,7 +398,8 @@ function revokeCurrentObjectUrl() {
 }
 
 function updatePlaylistNameDisplay() {
-  const name = currentPlaylistName || "CURRENT PLAYLIST";
+  const name = currentPlaylistName || "Unsaved"; // Default back to consistent "Unsaved" state
+  
   if (nowPlayingPlaylistName) {
     nowPlayingPlaylistName.textContent = name;
   }
@@ -408,7 +413,7 @@ function updatePlaylistNameDisplay() {
     savedPlaylistsSelect.value = ""; // Always show placeholder heading
   }
 
-  localStorage.setItem(STORAGE_KEYS.currentPlaylistName, currentPlaylistName);
+  localStorage.setItem(STORAGE_KEYS.currentPlaylistName, currentPlaylistName || "");
 }
 
 function normalizeTrack(track) {
@@ -455,7 +460,7 @@ function updateNowPlaying(track) {
     setCoverArtEmpty();
     setPlayerStatus("Ready when you are.");
     updateMediaSession();
-
+    console.log("[UI] updateNowPlaying: Empty state set.");
     return;
   }
 
@@ -464,6 +469,7 @@ function updateNowPlaying(track) {
   trackMetaEl.textContent = label;
   trackMetaEl.classList.toggle("hidden", !label);
   setCoverArtLoaded(track);
+  console.log(`[UI] updateNowPlaying: Loaded track "${track.title}"`);
 
   if (shuffleEnabled && repeatMode === "one") {
     setPlayerStatus("Shuffle is on. Repeat one is also on.");
