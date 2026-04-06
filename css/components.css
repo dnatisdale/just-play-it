@@ -200,7 +200,39 @@ h1 .dot {
   }
 }
 
-/* Hamburger menu button */
+/* Theme toggle button in topbar */
+.topbar-theme-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  background: var(--glass);
+  color: var(--text-2);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all var(--transition);
+  backdrop-filter: blur(8px);
+}
+
+.topbar-theme-btn:hover {
+  background: var(--glass-border);
+  border-color: var(--accent-subtle-border);
+  color: var(--accent-light);
+  transform: translateY(-1px);
+}
+
+.topbar-theme-btn:active {
+  transform: translateY(0);
+}
+
+.topbar-theme-btn svg {
+  flex-shrink: 0;
+}
+
+
 .menu-btn {
   width: 44px;
   height: 44px;
@@ -337,9 +369,10 @@ h1 .dot {
   display: grid;
   grid-template-columns: 1fr;
   gap: 20px;
-  max-width: 720px;
+  max-width: 680px; /* matches app-shell max-width — prevents card overflow on mobile */
   margin: 0 auto;
   width: 100%;
+  min-width: 0; /* prevents flex/grid blowout */
 }
 
 /* Each view section is a full-width column that inherits main-layout's max-width */
@@ -348,6 +381,7 @@ h1 .dot {
   flex-direction: column;
   gap: 20px;
   width: 100%;
+  min-width: 0; /* prevents flex children from overflowing grid column */
 }
 
 /*
@@ -873,6 +907,8 @@ input[type="range"]::-moz-range-thumb {
   gap: 10px;
   margin-top: 16px;
   align-items: center;
+  justify-content: center; /* center buttons when wrapping on narrow screens */
+  flex-wrap: wrap;         /* allow wrapping at all sizes — controlled by button width */
 }
 
 .mode-row .mode-btn {

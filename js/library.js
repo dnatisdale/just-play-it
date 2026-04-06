@@ -33,8 +33,8 @@ async function renderSidebarLibrary() {
     deviceLibraryList.innerHTML = `
       <div class="library-empty-state">
         <div class="empty-icon">${ICONS.record}</div>
-        <p>Your library is empty.</p>
-        <span class="empty-hint">Use the red + button below to add local audio files.</span>
+        <p>No tracks imported yet.</p>
+        <span class="empty-hint">Tap the red + button to pick audio files or a folder.</span>
       </div>
     `;
     return;

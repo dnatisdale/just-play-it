@@ -78,6 +78,10 @@ if (shareAppBtn) shareAppBtn.addEventListener("click", handleShare);
 
 
 // ── Bottom Navigation & View Switching ────────────────────────
+// Flag: set to true before calling switchView() when the caller wants
+// the Current Queue to stay expanded (e.g. Now Playing header click).
+let expandQueueForJumpNavigation = false;
+
 function switchView(targetViewId) {
   // Close import sheet when switching views (Bug 5)
   const sheet = document.getElementById("importBottomSheet");
@@ -112,6 +116,25 @@ function switchView(targetViewId) {
     } else {
       cab.classList.add("hidden");
     }
+  }
+
+  // Auto-collapse Current Queue when navigating to the Playlist tab normally.
+  // Skip if the caller set expandQueueForJumpNavigation (e.g. Now Playing header click).
+  if (targetViewId === "view-playlists") {
+    if (!expandQueueForJumpNavigation) {
+      const queueCard = document.getElementById("currentPlaylistCard");
+      const queueBtn  = document.getElementById("currentPlaylistHeaderBtn");
+      if (queueCard && !queueCard.classList.contains("collapsed")) {
+        queueCard.classList.remove("expanded");
+        queueCard.classList.add("collapsed");
+      }
+      if (queueBtn) {
+        queueBtn.setAttribute("aria-expanded", "false");
+        queueBtn.textContent = "Show";
+      }
+    }
+    // Always reset the flag after use
+    expandQueueForJumpNavigation = false;
   }
 
   // Generalize expansion of any subset collapsible panels in the library view (Bug 6)
@@ -308,16 +331,15 @@ if (volumeSlider) {
 // Automatic sleep timer on cycling
 if (sleepTimerBtn) {
   sleepTimerBtn.addEventListener("click", () => {
-    // Sequence: 0 -> 10 -> 30 -> 60 -> 0
+    // Sequence: Off -> 15 -> 30 -> 60 -> Off
     let current = sleepTimerMinutes || 0;
     let next = 0;
-    if (current === 0) next = 10;
-    else if (current === 10) next = 30;
+    if (current === 0)  next = 15;
+    else if (current === 15) next = 30;
     else if (current === 30) next = 60;
     else next = 0;
 
     setSleepTimer(next);
-    sleepTimerBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Sleep: ${next === 0 ? "Off" : next + " min"}`;
   });
 }
 
@@ -960,16 +982,26 @@ async function initApp() {
   if (nowPlayingPlaylistInfo) {
     nowPlayingPlaylistInfo.addEventListener("click", (e) => {
       e.stopPropagation();
-      const plistHeader = document.querySelector(".standardized-header");
-      
-      // Auto expand if collapsed (Ensure text and icon sync)
-      toggleSection("currentPlaylistHeaderBtn", "playlistContainer", "playlistCollapseText", "playlistCollapseIcon", true);
 
-      if (plistHeader) {
-        plistHeader.scrollIntoView({ behavior: "smooth", block: "start" });
-      } else if (playlistEl) {
-        playlistEl.scrollIntoView({ behavior: "smooth", block: "center" });
+      // Signal switchView to NOT auto-collapse the queue on this navigation
+      expandQueueForJumpNavigation = true;
+
+      // 1. Switch to the Playlist tab
+      switchView("view-playlists");
+
+      // 2. Expand Current Queue if it is collapsed
+      const queueCard = document.getElementById("currentPlaylistCard");
+      const queueBtn  = document.getElementById("currentPlaylistHeaderBtn");
+      if (queueCard && queueCard.classList.contains("collapsed")) {
+        toggleSection("currentPlaylistHeaderBtn", "playlistContainer", "playlistCollapseText", "playlistCollapseIcon", true);
       }
+      if (queueBtn) {
+        queueBtn.setAttribute("aria-expanded", "true");
+        queueBtn.textContent = "Hide";
+      }
+
+      // 3. Reuse the same scroll logic as "Jump to Current" button
+      setTimeout(jumpToCurrentTrack, 120);
     });
   }
   if (savedPlaylistsBadge) {

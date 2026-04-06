@@ -98,7 +98,14 @@
   }
 
   .mode-row {
-    grid-template-columns: 1fr;
+    gap: 6px; /* tighter gap for narrow screens */
+    flex-wrap: wrap; /* allow buttons to wrap to a second row if they can't all fit */
+  }
+
+  .mode-row .mode-btn {
+    font-size: 0.78rem !important; /* slightly smaller label text on mobile */
+    padding: 8px 6px;             /* tighter horizontal padding */
+    min-width: 80px;              /* prevent buttons collapsing too narrow */
   }
 
   .sleep-row {
@@ -114,7 +121,23 @@
   }
 }
 
+/* Narrow phones (420px and below) — mode-row centering fix */
+@media (max-width: 420px) {
+  .mode-row {
+    gap: 6px;
+  }
+
+  .mode-row .mode-btn {
+    flex: 0 1 auto;    /* don't force stretch; shrink to content + padding */
+    min-width: 88px;   /* enough for longest label "Sleep: 30 min" */
+    max-width: 120px;  /* cap width so 3 buttons fit on one row at 360px+ */
+    font-size: 0.76rem !important;
+    padding: 8px 8px;
+  }
+}
+
 /* Extra small screens (e.g. S21 portrait 360px) */
+
 @media (max-width: 380px) {
   .brand-logo-text {
     height: 30px;

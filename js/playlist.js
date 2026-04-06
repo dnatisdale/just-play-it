@@ -60,7 +60,7 @@ function renderPlaylistsView() {
   });
   
   if (entries.length === 0) {
-    container.innerHTML = `<p class="library-empty-state">No saved playlists. Create one above!</p>`;
+    container.innerHTML = `<p class="library-empty-state">No saved playlists yet.<br>Give your current queue a name and tap CREATE.</p>`;
     return;
   }
   
@@ -183,7 +183,7 @@ function renderPlaylist() {
   if (playlist.length === 0) {
     const empty = document.createElement("li");
     empty.className = "empty-state";
-    empty.textContent = "Your playlist is empty.";
+    empty.innerHTML = `No tracks in the queue yet.<br><span style="font-size:0.8rem;">Select tracks from the Library to add them.</span>`;
     playlistEl.appendChild(empty);
     updateNowPlaying(null);
     return;
