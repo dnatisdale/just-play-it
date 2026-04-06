@@ -342,6 +342,26 @@ h1 .dot {
   width: 100%;
 }
 
+/* Each view section is a full-width column that inherits main-layout's max-width */
+.view-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+/*
+ * When a .sidebar-section is placed directly inside a .view-section
+ * (e.g. the Current Queue block migrated to the Playlist tab),
+ * reset sidebar-specific horizontal padding so it fills the same
+ * edge-to-edge width as the adjacent library-card elements.
+ */
+.view-section > .sidebar-section {
+  padding-left: 0;
+  padding-right: 0;
+  margin-bottom: 0; /* gap handled by .view-section gap */
+}
+
 .layout-col {
   display: flex;
   flex-direction: column;

@@ -53,11 +53,7 @@ const sleepRow = document.querySelector(".sleep-row");
 
 const brandLogoWrap = document.getElementById("brandLogoWrap");
 
-// Sidebar elements
-const sidebar = document.getElementById("sidebar");
-const sidebarOverlay = document.getElementById("sidebarOverlay");
-const menuBtn = document.getElementById("menuBtn");
-const closeSidebarBtn = document.getElementById("closeSidebarBtn");
+// Settings / topbar elements
 const themeIcon = document.getElementById("themeIcon");
 const themeLabel = document.getElementById("themeLabel");
 const shuffleBtnLabel = document.getElementById("shuffleBtnLabel");

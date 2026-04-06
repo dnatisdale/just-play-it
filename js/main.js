@@ -1,4 +1,7 @@
 
+// ── Canonical public app URL (used for sharing and QR generation) ─────────────
+const APP_URL = "https://just-play-it.pages.dev/";
+
 fileInput.addEventListener("change", async (event) => {
   const files = event.target.files;
   if (!files || files.length === 0) return;
@@ -37,7 +40,7 @@ if (themeToggleBtn) themeToggleBtn.addEventListener("click", toggleTheme);
 if (viewErrorLogBtn) viewErrorLogBtn.addEventListener("click", showErrorLog);
 
 async function handleShare() {
-  const shareUrl = window.location.origin + window.location.pathname;
+  const shareUrl = APP_URL;
   const shareText = `JUST PLAY IT.
 A simple audio player for all your tracks.
 Click on the record to download and start!
@@ -73,35 +76,6 @@ Check it out here: ${shareUrl}`;
 
 if (shareAppBtn) shareAppBtn.addEventListener("click", handleShare);
 
-// ── Sidebar ──────────────────────────────────────────────
-function openSidebar() {
-  sidebar.classList.add("is-open");
-  sidebar.setAttribute("aria-hidden", "false");
-  sidebarOverlay.classList.add("is-open");
-  menuBtn.classList.add("is-open");
-  menuBtn.setAttribute("aria-expanded", "true");
-  document.body.style.overflow = "hidden";
-}
-
-function closeSidebar() {
-  sidebar.classList.remove("is-open");
-  sidebar.setAttribute("aria-hidden", "true");
-  sidebarOverlay.classList.remove("is-open");
-  menuBtn.classList.remove("is-open");
-  menuBtn.setAttribute("aria-expanded", "false");
-  document.body.style.overflow = "";
-}
-
-menuBtn.addEventListener("click", openSidebar);
-closeSidebarBtn.addEventListener("click", closeSidebar);
-sidebarOverlay.addEventListener("click", closeSidebar);
-
-// Close sidebar on Escape
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && sidebar.classList.contains("is-open")) {
-    closeSidebar();
-  }
-});
 
 // ── Bottom Navigation & View Switching ────────────────────────
 function switchView(targetViewId) {
@@ -161,9 +135,6 @@ function switchView(targetViewId) {
       btn.classList.remove("active");
     }
   });
-
-  // Ensure sidebar closes when switching via nav (though nav is usually outside sidebar)
-  if (sidebar.classList.contains("is-open")) closeSidebar();
 
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -596,14 +567,14 @@ function showUpdateBanner(reg) {
 function updateQrCode() {
   const qrImage = document.getElementById("qrImage");
   const qrImageFull = document.getElementById("qrImageFull");
-  if (!qrImage || !qrImageFull) return;
+  const settingsQrImage = document.getElementById("settingsQrImage");
 
-  const currentUrl = window.location.origin + window.location.pathname;
-  // Use a high-quality QR API (qrserver.com is fast and reliable)
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(currentUrl)}`;
+  // Use the canonical public URL, not window.location (avoids localhost in QR during dev)
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(APP_URL)}`;
   
-  qrImage.src = qrUrl;
-  qrImageFull.src = qrUrl;
+  if (qrImage) qrImage.src = qrUrl;
+  if (qrImageFull) qrImageFull.src = qrUrl;
+  if (settingsQrImage) settingsQrImage.src = qrUrl;
 }
 
 const qrWrapper = document.getElementById("qrWrapper");
@@ -631,71 +602,173 @@ if (closeQrBtn && qrFullscreen) {
   });
 }
 
-if (copyQrBtn) {
-  copyQrBtn.addEventListener("click", async () => {
+// ── Shared QR composition helper ─────────────────────────────────────────────
+/**
+ * Draws a composed QR image on a canvas:
+ *   • white rounded-rect frame (padding around QR)
+ *   • the QR code
+ *   • the app logo centred over the QR quiet zone
+ * Returns a Promise<Blob> (PNG).
+ */
+async function buildQrComposedCanvas(qrSrc) {
+  const SIZE      = 400;   // output canvas size (px)
+  const PADDING   = 24;    // white border around QR (px)
+  const RADIUS    = 20;    // frame corner radius
+  const LOGO_FRAC = 0.22;  // logo diameter as fraction of QR area
+
+  // Load QR image
+  const qrImg = await loadImage(qrSrc);
+
+  // Load logo (same icon used in the overlay)
+  const logoImg = await loadImage("icons/icon-512.png");
+
+  const canvas  = document.createElement("canvas");
+  canvas.width  = SIZE;
+  canvas.height = SIZE;
+  const ctx     = canvas.getContext("2d");
+
+  // 1. White rounded frame
+  const frameX = 0, frameY = 0, frameW = SIZE, frameH = SIZE;
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath();
+  ctx.roundRect(frameX, frameY, frameW, frameH, RADIUS);
+  ctx.fill();
+
+  // 2. QR code (inside the padding)
+  const qrX = PADDING, qrY = PADDING;
+  const qrW = SIZE - PADDING * 2, qrH = SIZE - PADDING * 2;
+  ctx.drawImage(qrImg, qrX, qrY, qrW, qrH);
+
+  // 3. Logo centred (white circle behind it first for contrast)
+  const logoSize = qrW * LOGO_FRAC;
+  const logoCX   = SIZE / 2;
+  const logoCY   = SIZE / 2;
+  const logoR    = logoSize / 2 + 4;   // slight white halo radius
+
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath();
+  ctx.arc(logoCX, logoCY, logoR, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.drawImage(
+    logoImg,
+    logoCX - logoSize / 2,
+    logoCY - logoSize / 2,
+    logoSize,
+    logoSize
+  );
+
+  return new Promise((resolve, reject) =>
+    canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("canvas toBlob failed")), "image/png")
+  );
+}
+
+/** Load an image URL into an HTMLImageElement, resolves when loaded. */
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload  = () => resolve(img);
+    img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
+    img.src = src;
+  });
+}
+
+/** Returns a local-time timestamp string for filenames: YYYY-MM-DD-HHMM */
+function qrTimestamp() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2, "0");
+  return `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
+}
+
+/** Copy composed QR canvas PNG to clipboard; falls back to copying the URL. */
+async function handleQrCopy(qrImageEl) {
+  try {
+    const blob = await buildQrComposedCanvas(qrImageEl.src);
+    const item = new ClipboardItem({ "image/png": blob });
+    await navigator.clipboard.write([item]);
+    showToast("QR code image copied.");
+  } catch (err) {
+    console.error("QR image copy failed:", err);
     try {
-      const qrImage = document.getElementById("qrImage");
-      // Use fetch to get the image as a blob
-      const response = await fetch(qrImage.src);
-      const blob = await response.blob();
-      
-      // Some browsers require ClipboardItem to be used with write()
-      const item = new ClipboardItem({ [blob.type]: blob });
-      await navigator.clipboard.write([item]);
-      
-      showToast("QR code image copied.");
-    } catch (err) {
-      console.error("QR image copy failed:", err);
-      // Fallback: copy the URL text
-      const currentUrl = window.location.origin + window.location.pathname;
-      try {
-        await navigator.clipboard.writeText(currentUrl);
-        showToast("Could not copy image. App URL copied instead.");
-      } catch (clipErr) {
-        showToast("Could not copy QR code.");
-      }
+      await navigator.clipboard.writeText(APP_URL);
+      showToast("Could not copy image. App URL copied instead.");
+    } catch (clipErr) {
+      showToast("Could not copy QR code.");
     }
+  }
+}
+
+/** Download composed QR canvas PNG with a timestamped filename. */
+async function handleQrDownload(qrImageEl) {
+  try {
+    const blob    = await buildQrComposedCanvas(qrImageEl.src);
+    const blobUrl = URL.createObjectURL(blob);
+    const link    = document.createElement("a");
+    link.href     = blobUrl;
+    link.download = `just-play-it-qr-${qrTimestamp()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+    showToast("QR code downloading...");
+  } catch (err) {
+    console.error("QR download failed:", err);
+    showToast("Could not download QR code.");
+  }
+}
+
+// ── Sidebar QR copy / download ────────────────────────────────────────────────
+if (copyQrBtn) {
+  copyQrBtn.addEventListener("click", () => {
+    const img = document.getElementById("qrImage");
+    handleQrCopy(img);
   });
 }
 
 if (downloadQrBtn) {
-  downloadQrBtn.addEventListener("click", async () => {
-    try {
-      const qrImage = document.getElementById("qrImage");
-      const response = await fetch(qrImage.src);
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      
-      const link = document.createElement("a");
-      link.href = blobUrl;
-      link.download = "just-play-it-qr.png";
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      
-      // Clean up the object URL later
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
-      showToast("QR code downloading...");
-    } catch (err) {
-      console.error("QR download failed:", err);
-      showToast("Could not download QR code.");
-    }
+  downloadQrBtn.addEventListener("click", () => {
+    const img = document.getElementById("qrImage");
+    handleQrDownload(img);
+  });
+}
+
+// ── Settings Share section wiring ─────────────────────────────────────────────
+const settingsShareAppBtn = document.getElementById("settingsShareAppBtn");
+if (settingsShareAppBtn) settingsShareAppBtn.addEventListener("click", handleShare);
+
+const settingsQrWrapper = document.getElementById("settingsQrWrapper");
+if (settingsQrWrapper && qrFullscreen) {
+  settingsQrWrapper.addEventListener("click", () => {
+    qrFullscreen.classList.add("is-open");
+    qrFullscreen.setAttribute("aria-hidden", "false");
+  });
+}
+
+const settingsCopyQrBtn = document.getElementById("settingsCopyQrBtn");
+if (settingsCopyQrBtn) {
+  settingsCopyQrBtn.addEventListener("click", () => {
+    const img = document.getElementById("settingsQrImage");
+    handleQrCopy(img);
+  });
+}
+
+const settingsDownloadQrBtn = document.getElementById("settingsDownloadQrBtn");
+if (settingsDownloadQrBtn) {
+  settingsDownloadQrBtn.addEventListener("click", () => {
+    const img = document.getElementById("settingsQrImage");
+    handleQrDownload(img);
   });
 }
 
 function updateBuildInfo() {
   // BUILD_LABEL is defined in js/version.js — the single source of truth.
   const label = typeof BUILD_LABEL !== "undefined" ? BUILD_LABEL : "—";
-  const sidebarInfo = document.getElementById("sidebarBuildInfo");
   const mainInfo = document.getElementById("mainBuildInfo");
-  if (sidebarInfo) sidebarInfo.innerHTML = label;
   if (mainInfo) mainInfo.innerHTML = label;
 }
 
 async function initApp() {
-  // Restore sidebar layout order before anything else
-  initSidebarOrder();
-
   // Apply saved/system theme immediately (before any paint)
   initTheme();
 
@@ -809,16 +882,13 @@ async function initApp() {
 
   wireUpToggle("currentPlaylistHeaderBtn", "currentPlaylistCard", "playlistCollapseText", "playlistCollapseIcon");
   wireUpToggle("libraryHeader", "libraryContainer", "libraryCollapseText", "libraryCollapseIcon");
-  wireUpToggle("supportHeaderBtn", "supportContainer", null, null);
-  wireUpToggle("shareHeaderBtn", "shareContainer", null, null);
+  wireUpToggle("settingsSupportHeaderBtn", "settingsSupportContainer", null, null);
+  wireUpToggle("settingsShareHeaderBtn", "settingsShareContainer", null, null);
 
   const addLibraryBtn = document.getElementById("addLibraryToPlaylistBtn");
   if (addLibraryBtn) {
     addLibraryBtn.addEventListener("click", addSelectedToPlaylist);
   }
-
-  // Initialize sidebar reordering logic
-  initSidebarRearrangeMode();
 
   // ── Populate Default Playlist Select ──
   const defSelect = document.getElementById("defaultPlaylistSelect");

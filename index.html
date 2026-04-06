@@ -46,116 +46,7 @@
       </div>
     </div>
 
-    <!-- ══ Sidebar overlay backdrop ══ -->
-    <div id="sidebarOverlay" class="sidebar-overlay" aria-hidden="true"></div>
 
-    <!-- ══ Sidebar ══ -->
-    <aside id="sidebar" class="sidebar" aria-label="Player queue and menu" aria-hidden="true">
-      <div class="sidebar-header">
-        <span class="sidebar-title">Queue &amp; Menu</span>
-        <button id="closeSidebarBtn" class="sidebar-close" type="button" aria-label="Close menu">✕</button>
-      </div>
-
-
-
-      <div class="sidebar-body">
-        <!-- Support Section -->
-        <div id="sidebar-section-support" class="sidebar-section">
-          <div class="sidebar-section-header">
-            <span class="sidebar-section-label" style="margin:0; padding:0;">Support</span>
-            <button id="supportHeaderBtn" class="sidebar-collapse-toggle" type="button" aria-expanded="false" aria-controls="supportContainer">Show</button>
-          </div>
-
-          <div id="supportContainer" class="sidebar-collapsible-content collapsed" style="margin-top: 8px;">
-            <div style="padding: 12px 0 8px;">
-              <a href="https://ko-fi.com/justplayit" class="sidebar-row-btn gold-member-btn" id="supportLinkTop" target="_blank" rel="noopener noreferrer" style="text-decoration: none; background: #940414; box-shadow: 0 4px 12px rgba(148, 4, 20, 0.25); border: none; margin-bottom: 8px;">
-                <span class="sidebar-row-icon blink-wrapper">
-                  <img src="icons/icon-192.png" width="18" height="18" alt="JPi Logo" class="blink-logo" />
-                  <svg class="blink-heart" width="18" height="18" viewBox="0 0 24 24" fill="#ffffff" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.72-8.72 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                </span>
-                <span class="sidebar-row-text" style="font-weight: 700; color: #ffffff;">Become a Gold Member Today!</span>
-                <span class="sidebar-row-icon blink-wrapper" style="margin-left: 0;">
-                  <img src="icons/icon-192.png" width="18" height="18" alt="JPi Logo" class="blink-logo" />
-                  <svg class="blink-heart" width="18" height="18" viewBox="0 0 24 24" fill="#ffffff" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.72-8.72 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                </span>
-              </a>
-              <p class="sidebar-storage-text" style="padding: 4px 14px 12px; font-weight: 400; opacity: 1; text-align: center; font-style: italic;">
-                Help keep the wheels turning and the records spinning.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Share Section -->
-        <div id="sidebar-section-share" class="sidebar-section qr-section">
-          <div class="sidebar-section-header">
-            <span class="sidebar-section-label" style="margin:0; padding:0;">Share</span>
-            <button id="shareHeaderBtn" class="sidebar-collapse-toggle" type="button" aria-expanded="true" aria-controls="shareContainer">Hide</button>
-          </div>
-
-          <div id="shareContainer" class="sidebar-collapsible-content expanded" style="margin-top: 12px;">
-            <button id="shareAppBtn" class="sidebar-row-btn" type="button" aria-label="Share this app" style="margin-bottom: 16px;">
-              <span class="sidebar-row-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></span>
-              <span class="sidebar-row-text">Share Player Link</span>
-              <span class="sidebar-row-arrow">›</span>
-            </button>
-            
-            <div id="qrWrapper" class="qr-wrapper" title="Click to enlarge QR code">
-              <img id="qrImage" class="qr-image" src="" alt="App QR Code" />
-              <div class="qr-logo-overlay">
-                <img src="icons/icon-512.png" alt="" />
-              </div>
-            </div>
-            <div class="qr-actions">
-              <button id="copyQrBtn" class="qr-action-btn" type="button">Copy</button>
-              <button id="downloadQrBtn" class="qr-action-btn" type="button">Download</button>
-            </div>
-            <p class="qr-hint" style="margin-bottom: 12px;">Scan with another device to open the player.</p>
-          </div>
-        </div>
-
-        <!-- Help & Guide -->
-        <div id="sidebar-section-help" class="sidebar-section">
-          <div class="sidebar-section-label">Help &amp; Guide</div>
-          <a href="guide.html" class="sidebar-row-btn" style="text-decoration: none; justify-content: center;">
-            <span class="sidebar-row-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-              </svg>
-            </span>
-            <span class="sidebar-row-text">Playlist Building Guide</span>
-          </a>
-        </div>
-
-        <div id="sidebar-section-queue" class="sidebar-section">
-          <div class="sidebar-section-header">
-            <span class="sidebar-section-label" style="margin:0; padding:0;">Current Queue <span id="playlistBadge" class="counter-badge hidden">0</span></span>
-            <button id="currentPlaylistHeaderBtn" class="sidebar-collapse-toggle" type="button" aria-expanded="true" aria-controls="playlistContainer">Hide</button>
-          </div>
-
-          <section id="currentPlaylistCard" class="library-card sidebar-collapsible-content expanded" style="margin-top: 8px;">
-            <div id="playlistContainer" class="playlist-container expanded">
-              <div class="inner-collapse">
-                <div class="playlist-tools">
-                  <button id="jumpToCurrentBtn" class="ghost-btn" type="button">Jump to Current</button>
-                  <button id="clearPlaylistBtn" class="ghost-btn" type="button" title="Clear all tracks from current playlist">Clear All</button>
-                  <button id="toggleEditBtn" class="ghost-btn" type="button" title="Show/hide reorder and delete buttons">Edit</button>
-                </div>
-                <ul id="playlist" class="playlist sidebar-queue-list" aria-label="Playlist"></ul>
-              </div>
-            </div>
-          </section>
-        </div>
-      </div><!-- End sidebar-body -->
-
-      <!-- Sidebar Footer — Build Version -->
-      <footer class="sidebar-footer">
-        <div id="sidebarBuildInfo" class="build-version-tag">BUILD —</div>
-      </footer>
-
-
-
-    </aside>
 
     <!-- ══ QR Fullscreen Overlay ══ -->
     <div id="qrFullscreen" class="qr-fullscreen" aria-hidden="true">
@@ -195,20 +86,6 @@
           <button id="installBtn" class="topbar-install-btn hidden" type="button" aria-label="Install as app">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21,15v4a2,2,0,0,1-2,2H5a2,2,0,0,1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             <span>Install</span>
-          </button>
-
-          <!-- Hamburger menu button -->
-          <button
-            id="menuBtn"
-            class="menu-btn"
-            type="button"
-            aria-label="Open queue and menu"
-            aria-expanded="false"
-            aria-controls="sidebar"
-          >
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
           </button>
         </div>
       </header>
@@ -283,6 +160,7 @@
 
           <div class="mode-row">
             <button id="repeatBtn" class="mode-btn" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="17,1 21,5 17,9"/><path d="M3,11V9a4,4,0,0,1,4-4h14"/><polyline points="7,23 3,19 7,15"/><path d="M21,13v2a4,4,0,0,1-4,4H3"/></svg> Repeat: Off</button>
+            <button id="shuffleBtn" class="mode-btn" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="16,3 21,3 21,8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21,16 21,21 16,21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg> <span id="shuffleBtnLabel">Shuffle: Off</span></button>
             <button id="sleepTimerBtn" class="mode-btn" type="button">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 
               Sleep: Off
@@ -293,9 +171,30 @@
 
       <!-- 2. PLAYLIST VIEW -->
       <section id="view-playlists" class="view-section">
+        <!-- Moved Current Queue Block -->
+        <div id="sidebar-section-queue" class="sidebar-section">
+          <div class="sidebar-section-header">
+            <span class="sidebar-section-label" style="margin:0; padding:0;">Current Queue <span id="playlistBadge" class="counter-badge hidden">0</span></span>
+            <button id="currentPlaylistHeaderBtn" class="sidebar-collapse-toggle" type="button" aria-expanded="true" aria-controls="playlistContainer">Hide</button>
+          </div>
+
+          <section id="currentPlaylistCard" class="library-card sidebar-collapsible-content expanded" style="margin-top: 8px;">
+            <div id="playlistContainer" class="playlist-container expanded">
+              <div class="inner-collapse">
+                <div class="playlist-tools">
+                  <button id="jumpToCurrentBtn" class="ghost-btn" type="button">Jump to Current</button>
+                  <button id="clearPlaylistBtn" class="ghost-btn" type="button" title="Clear all tracks from current playlist">Clear All</button>
+                  <button id="toggleEditBtn" class="ghost-btn" type="button" title="Show/hide reorder and delete buttons">Edit</button>
+                </div>
+                <ul id="playlist" class="playlist sidebar-queue-list" aria-label="Playlist"></ul>
+              </div>
+            </div>
+          </section>
+        </div>
+
         <section class="library-card" style="padding: 0;">
           <div class="section-head" style="padding: 16px;">
-            <h3>PLAYLIST <span class="counter-badge" id="savedPlaylistsBadge">0</span></h3>
+            <h3>PLAYLIST. <span class="counter-badge" id="savedPlaylistsBadge">0</span></h3>
           </div>
           
           <div class="saved-playlist-box" id="savedPlaylistBox">
@@ -322,7 +221,7 @@
       <section id="view-library" class="view-section">
         <section class="library-card card-pop" id="libraryMainCard" style="margin-bottom: 20px;">
           <div class="section-head standardized-header" id="libraryHeader">
-            <h3>LIBRARY <span id="libraryBadge" class="counter-badge hidden">0</span></h3>
+            <h3>LIBRARY. <span id="libraryBadge" class="counter-badge hidden">0</span></h3>
           </div>
 
           <div id="libraryContainer" class="playlist-container expanded">
@@ -339,10 +238,10 @@
       <section id="view-settings" class="view-section">
         <section class="library-card">
           <div class="section-head">
-            <h3>SETTINGS</h3>
+            <h3>SETTINGS.</h3>
           </div>
           <div class="settings-content" style="padding: 0 16px 16px;">
-            <!-- Theme -->
+            <!-- Appearance -->
             <div class="sidebar-section">
               <div class="sidebar-section-label">Appearance</div>
               <button id="themeToggleBtn" class="sidebar-row-btn theme-toggle-row" type="button" aria-label="Toggle light/dark mode">
@@ -352,19 +251,9 @@
               </button>
             </div>
 
-            <!-- Playback -->
-            <div class="sidebar-section" style="border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px;">
-              <div class="sidebar-section-label">Playback Preferences</div>
-              <button id="shuffleBtn" class="sidebar-row-btn" type="button">
-                <span class="sidebar-row-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="16,3 21,3 21,8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21,16 21,21 16,21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg></span>
-                <span class="sidebar-row-text" id="shuffleBtnLabel">Shuffle: Off</span>
-                <span class="sidebar-row-toggle" id="shuffleToggle" aria-hidden="true"></span>
-              </button>
-            </div>
-
             <!-- Library & Startup -->
             <div class="sidebar-section" style="border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px;">
-              <div class="sidebar-section-label">Library & Startup</div>
+              <div class="sidebar-section-label">Library &amp; Startup</div>
               <div class="sidebar-row-item" style="flex-direction: column; align-items: flex-start; gap: 4px; padding: 10px 14px;">
                 <label for="defaultPlaylistSelect" style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--muted); letter-spacing: 0.5px;">Auto-load on startup</label>
                 <select id="defaultPlaylistSelect" class="sidebar-select" style="width: 100%; height: 36px; background: var(--input-bg); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 0 8px; font-family: inherit; font-size: 13px;">
@@ -373,7 +262,7 @@
               </div>
             </div>
 
-            <!-- Storage and Local DB Management -->
+            <!-- Storage -->
             <div class="sidebar-section" style="border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px;">
               <div class="sidebar-section-label">Storage</div>
               <div class="sidebar-row-item sidebar-storage-row">
@@ -382,17 +271,92 @@
               </div>
               <button id="clearDeviceLibraryBtn" class="sidebar-row-btn danger-row" type="button" style="margin-top: 8px;">
                 <span class="sidebar-row-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14a2,2,0,0,1-2,2H8a2,2,0,0,1-2-2L5,6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/><path d="M9,6V4a1,1,0,0,1,1-1h4a1,1,0,0,1,1,1V6"/></svg></span>
-                <span class="sidebar-row-text">Remove All Saved Music</span>
+                <span class="sidebar-row-text">Remove all saved music</span>
               </button>
             </div>
 
-            <!-- Utility -->
-            <div class="sidebar-section" style="border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px;">
-              <div class="sidebar-section-label">App Utility</div>
-              <div style="display: flex; flex-direction: column; gap: 8px;">
-                <button id="viewErrorLogBtn" class="sidebar-reset-link" type="button" style="color: var(--danger); opacity: 0.8;">View Technical Error Log</button>
-                <a href="privacy.html" class="privacy-link">Privacy and Terms</a>
+            <!-- Support -->
+            <div id="settings-section-support" class="sidebar-section" style="border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px;">
+              <div class="sidebar-section-header">
+                <span class="sidebar-section-label" style="margin:0; padding:0;">Support</span>
+                <button id="settingsSupportHeaderBtn" class="sidebar-collapse-toggle" type="button" aria-expanded="false" aria-controls="settingsSupportContainer">Show</button>
               </div>
+
+              <div id="settingsSupportContainer" class="sidebar-collapsible-content collapsed" style="margin-top: 8px;">
+                <div style="padding: 12px 0 8px;">
+                  <a href="https://ko-fi.com/justplayit" class="sidebar-row-btn gold-member-btn" id="settingsSupportLink" target="_blank" rel="noopener noreferrer" style="text-decoration: none; background: #940414; box-shadow: 0 4px 12px rgba(148, 4, 20, 0.25); border: none; margin-bottom: 8px;">
+                    <span class="sidebar-row-icon blink-wrapper">
+                      <img src="icons/icon-192.png" width="18" height="18" alt="JPi Logo" class="blink-logo" />
+                      <svg class="blink-heart" width="18" height="18" viewBox="0 0 24 24" fill="#ffffff" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.72-8.72 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    </span>
+                    <span class="sidebar-row-text" style="font-weight: 700; color: #ffffff;">Become a Gold Member Today!</span>
+                    <span class="sidebar-row-icon blink-wrapper" style="margin-left: 0;">
+                      <img src="icons/icon-192.png" width="18" height="18" alt="JPi Logo" class="blink-logo" />
+                      <svg class="blink-heart" width="18" height="18" viewBox="0 0 24 24" fill="#ffffff" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.72-8.72 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    </span>
+                  </a>
+                  <p class="sidebar-storage-text" style="padding: 4px 14px 12px; font-weight: 400; opacity: 1; text-align: center; font-style: italic;">
+                    Help keep the wheels turning and the records spinning.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Share -->
+            <div id="settings-section-share" class="sidebar-section qr-section" style="border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px;">
+              <div class="sidebar-section-header">
+                <span class="sidebar-section-label" style="margin:0; padding:0;">Share</span>
+                <button id="settingsShareHeaderBtn" class="sidebar-collapse-toggle" type="button" aria-expanded="false" aria-controls="settingsShareContainer">Show</button>
+              </div>
+
+              <div id="settingsShareContainer" class="sidebar-collapsible-content collapsed" style="margin-top: 12px;">
+                <button id="settingsShareAppBtn" class="sidebar-row-btn" type="button" aria-label="Share this app" style="margin-bottom: 16px;">
+                  <span class="sidebar-row-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></span>
+                  <span class="sidebar-row-text">Share Player Link</span>
+                  <span class="sidebar-row-arrow">›</span>
+                </button>
+
+                <div id="settingsQrWrapper" class="qr-wrapper" title="Click to enlarge QR code">
+                  <img id="settingsQrImage" class="qr-image" src="" alt="App QR Code" />
+                  <div class="qr-logo-overlay">
+                    <img src="icons/icon-512.png" alt="" />
+                  </div>
+                </div>
+                <div class="qr-actions">
+                  <button id="settingsCopyQrBtn" class="qr-action-btn" type="button">Copy</button>
+                  <button id="settingsDownloadQrBtn" class="qr-action-btn" type="button">Download</button>
+                </div>
+                <p class="qr-hint" style="margin-bottom: 12px;">Scan with another device to open the player.</p>
+              </div>
+            </div>
+
+            <!-- Help & resources -->
+            <div id="settings-section-help" class="sidebar-section" style="border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px;">
+              <div class="sidebar-section-label">Help &amp; resources</div>
+              <a href="guide.html" class="sidebar-row-btn settings-doc-link" style="text-decoration: none;">
+                <span class="sidebar-row-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                  </svg>
+                </span>
+                <span class="sidebar-row-text">Playlist building guide</span>
+              </a>
+              <button id="viewErrorLogBtn" class="sidebar-row-btn settings-doc-link" type="button">
+                <span class="sidebar-row-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+                  </svg>
+                </span>
+                <span class="sidebar-row-text">View technical error log</span>
+              </button>
+              <a href="privacy.html" class="sidebar-row-btn settings-doc-link" style="text-decoration: none;">
+                <span class="sidebar-row-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  </svg>
+                </span>
+                <span class="sidebar-row-text">Privacy and terms</span>
+              </a>
             </div>
           </div>
         </section>
