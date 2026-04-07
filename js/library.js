@@ -331,8 +331,9 @@ async function addSelectedToPlaylist() {
   }
 
   playlist.push(...toAdd);
-  currentPlaylistName = "";
-  updatePlaylistNameDisplay();
+  // Do NOT clear currentPlaylistName here — if a named playlist is active,
+  // adding tracks from Library populates that playlist's workspace. Clearing
+  // the name was legacy behavior that broke the active-playlist state sync.
 
   const wasEmpty = playlist.length === toAdd.length;
   if (wasEmpty || currentTrackIndex === -1) {
@@ -342,6 +343,7 @@ async function addSelectedToPlaylist() {
     savePlaylistState();
   }
   await updateBadgeCounts();
+  if (typeof refreshUpdateRow === "function") refreshUpdateRow(); // keep pill badge in sync
 
   // Clear selection after adding
   selectedLibraryTracks.clear();
@@ -351,7 +353,22 @@ async function addSelectedToPlaylist() {
   const msg = toAdd.length > 0
     ? `${toAdd.length} track${toAdd.length !== 1 ? "s" : ""} added to Queue.${skipped.length > 0 ? ` (${skipped.length} already there)` : ""}`
     : `Already in queue.`;
-    
+
   showToast(msg);
   setPlayerStatus(msg);
+
+  // Navigate to Playlist tab and show the queue — only when tracks were actually added
+  if (toAdd.length > 0 && typeof switchView === "function") {
+    // Tell switchView to keep the queue expanded (not collapse it)
+    expandQueueForJumpNavigation = true;
+    switchView("view-playlists");
+
+    // After the tab transition settles, scroll the queue header into view
+    setTimeout(() => {
+      const queueHeader = document.getElementById("sidebar-section-queue");
+      if (queueHeader) {
+        queueHeader.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 100);
+  }
 }

@@ -37,6 +37,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
+  width: 100%;       /* always fill the container so space-between works edge-to-edge */
+  gap: 8px;          /* minimum gap between label and toggle */
 }
 
 .sidebar-collapse-toggle {
@@ -52,6 +54,12 @@
   cursor: pointer;
   flex-shrink: 0;
   transition: background var(--transition), opacity var(--transition);
+}
+
+/* Scoped right-inset for CURRENT QUEUE header — matches the 16px padding
+   that Settings headers get naturally from .settings-content padding. */
+#sidebar-section-queue .sidebar-section-header {
+  padding-right: 16px;
 }
 
 .sidebar-collapse-toggle:hover {
@@ -87,8 +95,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
+  gap: 8px;
   margin: 16px 4px 4px;
-  padding: 0 72px 6px 4px; /* right padding clears the fixed FAB (56px + ~16px gap) */
+  /* 16px right matches the inset of Settings headers; left stays 4px to align with track list */
+  padding: 0 16px 6px 4px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -213,104 +224,15 @@
   font-style: italic;
 }
 
-/* ═══════════════════════════════════════════
-   SIDEBAR
-═══════════════════════════════════════════ */
 
-.sidebar-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(4px);
-  z-index: 10000;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-}
-
-.sidebar-overlay.is-open {
-  opacity: 1;
-  pointer-events: all;
-}
-
-.sidebar {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: min(340px, 90vw);
-  background: var(--panel);
-  border-left: 1px solid var(--border);
-  backdrop-filter: blur(32px) saturate(160%);
-  z-index: 10001;
-  display: flex;
-  flex-direction: column;
-  transform: translateX(100%);
-  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
-}
-
-.sidebar.is-open {
-  transform: translateX(0);
-}
-
-.sidebar-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px 20px 16px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-
-.sidebar-title {
-  font-size: 1.05rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: var(--text);
-}
-
-.sidebar-close {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 1px solid var(--border-strong);
-  background: var(--glass);
-  color: var(--text-2);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.9rem;
-  transition: background var(--transition), color var(--transition),
-    transform var(--transition);
-}
-
-.sidebar-close:hover {
-  background: var(--glass-border);
-  color: var(--text);
-  transform: rotate(90deg);
-}
-
-.sidebar-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px 0 48px;
-}
-
-.sidebar-section,
-.sidebar-section-fixed {
-  padding: 0 16px 8px;
-  margin-bottom: 4px;
-}
-
-.sidebar-section + .sidebar-section,
-.sidebar-section + .sidebar-section-fixed,
-.sidebar-section-fixed + .sidebar-section {
-  border-top: 1px solid var(--border);
-  padding-top: 12px;
-  margin-top: 4px;
-}
+/* ─────────────────────────────────────────────
+   NOTE: The section/row classes below (.sidebar-section,
+   .sidebar-section-header, .sidebar-row-btn, etc.) have
+   "sidebar" in the name for historical reasons but are
+   actively used as reusable layout primitives in the
+   current tab-based UI (Settings, Library, Queue).
+   Do NOT remove them.
+───────────────────────────────────────────── */
 
 .sidebar-section-label {
   font-size: 0.68rem;
@@ -318,8 +240,16 @@
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--muted);
-  margin-bottom: 8px;
+  margin-bottom: 8px; /* spacing when used as a standalone block heading */
   padding: 0 4px;
+}
+
+/* When the label is inside a flex header row with a toggle button,
+   expand it to push the orange button to the far right edge. */
+.sidebar-section-header .sidebar-section-label {
+  margin-bottom: 0;
+  flex: 1;
+  min-width: 0;
 }
 
 /* Sidebar row buttons */
@@ -464,37 +394,6 @@
   padding: 0 8px;
 }
 
-/* Shuffle toggle pill */
-.sidebar-row-toggle {
-  width: 36px;
-  height: 20px;
-  border-radius: 999px;
-  background: var(--border-strong);
-  position: relative;
-  flex-shrink: 0;
-  transition: background 0.2s ease;
-}
-
-.sidebar-row-toggle::after {
-  content: "";
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: #fff;
-  transition: transform 0.2s ease;
-}
-
-.sidebar-row-btn.active .sidebar-row-toggle {
-  background: var(--accent);
-}
-
-.sidebar-row-btn.active .sidebar-row-toggle::after {
-  transform: translateX(16px);
-}
-
 /* Sidebar static row item (non-button) */
 .sidebar-row-item {
   display: flex;
@@ -512,13 +411,7 @@
   cursor: default;
 }
 
-/* Volume slider in sidebar */
-.sidebar-volume-slider {
-  flex: 1;
-  min-width: 0;
-}
-
-/* Storage row */
+/* Storage row (used in Settings › Storage section) */
 .sidebar-storage-row {
   align-items: flex-start;
   gap: 10px;
@@ -530,26 +423,4 @@
   font-size: 0.82rem;
   line-height: 1.5;
   flex: 1;
-}
-
-.sidebar-footer {
-  padding: 16px 20px;
-  border-top: 1px solid var(--border);
-  background: var(--panel-solid);
-  flex-shrink: 0;
-}
-
-.build-version-tag {
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--muted);
-  opacity: 0.8;
-  letter-spacing: 0.05em;
-  text-align: center;
-}
-
-.build-version-tag .accent-dash {
-  color: var(--accent);
-  margin: 0 4px;
 }

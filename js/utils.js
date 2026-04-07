@@ -191,136 +191,6 @@ function setPlayerStatus(text) {
   if (playerCard) playerCard.title = text;
 }
 
-// ── Sidebar Sequential Reordering ──────────────────────
-
-function initSidebarOrder() {
-  const saved = localStorage.getItem(STORAGE_KEYS.sidebarOrder);
-  if (saved) {
-    try {
-      const order = JSON.parse(saved);
-      applySidebarOrder(order);
-    } catch (e) {
-      console.error("Failed to load sidebar order:", e);
-    }
-  }
-
-  const resetSidebarOrderBtn = document.getElementById("resetSidebarOrderBtn");
-  if (resetSidebarOrderBtn) {
-    resetSidebarOrderBtn.addEventListener("click", () => {
-      localStorage.removeItem(STORAGE_KEYS.sidebarOrder);
-      showToast("Sidebar layout reset to default.");
-      setTimeout(() => window.location.reload(), 1200);
-    });
-  }
-}
-
-function applySidebarOrder(orderArray) {
-  const body = document.querySelector(".sidebar-body");
-  if (!body || !orderArray) return;
-  
-  orderArray.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) body.appendChild(el);
-  });
-  
-  // Ensure "Support" and "Utility" areas remain at the end of the scroll list
-  // The Support section could also be reordered if converted to sidebar-section
-  // but for now we keep it at the top as requested, then the rest scroll.
-  // Wait, the user said "Put it all back on the regular Sidebar list".
-  
-  const supportSection = document.getElementById("sidebar-section-support");
-  if (supportSection) body.appendChild(supportSection);
-  
-  // Re-append the rest of the order to put support at the top if we want it there
-  // Actually, to put Support at the top and Utility at the bottom:
-  if (supportSection) body.prepend(supportSection);
-
-  const utilitySection = document.getElementById("sidebar-section-utility");
-  if (utilitySection) body.appendChild(utilitySection);
-}
-
-function initSidebarRearrangeMode() {
-  const rearrangeSidebarBtn = document.getElementById("rearrangeSidebarBtn");
-  const sidebarBody = document.querySelector(".sidebar-body");
-  if (!rearrangeSidebarBtn || !sidebarBody) return;
-
-  rearrangeSidebarBtn.addEventListener("click", () => {
-    isRearrangeMode = !isRearrangeMode;
-    rearrangeQueue = [];
-    
-    if (isRearrangeMode) {
-      rearrangeSidebarBtn.textContent = "Cancel Rearrange";
-      rearrangeSidebarBtn.classList.add("active");
-      sidebarBody.classList.add("rearrange-active");
-      showToast("REARRANGE MODE: Click sections in the order you want them.");
-      
-      // Reset any previous state
-      sidebarBody.querySelectorAll(".sidebar-section").forEach(s => s.classList.remove("ordered"));
-      sidebarBody.querySelectorAll(".reorder-badge").forEach(b => b.remove());
-    } else {
-      rearrangeSidebarBtn.textContent = "Rearrange Sections";
-      rearrangeSidebarBtn.classList.remove("active");
-      sidebarBody.classList.remove("rearrange-active");
-      sidebarBody.querySelectorAll(".sidebar-section").forEach(s => s.classList.remove("ordered"));
-      sidebarBody.querySelectorAll(".reorder-badge").forEach(b => b.remove());
-    }
-  });
-
-  sidebarBody.addEventListener("click", (e) => {
-    if (!isRearrangeMode) return;
-    
-    const section = e.target.closest(".sidebar-section");
-    if (!section) return;
-
-    // Toggle off if already ordered
-    if (section.classList.contains("ordered")) {
-      section.classList.remove("ordered");
-      const badge = section.querySelector(".reorder-badge");
-      if (badge) badge.remove();
-      
-      const idx = rearrangeQueue.indexOf(section.id);
-      if (idx !== -1) rearrangeQueue.splice(idx, 1);
-      
-      // Re-index remaining badges
-      sidebarBody.querySelectorAll(".reorder-badge").forEach(b => {
-        const sId = b.parentElement.id;
-        b.textContent = rearrangeQueue.indexOf(sId) + 1;
-      });
-      return;
-    }
-    
-    rearrangeQueue.push(section.id);
-    section.classList.add("ordered");
-    
-    // Add badge
-    const badge = document.createElement("div");
-    badge.className = "reorder-badge";
-    badge.textContent = rearrangeQueue.length;
-    section.appendChild(badge);
-    
-    // Check if we finished selecting all moveable sections
-    const total = sidebarBody.querySelectorAll(".sidebar-section").length;
-    if (rearrangeQueue.length === total && total > 0) {
-      applySidebarOrder(rearrangeQueue);
-      localStorage.setItem(STORAGE_KEYS.sidebarOrder, JSON.stringify(rearrangeQueue));
-      
-      // Exit mode automatically
-      isRearrangeMode = false;
-      if (rearrangeSidebarBtn) {
-        rearrangeSidebarBtn.textContent = "Rearrange Sections";
-        rearrangeSidebarBtn.classList.remove("active");
-      }
-      sidebarBody.classList.remove("rearrange-active");
-      
-      setTimeout(() => {
-        sidebarBody.querySelectorAll(".sidebar-section").forEach(s => s.classList.remove("ordered"));
-        sidebarBody.querySelectorAll(".reorder-badge").forEach(b => b.remove());
-      }, 1200);
-      
-      showToast("Layout updated & saved!");
-    }
-  });
-}
 
 function showToast(message, duration = 2400) {
   toastEl.textContent = message;
@@ -414,7 +284,36 @@ function updatePlaylistNameDisplay() {
   }
 
   localStorage.setItem(STORAGE_KEYS.currentPlaylistName, currentPlaylistName || "");
+
+  // Keep the CURRENT QUEUE pill in sync whenever the name changes
+  refreshQueuePill();
 }
+
+/**
+ * refreshQueuePill — syncs the compact playlist pill in the CURRENT QUEUE toolbar.
+ * Shows when any playlist name is set (user or builtin); hides when queue is empty
+ * and no playlist is active.
+ */
+function refreshQueuePill() {
+  const pillEl    = typeof queuePlaylistPill    !== 'undefined' ? queuePlaylistPill    : document.getElementById('queuePlaylistPill');
+  const nameEl    = typeof queuePlaylistPillName  !== 'undefined' ? queuePlaylistPillName  : document.getElementById('queuePlaylistPillName');
+  const badgeEl   = typeof queuePlaylistPillBadge !== 'undefined' ? queuePlaylistPillBadge : document.getElementById('queuePlaylistPillBadge');
+
+  if (!pillEl) return;
+
+  const name  = currentPlaylistName || "";
+  const count = (playlist || []).length;
+
+  if (name || count > 0) {
+    pillEl.classList.remove("hidden");
+    if (nameEl)  nameEl.textContent  = name || "Unsaved";
+    if (badgeEl) badgeEl.textContent = count;
+  } else {
+    // Nothing active and queue is empty — hide pill
+    pillEl.classList.add("hidden");
+  }
+}
+
 
 function normalizeTrack(track) {
   if (!track || !track.sourceType || !track.id || !track.title) return null;

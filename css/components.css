@@ -543,6 +543,41 @@ h3.interactive-header:active {
   box-shadow: 0 2px 8px var(--accent-glow) !important;
 }
 
+/* ── Active-playlist editing indicator pill ──────────────── */
+.active-playlist-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--glass);
+  border: 1px solid var(--accent-subtle-border);
+  border-radius: 999px;
+  padding: 4px 10px 4px 12px;
+  backdrop-filter: blur(8px);
+  min-width: 0;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px var(--accent-glow);
+}
+
+#activePlaylistPillName {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--accent-light);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.active-playlist-pill .counter-badge {
+  position: relative;
+  top: auto;
+  right: auto;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
 .badge-orange {
   background: var(--orange) !important;
   color: #fff !important;
@@ -972,9 +1007,46 @@ input[type="range"]::-moz-range-thumb {
 .save-row,
 .load-row,
 .playlist-tools {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Queue active-playlist pill ─────────────────────────── */
+.queue-playlist-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--glass);
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  padding: 3px 8px 3px 10px;
+  backdrop-filter: blur(8px);
+  margin-left: auto;   /* pin to the right end of the flex row */
+  min-width: 0;
+  max-width: 180px;
+  overflow: hidden;
+}
+
+#queuePlaylistPillName {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.queue-playlist-pill .counter-badge {
+  position: relative;
+  top: auto;
+  right: auto;
+  display: inline-flex;
+  flex-shrink: 0;
 }
 
 .sleep-row select,

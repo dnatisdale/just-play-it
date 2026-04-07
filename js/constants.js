@@ -51,6 +51,17 @@ const currentPlaylistHeaderBtn = document.getElementById("currentPlaylistHeaderB
 const playlistContainer = document.getElementById("playlistContainer");
 const sleepRow = document.querySelector(".sleep-row");
 
+// Update active playlist controls (SAVED PLAYLISTS card)
+const updatePlaylistBtn       = document.getElementById("updatePlaylistBtn");
+const updatePlaylistRow       = document.getElementById("updatePlaylistRow");
+const activePlaylistPillName  = document.getElementById("activePlaylistPillName");
+const activePlaylistPillBadge = document.getElementById("activePlaylistPillBadge");
+
+// CURRENT QUEUE toolbar pill
+const queuePlaylistPill      = document.getElementById("queuePlaylistPill");
+const queuePlaylistPillName  = document.getElementById("queuePlaylistPillName");
+const queuePlaylistPillBadge = document.getElementById("queuePlaylistPillBadge");
+
 const brandLogoWrap = document.getElementById("brandLogoWrap");
 
 // Settings / topbar elements
@@ -100,7 +111,6 @@ const STORAGE_KEYS = {
   selectedSavedPlaylist: "justPlayItSelectedSavedPlaylist",
   currentPlaylistName: "justPlayItCurrentPlaylistName",
   theme: "justPlayItTheme",
-  sidebarOrder: "justPlayItSidebarOrder",
   errorLogs: "justPlayItErrorLogs",
   defaultPlaylist: "justPlayItDefaultPlaylist"
 };
@@ -123,8 +133,6 @@ let savedPlaylists = {};
 let currentPlaylistName = "";
 let selectedLibraryTracks = new Set();
 let resumeRetries = 0;
-let isRearrangeMode = false;
-let rearrangeQueue = []; // For storing the sequence of selected section IDs
 let deferredInstallPrompt = null;
 let currentObjectUrl = null;
 let toastTimeout = null;

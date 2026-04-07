@@ -178,7 +178,7 @@
         <!-- Moved Current Queue Block -->
         <div id="sidebar-section-queue" class="sidebar-section">
           <div class="sidebar-section-header">
-            <span class="sidebar-section-label" style="margin:0; padding:0;">CURRENT QUEUE. <span id="playlistBadge" class="counter-badge hidden">0</span></span>
+            <span class="sidebar-section-label" style="margin:0; padding:0;">CURRENT QUEUE. <span id="playlistBadge" class="counter-badge hidden" style="display:none !important;">0</span></span>
             <button id="currentPlaylistHeaderBtn" class="sidebar-collapse-toggle" type="button" aria-expanded="true" aria-controls="playlistContainer">Hide</button>
           </div>
 
@@ -189,6 +189,10 @@
                   <button id="jumpToCurrentBtn" class="ghost-btn" type="button">Jump to Current</button>
                   <button id="clearPlaylistBtn" class="ghost-btn" type="button" title="Clear all tracks from current playlist">Clear All</button>
                   <button id="toggleEditBtn" class="ghost-btn" type="button" title="Show/hide reorder and delete buttons">Edit</button>
+                  <div id="queuePlaylistPill" class="queue-playlist-pill hidden" aria-label="Active playlist">
+                    <span id="queuePlaylistPillName">Unsaved</span>
+                    <span class="counter-badge badge-red" id="queuePlaylistPillBadge">0</span>
+                  </div>
                 </div>
                 <ul id="playlist" class="playlist sidebar-queue-list" aria-label="Playlist"></ul>
               </div>
@@ -202,7 +206,7 @@
           </div>
           
           <div class="saved-playlist-box" id="savedPlaylistBox">
-            <!-- Create new playlist sticky header -->
+            <!-- Create new playlist -->
             <div style="padding: 0 16px 16px; border-bottom: 1px solid var(--border);">
               <div class="save-row" style="display: flex; gap: 8px;">
                 <input id="playlistNameInput" type="text" placeholder="New list name..." maxlength="60" autocomplete="off" style="flex: 1;" />
@@ -211,15 +215,25 @@
               <div id="savedPlaylistStatus" class="playlist-status-sub hidden" style="margin-top: 8px;"></div>
             </div>
 
+            <!-- Active playlist indicator pill + SAVE CHANGES — visible only for user playlists -->
+            <div id="updatePlaylistRow" class="hidden" style="padding: 10px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px;">
+              <div class="active-playlist-pill" id="activePlaylistPill">
+                <span id="activePlaylistPillName">—</span>
+                <span class="counter-badge badge-red" id="activePlaylistPillBadge">0</span>
+              </div>
+              <button id="updatePlaylistBtn" type="button" style="margin-left: auto; padding: 0 14px; background: var(--accent); border: none; color: #fff; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 6px; height: 30px; cursor: pointer; white-space: nowrap; flex-shrink: 0;">SAVE CHANGES</button>
+            </div>
+
+
             <!-- List container for JS rendering -->
             <div id="playlistsListContainer" style="padding: 16px; display: flex; flex-direction: column; gap: 8px;">
               <!-- Cards will go here -->
             </div>
-            
 
           </div>
         </section>
       </section>
+
 
       <!-- 3. LIBRARY VIEW -->
       <section id="view-library" class="view-section">
@@ -235,6 +249,14 @@
               <span id="selectionBadge" aria-hidden="true" style="display:none">0</span>
             </div>
           </div>
+
+          <!-- Auto-load on startup — library/playlist behavior, not global settings -->
+          <div style="padding: 10px 16px 14px; border-top: 1px solid var(--border); margin-top: 4px;">
+            <label for="defaultPlaylistSelect" style="display: block; font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 6px;">Auto-load on startup</label>
+            <select id="defaultPlaylistSelect" class="sidebar-select" style="width: 100%; height: 36px; background: var(--input-bg); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 0 8px; font-family: inherit; font-size: 13px;">
+              <option value="">None (Empty Start)</option>
+            </select>
+          </div>
         </section>
       </section>
 
@@ -246,27 +268,16 @@
           </div>
           <div class="settings-content" style="padding: 0 16px 16px;">
 
-            <!-- Library & Startup -->
-            <div class="sidebar-section">
-              <div class="sidebar-section-label">Library &amp; Startup</div>
-              <div class="sidebar-row-item" style="flex-direction: column; align-items: flex-start; gap: 4px; padding: 10px 14px;">
-                <label for="defaultPlaylistSelect" style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--muted); letter-spacing: 0.5px;">Auto-load on startup</label>
-                <select id="defaultPlaylistSelect" class="sidebar-select" style="width: 100%; height: 36px; background: var(--input-bg); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 0 8px; font-family: inherit; font-size: 13px;">
-                  <option value="">None (Empty Start)</option>
-                </select>
-              </div>
-            </div>
-
             <!-- Storage -->
-            <div class="sidebar-section" style="border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px;">
+            <div class="sidebar-section">
               <div class="sidebar-section-label">Storage</div>
               <div class="sidebar-row-item sidebar-storage-row">
                 <span class="sidebar-row-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21,12c0,1.66-4,3-9,3s-9-1.34-9-3"/><path d="M3,5v14c0,1.66,4,3,9,3s9-1.34,9-3V5"/></svg></span>
-                <p id="storageUsageText" class="sidebar-storage-text">Checking library usage…</p>
+                <p id="storageUsageText" class="sidebar-storage-text">Calculating track storage…</p>
               </div>
               <button id="clearDeviceLibraryBtn" class="sidebar-row-btn danger-row" type="button" style="margin-top: 8px;">
                 <span class="sidebar-row-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14a2,2,0,0,1-2,2H8a2,2,0,0,1-2-2L5,6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/><path d="M9,6V4a1,1,0,0,1,1-1h4a1,1,0,0,1,1,1V6"/></svg></span>
-                <span class="sidebar-row-text">Remove all saved music</span>
+                <span class="sidebar-row-text">Remove all saved tracks</span>
               </button>
             </div>
 

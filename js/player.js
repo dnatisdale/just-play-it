@@ -107,6 +107,16 @@ async function playNext() {
     nextIndex = found ? candidate : currentTrackIndex;
   }
 
+  console.log(
+    `[playNext] from: ${currentTrackIndex} → to: ${nextIndex} | ` +
+    `repeatMode: ${repeatMode}, shuffle: ${shuffleEnabled}`
+  );
+
+  // Clear any stale paused/retry state before the transition so the
+  // auto-resume watchdog and audio.play() both start clean.
+  userPaused = false;
+  resumeRetries = 0;
+
   pendingRestoreTime = null;
   await loadTrack(nextIndex, true);
 }
@@ -196,46 +206,114 @@ function skipSeconds(seconds) {
 
 function saveNamedPlaylist() {
   const name = playlistNameInput.value.trim();
-  console.log(`[Action] saveNamedPlaylist intent for: "${name}"`);
+  console.log(`[Action] saveNamedPlaylist (create empty) for: "${name}"`);
 
   if (!name) {
     showToast("Enter a playlist name first.");
     return;
   }
 
-  // Phase 4: Root Cause Repair. 
-  // Map current workspace tracks to metadata. If workspace is empty, tracks will be [].
-  const normalizedTracks = (playlist || [])
-    .map((track) => normalizeTrack(track))
-    .filter(Boolean);
-
+  // Create a NEW empty named playlist — tracks start at []
   savedPlaylists[name] = {
     name,
-    tracks: normalizedTracks,
+    tracks: [],
     savedAt: new Date().toISOString(),
   };
 
-  console.log(`[State] Saved playlist "${name}" with ${normalizedTracks.length} tracks.`);
+  console.log(`[State] Created empty playlist "${name}".`);
 
+  // Make this the active playlist and clear the current queue
   currentPlaylistName = name;
-  updatePlaylistNameDisplay();
-  persistSavedPlaylists();
-  
-  // Bug C: Clear input for better UX
-  playlistNameInput.value = "";
-  
-  // Ensure this name is the selected key for subsequent actions (Rename/Delete)
   selectedPlaylistKey = name;
   localStorage.setItem(STORAGE_KEYS.selectedSavedPlaylist, name);
-  
-  if (savedPlaylistBox) savedPlaylistBox.title = `Recently saved: ${name}`;
-  
-  // Bug 2: Ensure counts update EVERYWHERE immediately after save
+
+  // Clear the queue so the workspace matches the empty playlist
+  playlist = [];
+  currentTrackIndex = -1;
+  audio.pause();
+  revokeCurrentObjectUrl();
+  audio.removeAttribute("src");
+  audio.load();
+  localStorage.removeItem(STORAGE_KEYS.currentTime);
+
+  updatePlaylistNameDisplay();
+  persistSavedPlaylists();        // saves to localStorage + re-renders saved list
+  savePlaylistState();            // persists the now-empty queue
+  renderPlaylist();               // shows empty-state in CURRENT QUEUE
+  updateNowPlaying(null);         // resets NOW PLAYING card
+  updatePlayPauseButton();
   updateBadgeCounts();
 
-  setPlayerStatus(`Created playlist "${name}".`);
-  showToast(`Created "${name}" with ${normalizedTracks.length} tracks.`);
+  if (savedPlaylistBox) savedPlaylistBox.title = `Active playlist: ${name}`;
+  playlistNameInput.value = "";
+
+  setPlayerStatus(`Created "${name}". Add tracks via the Library or Pick Folder.`);
+  showToast(`Created empty playlist "${name}".`);
+  refreshUpdateRow();
 }
+
+/**
+ * refreshUpdateRow — keeps the active-playlist pill and UPDATE row in sync.
+ * Call any time currentPlaylistName or playlist[] changes.
+ */
+function refreshUpdateRow() {
+  if (!updatePlaylistRow) return;
+
+  const name   = currentPlaylistName;
+  const pl     = name ? savedPlaylists[name] : null;
+  const isUser = pl && !pl.isBuiltin;
+
+  if (isUser) {
+    updatePlaylistRow.classList.remove("hidden");
+    if (activePlaylistPillName)  activePlaylistPillName.textContent  = name;
+    if (activePlaylistPillBadge) activePlaylistPillBadge.textContent = (playlist || []).length;
+  } else {
+    updatePlaylistRow.classList.add("hidden");
+  }
+
+  // Also keep the CURRENT QUEUE toolbar pill in sync (covers library-add count changes)
+  if (typeof refreshQueuePill === "function") refreshQueuePill();
+}
+
+/**
+ * updateActivePlaylist — explicit SAVE CHANGES action.
+ * Writes the current queue (playlist[]) back into the active named playlist.
+ * No-op if no named playlist is set or if it is a built-in.
+ */
+function updateActivePlaylist() {
+  const name = currentPlaylistName;
+
+  if (!name) {
+    showToast("No active playlist to update. Use CREATE first.");
+    return;
+  }
+
+  if (!savedPlaylists[name]) {
+    showToast(`Playlist "${name}" not found.`);
+    return;
+  }
+
+  if (savedPlaylists[name].isBuiltin) {
+    showToast("Built-in playlists are read-only.");
+    return;
+  }
+
+  const normalizedTracks = (playlist || [])
+    .map(t => normalizeTrack(t))
+    .filter(Boolean);
+
+  savedPlaylists[name].tracks   = normalizedTracks;
+  savedPlaylists[name].savedAt  = new Date().toISOString();
+
+  persistSavedPlaylists();   // writes to localStorage + re-renders saved list
+  updateBadgeCounts();
+  refreshUpdateRow();
+
+  console.log(`[updateActivePlaylist] Saved ${normalizedTracks.length} tracks into "${name}".`);
+  setPlayerStatus(`Saved ${normalizedTracks.length} tracks to "${name}".`);
+  showToast(`"${name}" updated with ${normalizedTracks.length} track${normalizedTracks.length !== 1 ? "s" : ""}.`);
+}
+
 
 async function loadNamedPlaylist() {
   const name = selectedPlaylistKey;
@@ -277,6 +355,7 @@ async function loadNamedPlaylist() {
   setPlayerStatus(`Loaded playlist: ${name}`);
   await updateBadgeCounts();
   showToast(`Loaded "${name}".`);
+  refreshUpdateRow();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 

@@ -120,22 +120,34 @@ function switchView(targetViewId) {
 
   // Auto-collapse Current Queue when navigating to the Playlist tab normally.
   // Skip if the caller set expandQueueForJumpNavigation (e.g. Now Playing header click).
+  // Also skip collapse if the queue has tracks — collapsing a populated queue
+  // hides content the user may have just added, making it appear empty.
   if (targetViewId === "view-playlists") {
     if (!expandQueueForJumpNavigation) {
       const queueCard = document.getElementById("currentPlaylistCard");
       const queueBtn  = document.getElementById("currentPlaylistHeaderBtn");
-      if (queueCard && !queueCard.classList.contains("collapsed")) {
+      const queueIsEmpty = !playlist || playlist.length === 0;
+      if (queueIsEmpty && queueCard && !queueCard.classList.contains("collapsed")) {
         queueCard.classList.remove("expanded");
         queueCard.classList.add("collapsed");
-      }
-      if (queueBtn) {
-        queueBtn.setAttribute("aria-expanded", "false");
-        queueBtn.textContent = "Show";
+        if (queueBtn) {
+          queueBtn.setAttribute("aria-expanded", "false");
+          queueBtn.textContent = "Show";
+        }
+      } else if (!queueIsEmpty && queueCard) {
+        // Queue has tracks — ensure it's expanded so the user can see them
+        queueCard.classList.remove("collapsed");
+        queueCard.classList.add("expanded");
+        if (queueBtn) {
+          queueBtn.setAttribute("aria-expanded", "true");
+          queueBtn.textContent = "Hide";
+        }
       }
     }
     // Always reset the flag after use
     expandQueueForJumpNavigation = false;
   }
+
 
   // Generalize expansion of any subset collapsible panels in the library view (Bug 6)
   if (targetViewId === "view-library") {
@@ -220,6 +232,13 @@ if (folderInput) {
       showToast("No audio files found in that folder.");
     } else {
       await addFileTracks(files);
+
+      // If a user-created playlist is active, auto-persist the imported tracks into it.
+      // updateActivePlaylist() handles the builtin guard and refreshUpdateRow internally.
+      if (currentPlaylistName && savedPlaylists[currentPlaylistName] && !savedPlaylists[currentPlaylistName].isBuiltin) {
+        console.log(`[FolderImport] Auto-saving to active playlist: "${currentPlaylistName}"`);
+        updateActivePlaylist();
+      }
     }
     closeImportSheet();
     folderInput.value = "";
@@ -228,7 +247,10 @@ if (folderInput) {
 
 
 
+
+
 savePlaylistBtn.addEventListener("click", saveNamedPlaylist);
+if (updatePlaylistBtn) updatePlaylistBtn.addEventListener("click", updateActivePlaylist);
 
 // Playlist Action cycling and dropdown selection removed for Phase 2 card-based design
 let clearConfirmTimeout = null;
@@ -459,7 +481,18 @@ audio.addEventListener("ended", async () => {
     repeatMode === "all" ||
     currentTrackIndex < playlist.length - 1
   ) {
-    await playNext();
+    console.log(
+      `[ended] Auto-advance — repeatMode: ${repeatMode}, ` +
+      `shuffle: ${shuffleEnabled}, index: ${currentTrackIndex}/${playlist.length - 1}`
+    );
+    try {
+      await playNext();
+    } catch (error) {
+      const msg = `Auto-advance failed: ${error?.name} — ${error?.message}`;
+      console.error("[ended]", msg, error);
+      addErrorLog(msg, "AutoAdvance");
+      setPlayerStatus("Auto-advance failed. Tap ▶ to continue.");
+    }
   }
 });
 
@@ -848,7 +881,8 @@ async function initApp() {
   restoreSleepTimer();
   renderPlaylist();
   updatePlayPauseButton();
-  
+  refreshUpdateRow(); // Show UPDATE row if a user playlist was active on last visit
+
   // Initial check: determine if we are already hydrated or need to seed
   console.log(`[Init] Startup state - Workspace size: ${playlist.length}, Index: ${currentTrackIndex}`);
   

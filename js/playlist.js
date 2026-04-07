@@ -456,15 +456,44 @@ async function loadTrack(index, shouldPlay = false) {
         }, 12000);
       });
 
+      console.log(`[loadTrack] audio.play() attempt for: "${track.title}"`);
       await audio.play();
       isTransitioning = false;
       updatePlayPauseButton();
       setPlayerStatus(`Playing: ${track.title}`);
     } catch (error) {
+      console.warn(`[loadTrack] audio.play() failed (${error.name}): ${error.message}`);
+
+      // NotAllowedError is a transient mobile browser policy error — the audio
+      // context was suspended between tracks. A single retry after a short delay
+      // almost always succeeds without needing the user to tap anything.
+      if (error.name === "NotAllowedError") {
+        console.log("[loadTrack] NotAllowedError — retrying play() in 600ms...");
+        setTimeout(async () => {
+          try {
+            await audio.play();
+            isTransitioning = false;
+            updatePlayPauseButton();
+            setPlayerStatus(`Playing: ${track.title}`);
+            console.log(`[loadTrack] Retry succeeded for: "${track.title}"`);
+          } catch (retryError) {
+            // Retry also failed — now fall back gracefully
+            isTransitioning = false;
+            console.warn(`[loadTrack] Retry failed (${retryError.name}):`, retryError.message);
+            updatePlayPauseButton();
+            setPlayerStatus("Tap \u25B6 to resume.");
+            if (!document.hidden) {
+              showToast("Tap \u25B6 to resume playback.");
+            }
+          }
+        }, 600);
+        // isTransitioning stays true until the retry resolves
+        return;
+      }
+
+      // All other errors — fall back immediately
       isTransitioning = false;
-      console.warn("loadTrack: audio.play() failed:", error.name, error.message);
       updatePlayPauseButton();
-      // Show a recoverable message — the source IS set, pressing play will retry
       setPlayerStatus("Tap \u25B6 to resume.");
       if (!document.hidden) {
         showToast("Tap \u25B6 to resume playback.");
