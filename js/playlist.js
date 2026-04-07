@@ -1,7 +1,5 @@
-
 async function loadSavedPlaylists() {
   try {
-    // 1. Load user playlists from storage
     savedPlaylists = JSON.parse(
       localStorage.getItem(STORAGE_KEYS.savedPlaylists) || "{}",
     );
@@ -9,12 +7,10 @@ async function loadSavedPlaylists() {
       savedPlaylists = {};
     }
 
-    // 2. Load builtin playlists from fetch
     try {
       const resp = await fetch("./builtin-playlists.json");
       if (resp.ok) {
         const builtins = await resp.json();
-        // Merge builtins into savedPlaylists, tagging them as builtin
         Object.keys(builtins).forEach(name => {
           savedPlaylists[name] = {
             ...builtins[name],
@@ -48,9 +44,9 @@ function persistSavedPlaylists() {
 function renderPlaylistsView() {
   const container = document.getElementById("playlistsListContainer");
   if (!container) return;
-  
+
   container.innerHTML = "";
-  
+
   const entries = Object.keys(savedPlaylists).sort((a, b) => {
     const aBuiltin = savedPlaylists[a].isBuiltin;
     const bBuiltin = savedPlaylists[b].isBuiltin;
@@ -58,18 +54,17 @@ function renderPlaylistsView() {
     if (!aBuiltin && bBuiltin) return 1;
     return a.localeCompare(b);
   });
-  
+
   if (entries.length === 0) {
     container.innerHTML = `<p class="library-empty-state">No saved playlists yet.<br>Give your current queue a name and tap CREATE.</p>`;
     return;
   }
-  
+
   entries.forEach((name) => {
     const pl = savedPlaylists[name];
     const isBuiltin = !!pl.isBuiltin;
     const trackCount = Array.isArray(pl.tracks) ? pl.tracks.length : 0;
-    
-    // Calculate total duration roughly
+
     let totalSeconds = 0;
     if (Array.isArray(pl.tracks)) {
       pl.tracks.forEach(t => {
@@ -78,15 +73,14 @@ function renderPlaylistsView() {
         }
       });
     }
-    
+
     const timeStr = totalSeconds > 0 ? formatTime(totalSeconds) : "";
     const metaStr = `${trackCount} track${trackCount !== 1 ? "s" : ""} ${timeStr ? "• " + timeStr : ""}`;
-    
+
     const card = document.createElement("div");
     card.className = "library-item " + (isBuiltin ? "builtin-item" : "");
     card.style.cursor = "pointer";
-    
-    // Clicking the text/body of the card loads the playlist
+
     const info = document.createElement("div");
     info.className = "library-item-info";
     info.innerHTML = `
@@ -100,17 +94,16 @@ function renderPlaylistsView() {
       showToast(`Loaded: ${name}`);
       document.querySelector('.nav-item[href="#view-player"]')?.click();
     });
-    
+
     card.appendChild(info);
-    
-    // Add deletion button for non-built-in lists
+
     if (!isBuiltin) {
       const deleteBtn = document.createElement("button");
       deleteBtn.type = "button";
       deleteBtn.className = "library-delete-btn";
       deleteBtn.innerHTML = ICONS.trash;
       deleteBtn.setAttribute("aria-label", `Delete playlist ${escapeHtml(name)}`);
-      
+
       let confirmTimeout = null;
       deleteBtn.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -131,7 +124,7 @@ function renderPlaylistsView() {
       });
       card.appendChild(deleteBtn);
     }
-    
+
     container.appendChild(card);
   });
 }
@@ -245,7 +238,7 @@ function renderPlaylist() {
     infoBtn.type = "button";
     infoBtn.className = "track-info-btn";
     infoBtn.style.flex = "1";
-    infoBtn.style.minWidth = "0"; // Essential for ellipsis to work
+    infoBtn.style.minWidth = "0";
     const label = getTrackSourceLabel(track);
     const duration = track.duration ? formatTime(track.duration) : "";
 
@@ -258,7 +251,7 @@ function renderPlaylist() {
     `;
     infoBtn.addEventListener("click", async (e) => {
       e.stopPropagation();
-      await loadTrack(index, true);
+      await loadTrack(index, true, { reason: "track-click" });
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
 
@@ -273,7 +266,6 @@ function renderPlaylist() {
         <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
       </svg>`;
     dragHandle.title = "Drag to reorder";
-    // We don't need a click listener as the parent li is draggable=true
 
     const removeBtn = document.createElement("button");
     removeBtn.type = "button";
@@ -301,7 +293,7 @@ function renderPlaylist() {
     li.appendChild(actions);
 
     li.addEventListener("click", () => {
-      loadTrack(index, true);
+      loadTrack(index, true, { reason: "track-row-click" });
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
 
@@ -339,10 +331,10 @@ function reorderTrack(fromIndex, toIndex) {
   playlist.splice(toIndex, 0, movedTrack);
 
   updateCurrentTrackIndexAfterMove(fromIndex, toIndex);
-  // currentPlaylistName = "";  // Keep name on reorder as requested
   updatePlaylistNameDisplay();
   renderPlaylist();
   savePlaylistState();
+  schedulePreloadUpcomingTrack();
 
   if (currentTrackIndex >= 0 && currentTrackIndex < playlist.length) {
     updateNowPlaying(playlist[currentTrackIndex]);
@@ -353,7 +345,6 @@ function reorderTrack(fromIndex, toIndex) {
 }
 
 function moveTrack(index, direction) {
-  // Function logic removed as manual arrow sorting is retired for drag & drop
 }
 
 async function resolveTrackSource(track) {
@@ -376,17 +367,76 @@ async function resolveTrackSource(track) {
   return null;
 }
 
-async function loadTrack(index, shouldPlay = false) {
-  if (index < 0 || index >= playlist.length) return;
+function playAudioWithTimeout(timeoutMs = 8000) {
+  const maybePromise = audio.play();
+  if (!maybePromise || typeof maybePromise.then !== "function") {
+    return Promise.resolve();
+  }
 
-  // Signal to the auto-resume handler that we are intentionally changing tracks
+  return Promise.race([
+    maybePromise,
+    new Promise((_, reject) => {
+      const err = new Error("audio.play() timed out");
+      err.name = "TimeoutError";
+      setTimeout(() => reject(err), timeoutMs);
+    }),
+  ]);
+}
+
+async function claimPreloadedSourceForTrack(track) {
+  if (track.sourceType !== "file" || preloadedTrackId !== track.id) {
+    return null;
+  }
+
+  if (!preloadedTrackSource && preloadingTrackPromise) {
+    try {
+      await preloadingTrackPromise;
+    } catch (error) {
+      console.warn("Waiting for preloaded source failed:", error);
+    }
+  }
+
+  if (!preloadedTrackSource) {
+    return null;
+  }
+
+  currentObjectUrl = preloadedTrackSource;
+  const source = preloadedTrackSource;
+  preloadedTrackId = null;
+  preloadedTrackSource = null;
+  preloadingTrackPromise = null;
+  return source;
+}
+
+async function loadTrack(index, shouldPlay = false, options = {}) {
+  if (index < 0 || index >= playlist.length) return false;
+
+  const opts = (options && typeof options === "object") ? options : {};
+  const preserveTime = Number.isFinite(opts.preserveTime) && opts.preserveTime > 0
+    ? opts.preserveTime
+    : null;
+  const canplayTimeoutMs = Number.isFinite(opts.canplayTimeoutMs)
+    ? opts.canplayTimeoutMs
+    : 12000;
+  const playTimeoutMs = Number.isFinite(opts.playTimeoutMs)
+    ? opts.playTimeoutMs
+    : 8000;
+  const suppressManualResumeToast = !!opts.suppressManualResumeToast;
+
   isTransitioning = true;
+  clearPlaybackStallRecoveryTimer();
   audio.pause();
   revokeCurrentObjectUrl();
 
   currentTrackIndex = index;
   const track = playlist[index];
-  const source = await resolveTrackSource(track);
+
+  pendingRestoreTime = preserveTime;
+
+  let source = await claimPreloadedSourceForTrack(track);
+  if (!source) {
+    source = await resolveTrackSource(track);
+  }
 
   if (!source) {
     isTransitioning = false;
@@ -394,15 +444,13 @@ async function loadTrack(index, shouldPlay = false) {
     renderPlaylist();
     savePlaylistState();
     updatePlayPauseButton();
+    schedulePreloadUpcomingTrack();
     setPlayerStatus(`Missing stored file: ${track.title}`);
     showToast(`Missing stored file: ${track.title}`);
-    return;
+    return false;
   }
 
   audio.src = source;
-  // Explicitly tell the browser to start fetching the new source.
-  // Without this, some mobile browsers (especially iOS Safari) may not begin
-  // loading when audio.src is set on a paused element.
   audio.load();
 
   updateNowPlaying(track);
@@ -411,11 +459,6 @@ async function loadTrack(index, shouldPlay = false) {
 
   if (shouldPlay) {
     try {
-      // Wait until the new source is ready enough to start playing.
-      // IMPORTANT: we add a timeout here so this Promise cannot hang forever.
-      // On mobile (iOS especially), after an audio session interruption or
-      // phone-lock, 'canplay' may never fire even though the data exists.
-      // After 12s we resolve optimistically and let audio.play() decide.
       await new Promise((resolve, reject) => {
         let timeoutId;
 
@@ -439,70 +482,82 @@ async function loadTrack(index, shouldPlay = false) {
         audio.addEventListener("canplay", onCanPlay, { once: true });
         audio.addEventListener("error", onError, { once: true });
 
-        // If already ready enough, resolve immediately
         if (audio.readyState >= 3) {
           cleanup();
           resolve();
           return;
         }
 
-        // Safety valve: if canplay never fires (iOS suspension, network stall,
-        // background tab throttling), don't hang forever. Resolve after 12s
-        // and let audio.play() make the final call.
         timeoutId = setTimeout(() => {
           cleanup();
           console.warn("loadTrack: canplay timed out — attempting play anyway.");
           resolve();
-        }, 12000);
+        }, canplayTimeoutMs);
       });
 
+      if (
+        preserveTime !== null &&
+        Number.isFinite(audio.duration) &&
+        audio.duration > 1 &&
+        preserveTime < audio.duration - 0.25
+      ) {
+        audio.currentTime = preserveTime;
+      }
+
       console.log(`[loadTrack] audio.play() attempt for: "${track.title}"`);
-      await audio.play();
+      await playAudioWithTimeout(playTimeoutMs);
       isTransitioning = false;
       updatePlayPauseButton();
+      schedulePreloadUpcomingTrack();
       setPlayerStatus(`Playing: ${track.title}`);
+      return true;
     } catch (error) {
       console.warn(`[loadTrack] audio.play() failed (${error.name}): ${error.message}`);
 
-      // NotAllowedError is a transient mobile browser policy error — the audio
-      // context was suspended between tracks. A single retry after a short delay
-      // almost always succeeds without needing the user to tap anything.
-      if (error.name === "NotAllowedError") {
-        console.log("[loadTrack] NotAllowedError — retrying play() in 600ms...");
-        setTimeout(async () => {
-          try {
-            await audio.play();
-            isTransitioning = false;
-            updatePlayPauseButton();
-            setPlayerStatus(`Playing: ${track.title}`);
-            console.log(`[loadTrack] Retry succeeded for: "${track.title}"`);
-          } catch (retryError) {
-            // Retry also failed — now fall back gracefully
-            isTransitioning = false;
-            console.warn(`[loadTrack] Retry failed (${retryError.name}):`, retryError.message);
-            updatePlayPauseButton();
-            setPlayerStatus("Tap \u25B6 to resume.");
-            if (!document.hidden) {
-              showToast("Tap \u25B6 to resume playback.");
-            }
+      if (
+        error.name === "NotAllowedError" ||
+        error.name === "AbortError" ||
+        error.name === "TimeoutError"
+      ) {
+        console.log(`[loadTrack] ${error.name} — retrying play() in 600ms...`);
+        await new Promise(resolve => setTimeout(resolve, 600));
+
+        try {
+          await playAudioWithTimeout(playTimeoutMs);
+          isTransitioning = false;
+          updatePlayPauseButton();
+          schedulePreloadUpcomingTrack();
+          setPlayerStatus(`Playing: ${track.title}`);
+          console.log(`[loadTrack] Retry succeeded for: "${track.title}"`);
+          return true;
+        } catch (retryError) {
+          isTransitioning = false;
+          console.warn(`[loadTrack] Retry failed (${retryError.name}):`, retryError.message);
+          updatePlayPauseButton();
+          schedulePreloadUpcomingTrack();
+          setPlayerStatus(`Could not start: ${track.title}`);
+          if (!suppressManualResumeToast && !document.hidden) {
+            showToast("Tap ▶ to resume playback.");
           }
-        }, 600);
-        // isTransitioning stays true until the retry resolves
-        return;
+          return false;
+        }
       }
 
-      // All other errors — fall back immediately
       isTransitioning = false;
       updatePlayPauseButton();
-      setPlayerStatus("Tap \u25B6 to resume.");
-      if (!document.hidden) {
-        showToast("Tap \u25B6 to resume playback.");
+      schedulePreloadUpcomingTrack();
+      setPlayerStatus(`Could not start: ${track.title}`);
+      if (!suppressManualResumeToast && !document.hidden) {
+        showToast("Tap ▶ to resume playback.");
       }
+      return false;
     }
-  } else {
-    isTransitioning = false;
-    updatePlayPauseButton();
   }
+
+  isTransitioning = false;
+  updatePlayPauseButton();
+  schedulePreloadUpcomingTrack();
+  return true;
 }
 
 async function addFileTracks(files) {
@@ -511,7 +566,6 @@ async function addFileTracks(files) {
   const skipped = [];
   const forced = [];
 
-  // Get current library metadata for deeper duplicate check
   let libraryRecords = [];
   try {
     libraryRecords = await getAllTrackMetadata();
@@ -520,9 +574,8 @@ async function addFileTracks(files) {
   }
 
   for (const file of fileArray) {
-    // Triple Check: Name + Size + (LastModified if available)
-    const duplicate = libraryRecords.find(r => 
-      r.title === file.name && 
+    const duplicate = libraryRecords.find(r =>
+      r.title === file.name &&
       r.size === file.size &&
       (!file.lastModified || r.lastModified === file.lastModified)
     );
@@ -538,15 +591,13 @@ async function addFileTracks(files) {
 
     const id = crypto.randomUUID();
     const duration = await getAudioDuration(file);
-    
-    // Save to DB (keep raw filename as the technical 'title' for recovery)
-    // but we'll use cleanTrackName for the playlist display.
+
     await saveTrackBlob(id, file, duration);
 
     newTracks.push({
       id,
       title: cleanTrackName(file.name),
-      rawFilename: file.name, // Keep for metadata display
+      rawFilename: file.name,
       sourceType: "file",
       duration: duration
     });
@@ -564,10 +615,11 @@ async function addFileTracks(files) {
 
   const wasEmpty = (playlist.length === newTracks.length);
   if (wasEmpty || currentTrackIndex === -1) {
-    await loadTrack(0, true);
+    await loadTrack(0, true, { reason: "import-files" });
   } else {
     renderPlaylist();
     savePlaylistState();
+    schedulePreloadUpcomingTrack();
   }
   await updateBadgeCounts();
   await renderSidebarLibrary();
@@ -581,23 +633,20 @@ function addUrlTrack(url) {
     const parsedUrl = new URL(trimmed);
     const hostname = parsedUrl.hostname.toLowerCase();
     const lowerPath = parsedUrl.pathname.toLowerCase();
-    
-    // Check for YouTube links
+
     if (hostname.includes("youtube.com") || hostname.includes("youtu.be")) {
       showToast("YouTube URLs are not direct audio files and are not supported.", 4000);
       return;
     }
 
-    // Block common image and video formats from being added
     const blockExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg', '.webp', '.mp4', '.mkv', '.mov', '.avi', '.wmv', '.flv'];
     if (blockExtensions.some(ext => lowerPath.endsWith(ext))) {
       showToast("Images and videos cannot be added to the player.", 4000);
       return;
     }
 
-    // Check against known audio extensions or stream-like paths
     const validExtensions = ['.mp3', '.m4a', '.aac', '.ogg', '.oga', '.wav', '.flac', '.opus', '.weba', '.webm', '.caf', '.m3u8'];
-    
+
     let seemsLikeAudio = false;
     if (lowerPath.endsWith("/stream") || lowerPath.includes("/stream/") || lowerPath.endsWith("/listen")) {
       seemsLikeAudio = true;
@@ -636,10 +685,11 @@ function addUrlTrack(url) {
 
   if (currentTrackIndex === -1) {
     currentTrackIndex = 0;
-    loadTrack(0, true);
+    loadTrack(0, true, { reason: "add-url" });
   } else {
     renderPlaylist();
     savePlaylistState();
+    schedulePreloadUpcomingTrack();
   }
 
   updateBadgeCounts();
@@ -654,12 +704,12 @@ function removeTrack(index) {
   const removedTrack = playlist[index];
   const wasCurrent = index === currentTrackIndex;
   playlist.splice(index, 1);
-  // currentPlaylistName = ""; // Keep name on track removal as requested
   updatePlaylistNameDisplay();
 
   if (playlist.length === 0) {
     audio.pause();
     revokeCurrentObjectUrl();
+    clearPreloadedTrackSource();
     audio.removeAttribute("src");
     audio.load();
     currentTrackIndex = -1;
@@ -681,12 +731,13 @@ function removeTrack(index) {
     if (currentTrackIndex >= playlist.length) {
       currentTrackIndex = playlist.length - 1;
     }
-    loadTrack(currentTrackIndex, false);
+    loadTrack(currentTrackIndex, false, { reason: "remove-track" });
   }
 
   renderPlaylist();
   savePlaylistState();
   updateBadgeCounts();
+  schedulePreloadUpcomingTrack();
   setPlayerStatus(`Removed: ${removedTrack.title}`);
   showToast(`Removed: ${removedTrack.title}`);
 }
@@ -694,6 +745,7 @@ function removeTrack(index) {
 function clearPlaylist() {
   audio.pause();
   revokeCurrentObjectUrl();
+  clearPreloadedTrackSource();
   audio.removeAttribute("src");
   audio.load();
 
@@ -726,6 +778,7 @@ async function clearDeviceLibrary() {
   try {
     await clearAllTrackBlobs();
     revokeCurrentObjectUrl();
+    clearPreloadedTrackSource();
 
     playlist = playlist.filter((track) => track.sourceType !== "file");
     currentTrackIndex =
@@ -753,7 +806,7 @@ async function clearDeviceLibrary() {
     await renderSidebarLibrary();
 
     if (currentTrackIndex >= 0) {
-      await loadTrack(currentTrackIndex, false);
+      await loadTrack(currentTrackIndex, false, { reason: "clear-library" });
     } else {
       audio.pause();
       audio.removeAttribute("src");

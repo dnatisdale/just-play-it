@@ -287,6 +287,79 @@ function updatePlaylistNameDisplay() {
 
   // Keep the CURRENT QUEUE pill in sync whenever the name changes
   refreshQueuePill();
+
+  // Keep the unsaved queue warning in sync
+  refreshUnsavedWarning();
+}
+
+/**
+ * refreshUnsavedWarning — shows/hides the unsaved queue modal.
+ *
+ * Dismiss is keyed to a QUEUE FINGERPRINT (joined track IDs).
+ *   • Switching tabs does not change the fingerprint → modal stays dismissed.
+ *   • Adding or removing a track changes the fingerprint → modal re-shows.
+ *   • Saving the playlist (currentPlaylistName set) → modal hides + resets.
+ *   • Clearing the queue → modal hides + resets.
+ *   • Page reload: fingerprint match is in-memory only → modal shows again
+ *     on reload if queue is still Unsaved (appropriate reminder on fresh load).
+ */
+let _uqDismissedFingerprint = null; // fingerprint string at time of dismiss
+let _uqBtnWired = false;            // wire dismiss button exactly once
+
+function _uqFingerprint() {
+  // Stable string that changes when tracks are added/removed/reordered
+  if (!Array.isArray(playlist) || playlist.length === 0) return "";
+  return playlist.map(t => t.id).join(",");
+}
+
+function _uqSetVisible(show) {
+  const modal = document.getElementById("unsavedQueueWarning");
+  const scrim = document.getElementById("unsavedQueueScrim");
+  if (!modal) return;
+  if (show) {
+    modal.classList.remove("hidden");
+    if (scrim) scrim.classList.remove("hidden");
+  } else {
+    modal.classList.add("hidden");
+    if (scrim) scrim.classList.add("hidden");
+  }
+}
+
+function refreshUnsavedWarning() {
+  const modal = document.getElementById("unsavedQueueWarning");
+  if (!modal) return;
+
+  const hasQueue  = Array.isArray(playlist) && playlist.length > 0;
+  const isUnsaved = !currentPlaylistName;
+
+  // Wire the dismiss button exactly once
+  if (!_uqBtnWired) {
+    const btn = document.getElementById("unsavedWarningDismissBtn");
+    if (btn) {
+      btn.addEventListener("click", () => {
+        _uqDismissedFingerprint = _uqFingerprint();
+        _uqSetVisible(false);
+      });
+      _uqBtnWired = true;
+    }
+  }
+
+  // Case 1: Condition gone (saved or empty) — hide and fully reset
+  if (!hasQueue || !isUnsaved) {
+    _uqDismissedFingerprint = null;
+    _uqSetVisible(false);
+    return;
+  }
+
+  // Case 2: Should show — but only if fingerprint differs from last dismiss
+  const fp = _uqFingerprint();
+  if (fp === _uqDismissedFingerprint) {
+    // Same queue state as when user dismissed — respect dismiss, stay hidden
+    return;
+  }
+
+  // Case 3: New or changed unsaved queue state — show the modal
+  _uqSetVisible(true);
 }
 
 /**

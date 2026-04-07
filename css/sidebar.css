@@ -1,4 +1,119 @@
 /* ═══════════════════════════════════════════
+   UNSAVED QUEUE MODAL (fixed overlay)
+═══════════════════════════════════════════ */
+
+/* Scrim — full-screen dim overlay behind the modal */
+.uq-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  animation: uq-scrim-in 0.18s ease;
+}
+
+.uq-scrim.hidden {
+  display: none !important;
+}
+
+@keyframes uq-scrim-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Modal panel — solid dark red, centered */
+.uq-modal {
+  position: fixed;
+  z-index: 9001;
+  /* Center horizontally and vertically — slightly above center feels more alert-like */
+  left: 50%;
+  top: 44%;
+  transform: translate(-50%, -50%);
+  width: min(88vw, 360px);
+  background: #5c000c;           /* solid dark red — no transparency */
+  border: 1px solid #8a0016;
+  border-top: 3px solid #d92040; /* bright red accent top line */
+  border-radius: 14px;
+  padding: 22px 20px 18px;
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  animation: uq-modal-in 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.uq-modal.hidden {
+  display: none !important;
+}
+
+@keyframes uq-modal-in {
+  from { opacity: 0; transform: translate(-50%, -46%) scale(0.94); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* Message text */
+.uq-modal-msg {
+  margin: 0 0 16px;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffd0d5;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+}
+
+.uq-modal-msg strong {
+  color: #ffffff;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+/* Action row */
+.uq-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Got it button */
+.uq-modal-btn-ok {
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 8px;
+  color: #ffffff;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 8px 20px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.uq-modal-btn-ok:hover {
+  background: rgba(255, 255, 255, 0.24);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.uq-modal-btn-ok:active {
+  background: rgba(255, 255, 255, 0.32);
+  transform: scale(0.97);
+}
+
+/* Light theme: keep it strongly readable */
+[data-theme="light"] .uq-scrim {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="light"] .uq-modal {
+  background: #7a0012;
+  border-color: #a0001a;
+  border-top-color: #d92040;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255,255,255,0.08);
+}
+
+/* ═══════════════════════════════════════════
    DEVICE LIBRARY LIST (sidebar)
 ═══════════════════════════════════════════ */
 
@@ -423,4 +538,79 @@
   font-size: 0.82rem;
   line-height: 1.5;
   flex: 1;
+}
+
+/* ═══════════════════════════════════════════
+   SETTINGS › STORAGE — stored-track checklist
+═══════════════════════════════════════════ */
+
+.stored-tracks-checklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.stored-track-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--panel-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  padding: 7px 10px;
+  transition: background var(--transition), border-color var(--transition);
+}
+
+.stored-track-row:hover {
+  background: var(--glass-border);
+  border-color: var(--border-strong);
+}
+
+/* Label wraps checkbox + track name; fills available space */
+.stored-track-label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.stored-track-cb {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--orange);
+  cursor: pointer;
+}
+
+.stored-track-name {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.stored-track-meta {
+  font-size: 0.75rem;
+  color: var(--muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Mute the delete button until something is selected */
+#deleteSelectedStoredBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+#deleteSelectedStoredBtn:not(:disabled) {
+  opacity: 1;
 }

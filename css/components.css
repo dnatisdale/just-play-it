@@ -756,6 +756,64 @@ h3.interactive-header:active {
   cursor: pointer;
 }
 
+/* ── Auto-load / sidebar select dropdown ───────────────────────────
+   .sidebar-select is the styled wrapper for the defaultPlaylistSelect.
+   We can control the closed-box appearance fully.
+   The open picker on iOS/Safari is rendered by the OS and ignores
+   option-level color overrides — that is a browser limitation.
+────────────────────────────────────────────────────────────────── */
+.sidebar-select {
+  /* Remove OS-default arrow so we can inject a custom one */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+
+  border-radius: var(--radius-xs); /* 10px — matches app card radius language */
+  border: 1px solid var(--border);
+  background-color: var(--input-bg);
+  /* Custom orange chevron arrow injected as SVG */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23ff9c2b' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+
+  color: var(--text);
+  padding: 0 32px 0 10px; /* right padding makes room for the arrow */
+  cursor: pointer;
+  font-family: inherit;
+  outline: none;
+
+  /* Tints the selected-option highlight in browsers that support accent-color
+     (Chrome ≥93, Firefox ≥92, Edge ≥93). iOS Safari ignores this. */
+  accent-color: var(--orange);
+
+  transition:
+    border-color var(--transition),
+    box-shadow var(--transition),
+    background-color 0.3s ease;
+}
+
+.sidebar-select:hover {
+  border-color: var(--border-strong);
+}
+
+.sidebar-select:focus {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 3px var(--orange-glow);
+  outline: none;
+}
+
+/* Option background/foreground — respected by Firefox and desktop Chrome.
+   iOS/Android native pickers ignore these entirely (OS limitation). */
+.sidebar-select option {
+  background: var(--select-bg);
+  color: var(--text);
+}
+
+.sidebar-select option:checked {
+  background: var(--orange);
+  color: #1a0e00; /* dark warm text on orange, matches SHOW/HIDE button style */
+}
+
 .sleep-row {
   display: flex;
   align-items: center;

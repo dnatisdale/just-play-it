@@ -71,14 +71,15 @@ async function renderSidebarLibrary() {
     yourTracksHeader.className = "library-section-header";
     yourTracksHeader.innerHTML = `
       <span class="library-section-title-text">YOUR TRACKS</span>
-      <button class="sidebar-collapse-toggle" type="button" aria-expanded="true" data-section="your-tracks">Hide</button>
+      <button class="sidebar-collapse-toggle" type="button" aria-expanded="false" data-section="your-tracks">Show</button>
     `;
     deviceLibraryList.appendChild(yourTracksHeader);
 
-    // Collapsible content wrapper
+    // Collapsible content wrapper — starts collapsed
     const yourTracksContent = document.createElement("div");
     yourTracksContent.className = "library-section-content";
     yourTracksContent.id = "lib-section-your-tracks";
+    yourTracksContent.style.display = "none";
 
     records.forEach((record) => {
       const size = formatBytes(record.size || record.blob?.size || 0);
@@ -149,14 +150,15 @@ async function renderSidebarLibrary() {
     builtinsHeader.className = "library-section-header";
     builtinsHeader.innerHTML = `
       <span class="library-section-title-text">TRACKS BUILT-IN</span>
-      <button class="sidebar-collapse-toggle" type="button" aria-expanded="true" data-section="built-in">Hide</button>
+      <button class="sidebar-collapse-toggle" type="button" aria-expanded="false" data-section="built-in">Show</button>
     `;
     deviceLibraryList.appendChild(builtinsHeader);
 
-    // Collapsible content wrapper
+    // Collapsible content wrapper — starts collapsed
     const builtinsContent = document.createElement("div");
     builtinsContent.className = "library-section-content";
     builtinsContent.id = "lib-section-built-in";
+    builtinsContent.style.display = "none";
 
     uniqueBuiltins.forEach((track) => {
       const durationStr = track.duration ? formatTime(track.duration) : "";

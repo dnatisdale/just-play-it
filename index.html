@@ -171,18 +171,27 @@
             </button>
           </div>
         </section>
+
+        <!-- Auto-load on startup – moved here from Library tab -->
+        <div style="padding: 10px 16px 4px;">
+          <label for="defaultPlaylistSelect" style="display: block; font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 6px;">Auto-load on startup</label>
+          <select id="defaultPlaylistSelect" class="sidebar-select" style="width: 100%; height: 36px; background: var(--input-bg); border: 1px solid var(--border); color: var(--text); padding: 0 8px; font-family: inherit; font-size: 13px;">
+            <option value="">None (Empty Start)</option>
+          </select>
+        </div>
       </section>
 
       <!-- 2. PLAYLIST VIEW -->
       <section id="view-playlists" class="view-section">
+
         <!-- Moved Current Queue Block -->
         <div id="sidebar-section-queue" class="sidebar-section">
           <div class="sidebar-section-header">
             <span class="sidebar-section-label" style="margin:0; padding:0;">CURRENT QUEUE. <span id="playlistBadge" class="counter-badge hidden" style="display:none !important;">0</span></span>
-            <button id="currentPlaylistHeaderBtn" class="sidebar-collapse-toggle" type="button" aria-expanded="true" aria-controls="playlistContainer">Hide</button>
+            <button id="currentPlaylistHeaderBtn" class="sidebar-collapse-toggle" type="button" aria-expanded="false" aria-controls="playlistContainer">Show</button>
           </div>
 
-          <section id="currentPlaylistCard" class="library-card sidebar-collapsible-content expanded" style="margin-top: 8px;">
+          <section id="currentPlaylistCard" class="library-card sidebar-collapsible-content collapsed" style="margin-top: 8px;">
             <div id="playlistContainer" class="playlist-container expanded">
               <div class="inner-collapse">
                 <div class="playlist-tools">
@@ -250,13 +259,6 @@
             </div>
           </div>
 
-          <!-- Auto-load on startup — library/playlist behavior, not global settings -->
-          <div style="padding: 10px 16px 14px; border-top: 1px solid var(--border); margin-top: 4px;">
-            <label for="defaultPlaylistSelect" style="display: block; font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 6px;">Auto-load on startup</label>
-            <select id="defaultPlaylistSelect" class="sidebar-select" style="width: 100%; height: 36px; background: var(--input-bg); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 0 8px; font-family: inherit; font-size: 13px;">
-              <option value="">None (Empty Start)</option>
-            </select>
-          </div>
         </section>
       </section>
 
@@ -268,17 +270,32 @@
           </div>
           <div class="settings-content" style="padding: 0 16px 16px;">
 
-            <!-- Storage -->
-            <div class="sidebar-section">
-              <div class="sidebar-section-label">Storage</div>
-              <div class="sidebar-row-item sidebar-storage-row">
-                <span class="sidebar-row-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21,12c0,1.66-4,3-9,3s-9-1.34-9-3"/><path d="M3,5v14c0,1.66,4,3,9,3s9-1.34,9-3V5"/></svg></span>
-                <p id="storageUsageText" class="sidebar-storage-text">Calculating track storage…</p>
+            <!-- Share -->
+            <div id="settings-section-share" class="sidebar-section qr-section">
+              <div class="sidebar-section-header">
+                <span class="sidebar-section-label" style="margin:0; padding:0;">Share</span>
+                <button id="settingsShareHeaderBtn" class="sidebar-collapse-toggle" type="button" aria-expanded="true" aria-controls="settingsShareContainer">Hide</button>
               </div>
-              <button id="clearDeviceLibraryBtn" class="sidebar-row-btn danger-row" type="button" style="margin-top: 8px;">
-                <span class="sidebar-row-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14a2,2,0,0,1-2,2H8a2,2,0,0,1-2-2L5,6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/><path d="M9,6V4a1,1,0,0,1,1-1h4a1,1,0,0,1,1,1V6"/></svg></span>
-                <span class="sidebar-row-text">Remove all saved tracks</span>
-              </button>
+
+              <div id="settingsShareContainer" class="sidebar-collapsible-content" style="margin-top: 12px;">
+                <button id="settingsShareAppBtn" class="sidebar-row-btn" type="button" aria-label="Share this app" style="margin-bottom: 16px;">
+                  <span class="sidebar-row-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></span>
+                  <span class="sidebar-row-text">Share Player Link</span>
+                  <span class="sidebar-row-arrow">›</span>
+                </button>
+
+                <div id="settingsQrWrapper" class="qr-wrapper" title="Click to enlarge QR code">
+                  <img id="settingsQrImage" class="qr-image" src="" alt="App QR Code" />
+                  <div class="qr-logo-overlay">
+                    <img src="icons/icon-512.png" alt="" />
+                  </div>
+                </div>
+                <div class="qr-actions">
+                  <button id="settingsCopyQrBtn" class="qr-action-btn" type="button">Copy</button>
+                  <button id="settingsDownloadQrBtn" class="qr-action-btn" type="button">Download</button>
+                </div>
+                <p class="qr-hint" style="margin-bottom: 12px;">Scan with another device to open the player.</p>
+              </div>
             </div>
 
             <!-- Support -->
@@ -305,34 +322,6 @@
                     Help keep the wheels turning and the records spinning.
                   </p>
                 </div>
-              </div>
-            </div>
-
-            <!-- Share -->
-            <div id="settings-section-share" class="sidebar-section qr-section" style="border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px;">
-              <div class="sidebar-section-header">
-                <span class="sidebar-section-label" style="margin:0; padding:0;">Share</span>
-                <button id="settingsShareHeaderBtn" class="sidebar-collapse-toggle" type="button" aria-expanded="false" aria-controls="settingsShareContainer">Show</button>
-              </div>
-
-              <div id="settingsShareContainer" class="sidebar-collapsible-content collapsed" style="margin-top: 12px;">
-                <button id="settingsShareAppBtn" class="sidebar-row-btn" type="button" aria-label="Share this app" style="margin-bottom: 16px;">
-                  <span class="sidebar-row-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></span>
-                  <span class="sidebar-row-text">Share Player Link</span>
-                  <span class="sidebar-row-arrow">›</span>
-                </button>
-
-                <div id="settingsQrWrapper" class="qr-wrapper" title="Click to enlarge QR code">
-                  <img id="settingsQrImage" class="qr-image" src="" alt="App QR Code" />
-                  <div class="qr-logo-overlay">
-                    <img src="icons/icon-512.png" alt="" />
-                  </div>
-                </div>
-                <div class="qr-actions">
-                  <button id="settingsCopyQrBtn" class="qr-action-btn" type="button">Copy</button>
-                  <button id="settingsDownloadQrBtn" class="qr-action-btn" type="button">Download</button>
-                </div>
-                <p class="qr-hint" style="margin-bottom: 12px;">Scan with another device to open the player.</p>
               </div>
             </div>
 
@@ -364,6 +353,36 @@
                 <span class="sidebar-row-text">Privacy and terms</span>
               </a>
             </div>
+
+            <!-- Storage -->
+            <div class="sidebar-section" style="border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px;">
+              <div class="sidebar-section-label">Storage</div>
+
+              <!-- Storage usage summary -->
+              <div class="sidebar-row-item sidebar-storage-row">
+                <span class="sidebar-row-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21,12c0,1.66-4,3-9,3s-9-1.34-9-3"/><path d="M3,5v14c0,1.66,4,3,9,3s9-1.34,9-3V5"/></svg></span>
+                <p id="storageUsageText" class="sidebar-storage-text">Calculating track storage…</p>
+              </div>
+
+              <!-- Stored tracks list — populated by JS -->
+              <div id="storedTracksListContainer" style="margin-top: 10px;">
+                <p class="sidebar-storage-text" style="padding: 6px 0 2px; font-style: italic;">Loading stored tracks…</p>
+              </div>
+
+              <!-- Selection toolbar — hidden until tracks exist -->
+              <div id="storedTracksToolbar" class="hidden" style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+                <button id="selectAllStoredBtn" class="ghost-btn" type="button">Select All</button>
+                <button id="clearStoredSelectionBtn" class="ghost-btn" type="button">Clear</button>
+                <button id="deleteSelectedStoredBtn" class="sidebar-row-btn danger-row" type="button" style="margin-left: auto;" disabled>
+                  <span class="sidebar-row-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14a2,2,0,0,1-2,2H8a2,2,0,0,1-2-2L5,6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/><path d="M9,6V4a1,1,0,0,1,1-1h4a1,1,0,0,1,1,1V6"/></svg></span>
+                  <span id="deleteSelectedStoredLabel">Remove saved tracks from this device</span>
+                </button>
+              </div>
+
+              <!-- Legacy hidden button kept for backward compatibility with existing JS wiring -->
+              <button id="clearDeviceLibraryBtn" type="button" style="display:none;" aria-hidden="true"></button>
+            </div>
+
           </div>
         </section>
       </section>
@@ -394,6 +413,15 @@
     </div>
 
     <div id="toast" class="toast" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- ── Unsaved Queue Modal — position:fixed, outside all views ── -->
+    <div id="unsavedQueueScrim" class="uq-scrim hidden" aria-hidden="true"></div>
+    <div id="unsavedQueueWarning" class="uq-modal hidden" role="alertdialog" aria-modal="true" aria-labelledby="uqModalMsg">
+      <p id="uqModalMsg" class="uq-modal-msg">Queue not saved - use <strong>SAVED PLAYLISTS</strong> below to save it.</p>
+      <div class="uq-modal-actions">
+        <button id="unsavedWarningDismissBtn" class="uq-modal-btn uq-modal-btn-ok" type="button">Got it</button>
+      </div>
+    </div>
 
     <!-- ── FAB & Import Sheet — outside all view sections so position:fixed works reliably ── -->
     <button id="importFab" class="fab-add hidden" aria-label="Import Audio" title="Import Audio">

@@ -1,4 +1,3 @@
-
 // ── Canonical public app URL (used for sharing and QR generation) ─────────────
 const APP_URL = "https://just-play-it.pages.dev/";
 
@@ -9,15 +8,11 @@ fileInput.addEventListener("change", async (event) => {
   fileInput.value = "";
 });
 
-// Cover art click → open file picker (only when in "load" state)
 coverArtEl.addEventListener("click", () => {
   if (coverArtEl.classList.contains("cover-art-load")) {
     fileInput.click();
   }
 });
-
-
-// URL input removed in Phase 1
 
 playPauseBtn.addEventListener("click", async () => {
   if (!audio.src) return playCurrent();
@@ -76,20 +71,14 @@ Check it out here: ${shareUrl}`;
 
 if (shareAppBtn) shareAppBtn.addEventListener("click", handleShare);
 
-
-// ── Bottom Navigation & View Switching ────────────────────────
-// Flag: set to true before calling switchView() when the caller wants
-// the Current Queue to stay expanded (e.g. Now Playing header click).
 let expandQueueForJumpNavigation = false;
 
 function switchView(targetViewId) {
-  // Close import sheet when switching views (Bug 5)
   const sheet = document.getElementById("importBottomSheet");
   if (sheet && sheet.classList.contains("is-open")) {
     closeImportSheet();
   }
 
-  // Update view sections
   document.querySelectorAll(".view-section").forEach(view => {
     if (view.id === targetViewId) {
       view.classList.add("active");
@@ -98,7 +87,6 @@ function switchView(targetViewId) {
     }
   });
 
-  // FAB visibility: Only show in Library tab
   const importFab = document.getElementById("importFab");
   if (importFab) {
     if (targetViewId === "view-library") {
@@ -108,7 +96,6 @@ function switchView(targetViewId) {
     }
   }
 
-  // Selection Action Bar management (Contextual Bar visibility)
   const cab = document.getElementById("selectionActionBar");
   if (cab) {
     if (targetViewId === "view-library" && selectedLibraryTracks.size > 0) {
@@ -118,10 +105,6 @@ function switchView(targetViewId) {
     }
   }
 
-  // Auto-collapse Current Queue when navigating to the Playlist tab normally.
-  // Skip if the caller set expandQueueForJumpNavigation (e.g. Now Playing header click).
-  // Also skip collapse if the queue has tracks — collapsing a populated queue
-  // hides content the user may have just added, making it appear empty.
   if (targetViewId === "view-playlists") {
     if (!expandQueueForJumpNavigation) {
       const queueCard = document.getElementById("currentPlaylistCard");
@@ -135,7 +118,6 @@ function switchView(targetViewId) {
           queueBtn.textContent = "Show";
         }
       } else if (!queueIsEmpty && queueCard) {
-        // Queue has tracks — ensure it's expanded so the user can see them
         queueCard.classList.remove("collapsed");
         queueCard.classList.add("expanded");
         if (queueBtn) {
@@ -144,25 +126,19 @@ function switchView(targetViewId) {
         }
       }
     }
-    // Always reset the flag after use
     expandQueueForJumpNavigation = false;
   }
 
-
-  // Generalize expansion of any subset collapsible panels in the library view (Bug 6)
   if (targetViewId === "view-library") {
-    // Reset all library collapsible content wrappers
     document.querySelectorAll(".library-section-content").forEach(el => {
-      el.style.display = ""; // clears inline 'none'
+      el.style.display = "";
     });
-    // Reset all library specific toggle buttons to indicate 'Hide' mode now that the contents are visible
     document.querySelectorAll(".library-section-header .sidebar-collapse-toggle").forEach(btn => {
       btn.textContent = "Hide";
       btn.setAttribute("aria-expanded", "true");
     });
   }
 
-  // Update nav buttons
   document.querySelectorAll(".nav-item").forEach(btn => {
     if (btn.dataset.target === targetViewId) {
       btn.classList.add("active");
@@ -180,18 +156,15 @@ document.querySelectorAll(".nav-item").forEach(btn => {
   });
 });
 
-// ── FAB & Bottom Sheet (Import Audio) ────────────────────────
 const importFab = document.getElementById("importFab");
 const importBottomSheet = document.getElementById("importBottomSheet");
 const fabOverlay = document.getElementById("fabOverlay");
 const fabCancel = document.getElementById("fabCancel");
 const fabPickFiles = document.getElementById("fabPickFiles");
-// input file handling is still attached from original variables
 
 function openImportSheet() {
   importBottomSheet.classList.remove("hidden");
   fabOverlay.classList.remove("hidden");
-  // slight delay for transition
   requestAnimationFrame(() => {
     importBottomSheet.classList.add("is-open");
     fabOverlay.classList.add("is-active");
@@ -223,8 +196,6 @@ if (fabPickFiles) {
   });
 }
 
-
-// ── Folder picker ────────────────────────────────────────
 if (folderInput) {
   folderInput.addEventListener("change", async (event) => {
     const files = Array.from(event.target.files).filter(isAudioFile);
@@ -233,8 +204,6 @@ if (folderInput) {
     } else {
       await addFileTracks(files);
 
-      // If a user-created playlist is active, auto-persist the imported tracks into it.
-      // updateActivePlaylist() handles the builtin guard and refreshUpdateRow internally.
       if (currentPlaylistName && savedPlaylists[currentPlaylistName] && !savedPlaylists[currentPlaylistName].isBuiltin) {
         console.log(`[FolderImport] Auto-saving to active playlist: "${currentPlaylistName}"`);
         updateActivePlaylist();
@@ -245,14 +214,9 @@ if (folderInput) {
   });
 }
 
-
-
-
-
 savePlaylistBtn.addEventListener("click", saveNamedPlaylist);
 if (updatePlaylistBtn) updatePlaylistBtn.addEventListener("click", updateActivePlaylist);
 
-// Playlist Action cycling and dropdown selection removed for Phase 2 card-based design
 let clearConfirmTimeout = null;
 clearDeviceLibraryBtn.addEventListener("click", async () => {
   if (clearDeviceLibraryBtn.classList.contains("confirming")) {
@@ -302,14 +266,9 @@ if (toggleEditBtn) {
   });
 }
 
-
-
-// savedPlaylistsSelect dropdown handling removed in Phase 2
-
 audio.addEventListener("loadedmetadata", () => {
   durationEl.textContent = formatTime(audio.duration);
 
-  // Auto-capture duration into playlist if missing
   if (playlist[currentTrackIndex] && !playlist[currentTrackIndex].duration) {
     playlist[currentTrackIndex].duration = audio.duration;
     renderPlaylist();
@@ -334,6 +293,7 @@ audio.addEventListener("timeupdate", () => {
     seekBar.value = 0;
   }
 
+  clearPlaybackStallRecoveryTimer();
   savePlaybackState();
 });
 
@@ -350,10 +310,8 @@ if (volumeSlider) {
   });
 }
 
-// Automatic sleep timer on cycling
 if (sleepTimerBtn) {
   sleepTimerBtn.addEventListener("click", () => {
-    // Sequence: Off -> 15 -> 30 -> 60 -> Off
     let current = sleepTimerMinutes || 0;
     let next = 0;
     if (current === 0)  next = 15;
@@ -365,9 +323,8 @@ if (sleepTimerBtn) {
   });
 }
 
-// pickFilesBtn removed in favor of fabPickFiles
-
 audio.addEventListener("play", () => {
+  clearPlaybackStallRecoveryTimer();
   updatePlayPauseButton();
   updateMediaSession();
 
@@ -376,13 +333,16 @@ audio.addEventListener("play", () => {
   }
 });
 
+audio.addEventListener("playing", () => {
+  clearPlaybackStallRecoveryTimer();
+  schedulePreloadUpcomingTrack();
+});
+
 audio.addEventListener("pause", () => {
+  clearPlaybackStallRecoveryTimer();
   updatePlayPauseButton();
   updateMediaSession();
 
-  // Mobile: Auto-resume logic for notifications/interruptions.
-  // Skip entirely if we are intentionally transitioning to a new track —
-  // the loadTrack function manages play() for transitions itself.
   if (isTransitioning) {
     resumeRetries = 0;
     return;
@@ -395,7 +355,6 @@ audio.addEventListener("pause", () => {
     setPlayerStatus(`Playback interrupted. Resuming... (Retry ${resumeRetries}/3)`);
 
     setTimeout(async () => {
-      // Re-check everything after the delay — state may have changed
       if (
         !userPaused &&
         !audio.ended &&
@@ -405,26 +364,25 @@ audio.addEventListener("pause", () => {
       ) {
         try {
           await audio.play();
-          resumeRetries = 0; // Successfully resumed
+          resumeRetries = 0;
         } catch (err) {
           console.warn(`Auto-resume retry ${resumeRetries} blocked:`, err);
           if (resumeRetries >= 3) {
-            setPlayerStatus("Playback stalled. Please press Play manually.");
+            armPlaybackStallRecovery("pause-resume");
+            setPlayerStatus("Playback stalled. Attempting recovery...");
           }
         }
       }
     }, 2000);
   } else if (!userPaused && audio.ended) {
-    // Already handled by 'ended' listener, do nothing here
   } else if (audio.currentTime > 0 && !audio.ended && !isTransitioning) {
     setPlayerStatus("Playback paused.");
     resumeRetries = 0;
   }
 });
 
-
-// Audio Error Handling
 audio.addEventListener("error", (e) => {
+  clearPlaybackStallRecoveryTimer();
   const err = audio.error;
   let msg = "Playback error occurred.";
   let technical = "Unknown audio error";
@@ -441,18 +399,36 @@ audio.addEventListener("error", (e) => {
   console.error("Audio element error:", err);
   setPlayerStatus(msg);
   showToast(msg);
-  resumeRetries = 0; // Stop auto-resume loop on actual errors
+  resumeRetries = 0;
+
+  const canAdvance = !userPaused && (shuffleEnabled || repeatMode === "all" || currentTrackIndex < playlist.length - 1);
+  if (canAdvance) {
+    setTimeout(() => {
+      playNext({ reason: "audio-error" }).catch((error) => {
+        console.error("Could not skip after audio error:", error);
+      });
+    }, 250);
+  }
 });
 
 audio.addEventListener("stalled", () => {
   if (!audio.paused && !audio.ended) {
     addErrorLog(`Playback stalled/buffering at ${audio.currentTime.toFixed(2)}s`, "AudioStatus");
     setPlayerStatus("Buffering/Stalled...");
+    armPlaybackStallRecovery("stalled");
+  }
+});
+
+audio.addEventListener("waiting", () => {
+  if (!audio.paused && !audio.ended) {
+    setPlayerStatus("Waiting for audio...");
+    armPlaybackStallRecovery("waiting");
   }
 });
 
 audio.addEventListener("ended", async () => {
-  resumeRetries = 0; // Reset retries on successful completion
+  clearPlaybackStallRecoveryTimer();
+  resumeRetries = 0;
   pendingRestoreTime = null;
   localStorage.removeItem(STORAGE_KEYS.currentTime);
 
@@ -467,9 +443,6 @@ audio.addEventListener("ended", async () => {
     repeatMode === "off" &&
     currentTrackIndex === playlist.length - 1
   ) {
-    // Playlist finished naturally — mark as user-paused so the subsequent
-    // 'pause' event (which always fires after 'ended') does NOT trigger
-    // the auto-resume loop.
     userPaused = true;
     updatePlayPauseButton();
     setPlayerStatus("Reached the end of the playlist.");
@@ -486,7 +459,11 @@ audio.addEventListener("ended", async () => {
       `shuffle: ${shuffleEnabled}, index: ${currentTrackIndex}/${playlist.length - 1}`
     );
     try {
-      await playNext();
+      const advanced = await playNext({ reason: "auto-advance" });
+      if (!advanced) {
+        addErrorLog("Auto-advance exhausted the queue without starting playback.", "AutoAdvance");
+        setPlayerStatus("Auto-advance stalled. Tap ▶ to continue.");
+      }
     } catch (error) {
       const msg = `Auto-advance failed: ${error?.name} — ${error?.message}`;
       console.error("[ended]", msg, error);
@@ -529,24 +506,20 @@ window.addEventListener("beforeunload", () => {
   saveVolume();
   saveModes();
   revokeCurrentObjectUrl();
+  clearPreloadedTrackSource();
 });
 
-// ── Service Worker Registration & Update Detection ─────────────────────────
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("./service-worker.js").then((reg) => {
-      // Check for updates every hour (avoids hammering the server on every page load)
       setInterval(() => reg.update(), 60 * 60 * 1000);
 
-      // A new SW has been found and finished installing — it is now WAITING.
-      // Do NOT activate it yet; instead show the update banner and let the user decide.
       function onUpdateFound() {
         const newWorker = reg.installing;
         if (!newWorker) return;
 
         newWorker.addEventListener("statechange", () => {
           if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-            // There is a new version waiting — show the non-intrusive banner.
             showUpdateBanner(reg);
           }
         });
@@ -554,8 +527,6 @@ if ("serviceWorker" in navigator) {
 
       reg.addEventListener("updatefound", onUpdateFound);
 
-      // If a new worker is already waiting when the page loads (e.g. user returned
-      // to a tab that had been open during a deployment), show the banner immediately.
       if (reg.waiting && navigator.serviceWorker.controller) {
         showUpdateBanner(reg);
       }
@@ -564,8 +535,6 @@ if ("serviceWorker" in navigator) {
     });
   });
 
-  // After the user clicks "Update Now" the new SW calls skipWaiting(), which
-  // triggers controllerchange. At that point we do a clean page reload.
   let refreshing = false;
   navigator.serviceWorker.addEventListener("controllerchange", () => {
     if (!refreshing) {
@@ -575,13 +544,7 @@ if ("serviceWorker" in navigator) {
   });
 }
 
-/**
- * Show an in-app "New version available" banner.
- * Only one instance can exist at a time.
- * @param {ServiceWorkerRegistration} reg
- */
 function showUpdateBanner(reg) {
-  // Don't create a second banner if one already exists
   if (document.getElementById("updateBanner")) return;
 
   const banner = document.createElement("div");
@@ -600,13 +563,10 @@ function showUpdateBanner(reg) {
   `;
   document.body.appendChild(banner);
 
-  // Animate in after next frame
   requestAnimationFrame(() => banner.classList.add("is-visible"));
 
   document.getElementById("updateNowBtn").addEventListener("click", () => {
     banner.classList.remove("is-visible");
-    // Tell the waiting service worker to skip waiting and take control.
-    // The controllerchange listener above will then reload the page cleanly.
     const waitingWorker = reg.waiting;
     if (waitingWorker) {
       waitingWorker.postMessage({ type: "SKIP_WAITING" });
@@ -624,9 +584,8 @@ function updateQrCode() {
   const qrImageFull = document.getElementById("qrImageFull");
   const settingsQrImage = document.getElementById("settingsQrImage");
 
-  // Use the canonical public URL, not window.location (avoids localhost in QR during dev)
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(APP_URL)}`;
-  
+
   if (qrImage) qrImage.src = qrUrl;
   if (qrImageFull) qrImageFull.src = qrUrl;
   if (settingsQrImage) settingsQrImage.src = qrUrl;
@@ -657,24 +616,13 @@ if (closeQrBtn && qrFullscreen) {
   });
 }
 
-// ── Shared QR composition helper ─────────────────────────────────────────────
-/**
- * Draws a composed QR image on a canvas:
- *   • white rounded-rect frame (padding around QR)
- *   • the QR code
- *   • the app logo centred over the QR quiet zone
- * Returns a Promise<Blob> (PNG).
- */
 async function buildQrComposedCanvas(qrSrc) {
-  const SIZE      = 400;   // output canvas size (px)
-  const PADDING   = 24;    // white border around QR (px)
-  const RADIUS    = 20;    // frame corner radius
-  const LOGO_FRAC = 0.22;  // logo diameter as fraction of QR area
+  const SIZE      = 400;
+  const PADDING   = 24;
+  const RADIUS    = 20;
+  const LOGO_FRAC = 0.22;
 
-  // Load QR image
   const qrImg = await loadImage(qrSrc);
-
-  // Load logo (same icon used in the overlay)
   const logoImg = await loadImage("icons/icon-512.png");
 
   const canvas  = document.createElement("canvas");
@@ -682,23 +630,20 @@ async function buildQrComposedCanvas(qrSrc) {
   canvas.height = SIZE;
   const ctx     = canvas.getContext("2d");
 
-  // 1. White rounded frame
   const frameX = 0, frameY = 0, frameW = SIZE, frameH = SIZE;
   ctx.fillStyle = "#ffffff";
   ctx.beginPath();
   ctx.roundRect(frameX, frameY, frameW, frameH, RADIUS);
   ctx.fill();
 
-  // 2. QR code (inside the padding)
   const qrX = PADDING, qrY = PADDING;
   const qrW = SIZE - PADDING * 2, qrH = SIZE - PADDING * 2;
   ctx.drawImage(qrImg, qrX, qrY, qrW, qrH);
 
-  // 3. Logo centred (white circle behind it first for contrast)
   const logoSize = qrW * LOGO_FRAC;
   const logoCX   = SIZE / 2;
   const logoCY   = SIZE / 2;
-  const logoR    = logoSize / 2 + 4;   // slight white halo radius
+  const logoR    = logoSize / 2 + 4;
 
   ctx.fillStyle = "#ffffff";
   ctx.beginPath();
@@ -718,7 +663,6 @@ async function buildQrComposedCanvas(qrSrc) {
   );
 }
 
-/** Load an image URL into an HTMLImageElement, resolves when loaded. */
 function loadImage(src) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -729,14 +673,12 @@ function loadImage(src) {
   });
 }
 
-/** Returns a local-time timestamp string for filenames: YYYY-MM-DD-HHMM */
 function qrTimestamp() {
   const now = new Date();
   const pad = n => String(n).padStart(2, "0");
   return `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
 }
 
-/** Copy composed QR canvas PNG to clipboard; falls back to copying the URL. */
 async function handleQrCopy(qrImageEl) {
   try {
     const blob = await buildQrComposedCanvas(qrImageEl.src);
@@ -754,7 +696,6 @@ async function handleQrCopy(qrImageEl) {
   }
 }
 
-/** Download composed QR canvas PNG with a timestamped filename. */
 async function handleQrDownload(qrImageEl) {
   try {
     const blob    = await buildQrComposedCanvas(qrImageEl.src);
@@ -773,7 +714,6 @@ async function handleQrDownload(qrImageEl) {
   }
 }
 
-// ── Sidebar QR copy / download ────────────────────────────────────────────────
 if (copyQrBtn) {
   copyQrBtn.addEventListener("click", () => {
     const img = document.getElementById("qrImage");
@@ -788,7 +728,6 @@ if (downloadQrBtn) {
   });
 }
 
-// ── Settings Share section wiring ─────────────────────────────────────────────
 const settingsShareAppBtn = document.getElementById("settingsShareAppBtn");
 if (settingsShareAppBtn) settingsShareAppBtn.addEventListener("click", handleShare);
 
@@ -817,14 +756,12 @@ if (settingsDownloadQrBtn) {
 }
 
 function updateBuildInfo() {
-  // BUILD_LABEL is defined in js/version.js — the single source of truth.
   const label = typeof BUILD_LABEL !== "undefined" ? BUILD_LABEL : "—";
   const mainInfo = document.getElementById("mainBuildInfo");
   if (mainInfo) mainInfo.innerHTML = label;
 }
 
 async function initApp() {
-  // Apply saved/system theme immediately (before any paint)
   initTheme();
 
   try {
@@ -837,8 +774,7 @@ async function initApp() {
   loadVolume();
   loadModes();
   await loadSavedPlaylists();
-  
-  // ── Handle Shared Files from Android share_target ──
+
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.has("shared") && urlParams.get("shared") === "true") {
     try {
@@ -847,7 +783,6 @@ async function initApp() {
       const files = [];
 
       for (const req of requests) {
-        // Use endsWith locally to check for our temporary file prefix
         if (req.url.includes("shared-temp/")) {
           const resp = await cache.match(req);
           if (resp) {
@@ -863,7 +798,6 @@ async function initApp() {
       if (files.length > 0) {
         await addFileTracks(files);
         showToast(`Imported ${files.length} shared file${files.length !== 1 ? "s" : ""}.`);
-        // Clean URL
         window.history.replaceState({}, document.title, window.location.pathname);
       }
     } catch (err) {
@@ -871,26 +805,23 @@ async function initApp() {
     }
   }
 
-  // Restore previously selected playlist key
   const restoredKey = localStorage.getItem(STORAGE_KEYS.selectedSavedPlaylist);
   if (restoredKey && savedPlaylists[restoredKey]) {
     selectedPlaylistKey = restoredKey;
   }
-  
+
   loadPlaylistFromStorage();
   restoreSleepTimer();
   renderPlaylist();
   updatePlayPauseButton();
-  refreshUpdateRow(); // Show UPDATE row if a user playlist was active on last visit
+  refreshUpdateRow();
 
-  // Initial check: determine if we are already hydrated or need to seed
   console.log(`[Init] Startup state - Workspace size: ${playlist.length}, Index: ${currentTrackIndex}`);
-  
+
   updateNowPlaying(playlist[currentTrackIndex] || null);
   setupMediaSessionActions();
   await renderSidebarLibrary();
 
-  // ── Unified Toggle Function ──
   window.toggleSection = (headerId, containerId, textId, iconId, forceExpand = false) => {
     const header = typeof headerId === 'string' ? document.getElementById(headerId) : headerId;
     const container = typeof containerId === 'string' ? document.getElementById(containerId) : containerId;
@@ -913,7 +844,7 @@ async function initApp() {
     }
 
     header.setAttribute("aria-expanded", targetVisible);
-    
+
     if (textEl) {
       textEl.textContent = targetVisible ? "Hide" : "Show";
     } else if (header.tagName === "BUTTON") {
@@ -923,7 +854,6 @@ async function initApp() {
     if (iconEl) iconEl.style.transform = targetVisible ? "rotate(180deg)" : "";
   };
 
-  // ── Unified Toggle Handling ──
   const wireUpToggle = (headerId, containerId, textId, iconId) => {
     const hdr = document.getElementById(headerId);
     if (!hdr) return;
@@ -946,7 +876,6 @@ async function initApp() {
     addLibraryBtn.addEventListener("click", addSelectedToPlaylist);
   }
 
-  // ── Populate Default Playlist Select ──
   const defSelect = document.getElementById("defaultPlaylistSelect");
   if (defSelect) {
     const sortedNames = Object.keys(savedPlaylists).sort();
@@ -956,7 +885,7 @@ async function initApp() {
       opt.textContent = name;
       defSelect.appendChild(opt);
     });
-    
+
     const savedDefault = localStorage.getItem(STORAGE_KEYS.defaultPlaylist);
     if (savedDefault) defSelect.value = savedDefault;
 
@@ -966,20 +895,14 @@ async function initApp() {
     });
   }
 
-  // Final count update before view switches
   await updateBadgeCounts();
   updateQrCode();
   updateBuildInfo();
 
   if (currentTrackIndex >= 0 && playlist.length > 0) {
     console.log("[Init] Restoring active track:", currentTrackIndex);
-    await loadTrack(currentTrackIndex, false);
+    await loadTrack(currentTrackIndex, false, { reason: "init-restore" });
   } else if (playlist.length === 0) {
-    // Priority for startup:
-    // 1. User's saved Default Playlist
-    // 2. "Remember the Lord" (App default)
-    // 3. All Library files (fallback)
-    
     const userDefault = localStorage.getItem(STORAGE_KEYS.defaultPlaylist);
     const starterName = (userDefault && savedPlaylists[userDefault]) ? userDefault : "Remember the Lord";
 
@@ -987,7 +910,7 @@ async function initApp() {
 
     if (savedPlaylists[starterName]) {
       selectedPlaylistKey = starterName;
-      await loadNamedPlaylist(); // This will call updateBadgeCounts and updateNowPlaying correctly
+      await loadNamedPlaylist();
     } else {
       console.log("[Init] No starter playlist found. Checking device library as fallback.");
       const records = db ? await getAllTrackMetadata() : [];
@@ -998,7 +921,7 @@ async function initApp() {
           sourceType: "file"
         }));
         currentTrackIndex = 0;
-        await loadTrack(0, false);
+        await loadTrack(0, false, { reason: "init-fallback" });
         renderPlaylist();
       } else {
         console.log("[Init] System truly empty. Landing page will remain in 'Nothing loaded yet' state.");
@@ -1006,24 +929,17 @@ async function initApp() {
     }
   }
 
-  // ── Set Initial View ──
-  // Do this after startup logic but before UI jumps
   switchView("view-player");
 
-  // Header text/badge jumps
   const nowPlayingPlaylistInfo = document.getElementById("nowPlayingPlaylistInfo");
-  
+
   if (nowPlayingPlaylistInfo) {
     nowPlayingPlaylistInfo.addEventListener("click", (e) => {
       e.stopPropagation();
 
-      // Signal switchView to NOT auto-collapse the queue on this navigation
       expandQueueForJumpNavigation = true;
-
-      // 1. Switch to the Playlist tab
       switchView("view-playlists");
 
-      // 2. Expand Current Queue if it is collapsed
       const queueCard = document.getElementById("currentPlaylistCard");
       const queueBtn  = document.getElementById("currentPlaylistHeaderBtn");
       if (queueCard && queueCard.classList.contains("collapsed")) {
@@ -1034,7 +950,6 @@ async function initApp() {
         queueBtn.textContent = "Hide";
       }
 
-      // 3. Reuse the same scroll logic as "Jump to Current" button
       setTimeout(jumpToCurrentTrack, 120);
     });
   }
@@ -1047,12 +962,9 @@ async function initApp() {
   if (playlistBadge) {
     playlistBadge.addEventListener("click", (e) => {
       e.stopPropagation();
-      
-      // Auto expand if collapsed
       toggleSection("currentPlaylistHeaderBtn", "playlistContainer", "playlistCollapseText", "playlistCollapseIcon", true);
 
       if (currentPlaylistHeaderBtn) {
-        // Bring the Current Playlist label to the very top
         currentPlaylistHeaderBtn.scrollIntoView({ behavior: "smooth", block: "start" });
       } else if (playlistEl) {
         playlistEl.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -1063,7 +975,6 @@ async function initApp() {
   try {
     const splash = document.getElementById("splashScreen");
     if (splash) {
-      // Delay to let the fancy bouncy animation finish
       setTimeout(() => {
         splash.classList.add("fade-out");
       }, 4000);
@@ -1072,7 +983,6 @@ async function initApp() {
     console.warn("Splash screen fade failed:", err);
   }
 
-  // Playback watchdog — detects ghost play state
   let _lastWatchTime = null;
   let _watchStallCount = 0;
 
@@ -1089,13 +999,12 @@ async function initApp() {
     if (audio.currentTime === _lastWatchTime) {
       _watchStallCount++;
       if (_watchStallCount >= 2) {
-        // Audio says playing but hasn't moved for ~4s — force UI reset
         console.warn("Playback watchdog: stall detected, resetting UI");
-        updatePlayPauseButton(); // forces re-read of audio.paused, spinning syncs to state
+        updatePlayPauseButton();
+        armPlaybackStallRecovery("watchdog");
         if (_watchStallCount >= 4) {
-          // After ~8s stall, attempt full recovery
           setPlayerStatus("Playback stalled. Attempting recovery...");
-          loadTrack(currentTrackIndex, true).catch(() => {
+          recoverFromPlaybackStall("watchdog-hard").catch(() => {
             setPlayerStatus("Playback stalled. Press Play to retry.");
           });
           _watchStallCount = 0;
@@ -1113,8 +1022,7 @@ function jumpToSavedPlaylists() {
     savedPlaylistsSelect.scrollIntoView({ behavior: "smooth", block: "center" });
     savedPlaylistsSelect.classList.add("highlight");
     setTimeout(() => savedPlaylistsSelect.classList.remove("highlight"), 1200);
-    
-    // Attempt to open the dropdown menu natively
+
     try {
       if (typeof savedPlaylistsSelect.showPicker === "function") {
         savedPlaylistsSelect.showPicker();
@@ -1127,7 +1035,6 @@ function jumpToSavedPlaylists() {
   }
 }
 
-// ── Scroll to Top Logic ─────────────────────────────────────────────
 const scrollToTopBtn = document.getElementById("scrollToTopBtn");
 if (scrollToTopBtn) {
   window.addEventListener("scroll", () => {
@@ -1143,8 +1050,6 @@ if (scrollToTopBtn) {
   });
 }
 
-// ── Entry Point & Crash Protection ─────────────────────────
-// Immediate 5-second safety valve: if ANYTHING hangs, clear splash anyway
 setTimeout(() => {
   const splash = document.getElementById("splashScreen");
   if (splash && !splash.classList.contains("fade-out")) {
@@ -1155,8 +1060,7 @@ setTimeout(() => {
 
 initApp().then(() => {
   console.log("Application initialized successfully.");
-  
-  // ── File Handling API (Launch Queue) ─────────────────────────
+
   if ('launchQueue' in window) {
     window.launchQueue.setConsumer(async (launchParams) => {
       if (!launchParams.files || !launchParams.files.length) return;
@@ -1173,7 +1077,6 @@ initApp().then(() => {
     });
   }
 
-  // ── Service Worker Error Reporting ─────────────────────────
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.addEventListener('message', (event) => {
       if (event.data && event.data.type === 'SW_ERROR') {
