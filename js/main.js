@@ -25,8 +25,8 @@ playPauseBtn.addEventListener("click", async () => {
 
 nextBtn.addEventListener("click", async () => playNext());
 prevBtn.addEventListener("click", async () => playPrev());
-skipBackBtn.addEventListener("click", () => skipSeconds(-30));
-skipForwardBtn.addEventListener("click", () => skipSeconds(30));
+skipBackBtn.addEventListener("click", () => skipSeconds(-15));
+skipForwardBtn.addEventListener("click", () => skipSeconds(15));
 
 shuffleBtn.addEventListener("click", toggleShuffle);
 repeatBtn.addEventListener("click", cycleRepeatMode);
