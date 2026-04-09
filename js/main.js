@@ -284,24 +284,69 @@ audio.addEventListener("loadedmetadata", () => {
   }
 });
 
+// ── Scrubbing state ────────────────────────────────────────────────────────
+// isScrubbing = true while the user is actively pressing/dragging the seek
+// handle. When true, the timeupdate handler must NOT overwrite seekBar.value,
+// otherwise it snaps the thumb back to the actual playback position.
+let isScrubbing = false;
+
 audio.addEventListener("timeupdate", () => {
   currentTimeEl.textContent = formatTime(audio.currentTime);
 
-  if (Number.isFinite(audio.duration) && audio.duration > 0) {
-    seekBar.value = (audio.currentTime / audio.duration) * 100;
-  } else {
-    seekBar.value = 0;
+  // Only update the bar position from audio when the user is NOT dragging it.
+  if (!isScrubbing) {
+    if (Number.isFinite(audio.duration) && audio.duration > 0) {
+      seekBar.value = (audio.currentTime / audio.duration) * 100;
+    } else {
+      seekBar.value = 0;
+    }
   }
 
   clearPlaybackStallRecoveryTimer();
   savePlaybackState();
 });
 
-seekBar.addEventListener("input", () => {
+// ── Seek bar scrubbing ──────────────────────────────────────────────────────
+// Strategy: let the NATIVE range element handle all thumb tracking (it does
+// this correctly for mouse and touch). We only need to:
+//   1. Set isScrubbing = true on pointerdown so timeupdate stops fighting us.
+//   2. Update the currentTime display label live during the drag (input event).
+//   3. Commit audio.currentTime on pointerup / pointercancel.
+//
+// Critical: do NOT call seekBar.setPointerCapture() — that breaks the
+// browser's internal range-thumb drag machinery and freezes the thumb.
+
+function onSeekBarPointerDown() {
+  isScrubbing = true;
+}
+
+function onSeekBarInput() {
+  // Fires continuously as the thumb moves (native range behaviour).
+  // Update the displayed time label in real-time while dragging.
+  if (Number.isFinite(audio.duration) && audio.duration > 0) {
+    currentTimeEl.textContent = formatTime((Number(seekBar.value) / 100) * audio.duration);
+  }
+  // Also seek immediately for click-on-bar (single tap, no drag).
+  // When isScrubbing is true from a drag this is a preview; the
+  // pointerup handler will also fire and commits the same value — harmless.
   if (!Number.isFinite(audio.duration) || audio.duration <= 0) return;
   const seekTo = (Number(seekBar.value) / 100) * audio.duration;
   audio.currentTime = seekTo;
-});
+}
+
+function onSeekBarPointerUp() {
+  if (!isScrubbing) return;
+  isScrubbing = false;
+  // Commit any final drag position that input may not have caught.
+  if (!Number.isFinite(audio.duration) || audio.duration <= 0) return;
+  const seekTo = (Number(seekBar.value) / 100) * audio.duration;
+  audio.currentTime = seekTo;
+}
+
+seekBar.addEventListener("pointerdown",  onSeekBarPointerDown);
+seekBar.addEventListener("input",        onSeekBarInput);
+seekBar.addEventListener("pointerup",    onSeekBarPointerUp);
+seekBar.addEventListener("pointercancel", onSeekBarPointerUp); // finger lifted abruptly
 
 if (volumeSlider) {
   volumeSlider.addEventListener("input", () => {
@@ -810,17 +855,61 @@ async function initApp() {
     selectedPlaylistKey = restoredKey;
   }
 
-  loadPlaylistFromStorage();
-  restoreSleepTimer();
-  renderPlaylist();
-  updatePlayPauseButton();
-  refreshUpdateRow();
+  // ── Startup precedence ───────────────────────────────────────────────────
+  // Rule 1: defaultPlaylist is set AND autoloadEnabled is "true" AND playlist exists → auto-load it.
+  // Rule 2: Otherwise → restore last workspace state (existing behavior).
+  // Rule 3: Workspace empty → fall back to device library or empty state.
 
-  console.log(`[Init] Startup state - Workspace size: ${playlist.length}, Index: ${currentTrackIndex}`);
+  const defaultPlaylistName = localStorage.getItem(STORAGE_KEYS.defaultPlaylist);
+  const autoloadIsEnabled   = localStorage.getItem(STORAGE_KEYS.autoloadEnabled) === "true";
+  const defaultIsValid      = !!(defaultPlaylistName && savedPlaylists[defaultPlaylistName]);
 
-  updateNowPlaying(playlist[currentTrackIndex] || null);
-  setupMediaSessionActions();
-  await renderSidebarLibrary();
+  if (defaultPlaylistName && !defaultIsValid) {
+    // Default playlist was deleted — clear both keys
+    localStorage.removeItem(STORAGE_KEYS.defaultPlaylist);
+    localStorage.removeItem(STORAGE_KEYS.autoloadEnabled);
+    showToast(`Default playlist "${defaultPlaylistName}" not found. Cleared.`);
+    console.warn(`[Init] Default playlist "${defaultPlaylistName}" not found. Cleared.`);
+  }
+
+  if (defaultIsValid && autoloadIsEnabled) {
+    // Rule 1: auto-load the chosen default
+    console.log(`[Init] Auto-load enabled. Loading "${defaultPlaylistName}" on startup.`);
+    selectedPlaylistKey = defaultPlaylistName;
+    await loadNamedPlaylist();
+    restoreSleepTimer();
+    setupMediaSessionActions();
+    await renderSidebarLibrary();
+  } else {
+    // Rule 2: normal workspace restore
+    loadPlaylistFromStorage();
+    renderPlaylist();
+    updatePlayPauseButton();
+    refreshUpdateRow();
+
+    console.log(`[Init] Startup state — Workspace: ${playlist.length} tracks, Index: ${currentTrackIndex}`);
+    updateNowPlaying(playlist[currentTrackIndex] || null);
+    restoreSleepTimer();
+    setupMediaSessionActions();
+    await renderSidebarLibrary();
+
+    if (currentTrackIndex >= 0 && playlist.length > 0) {
+      console.log("[Init] Restoring active track:", currentTrackIndex);
+      await loadTrack(currentTrackIndex, false, { reason: "init-restore" });
+    } else if (playlist.length === 0) {
+      // Rule 3: truly empty — try device library
+      console.log("[Init] Workspace empty. Checking device library as fallback.");
+      const records = db ? await getAllTrackMetadata() : [];
+      if (records.length > 0) {
+        playlist = records.map(r => ({ id: r.id, title: r.title, sourceType: "file" }));
+        currentTrackIndex = 0;
+        await loadTrack(0, false, { reason: "init-fallback" });
+        renderPlaylist();
+      } else {
+        console.log("[Init] System empty. Staying in 'Nothing loaded yet' state.");
+      }
+    }
+  }
 
   window.toggleSection = (headerId, containerId, textId, iconId, forceExpand = false) => {
     const header = typeof headerId === 'string' ? document.getElementById(headerId) : headerId;
@@ -876,58 +965,13 @@ async function initApp() {
     addLibraryBtn.addEventListener("click", addSelectedToPlaylist);
   }
 
-  const defSelect = document.getElementById("defaultPlaylistSelect");
-  if (defSelect) {
-    const sortedNames = Object.keys(savedPlaylists).sort();
-    sortedNames.forEach(name => {
-      const opt = document.createElement("option");
-      opt.value = name;
-      opt.textContent = name;
-      defSelect.appendChild(opt);
-    });
-
-    const savedDefault = localStorage.getItem(STORAGE_KEYS.defaultPlaylist);
-    if (savedDefault) defSelect.value = savedDefault;
-
-    defSelect.addEventListener("change", () => {
-      localStorage.setItem(STORAGE_KEYS.defaultPlaylist, defSelect.value);
-      showToast(defSelect.value ? `Default: ${defSelect.value}` : "Auto-load disabled.");
-    });
-  }
+  // (Auto-load default is now controlled per-card in renderPlaylistsView — no Player-view wiring needed)
 
   await updateBadgeCounts();
   updateQrCode();
   updateBuildInfo();
 
-  if (currentTrackIndex >= 0 && playlist.length > 0) {
-    console.log("[Init] Restoring active track:", currentTrackIndex);
-    await loadTrack(currentTrackIndex, false, { reason: "init-restore" });
-  } else if (playlist.length === 0) {
-    const userDefault = localStorage.getItem(STORAGE_KEYS.defaultPlaylist);
-    const starterName = (userDefault && savedPlaylists[userDefault]) ? userDefault : "Remember the Lord";
-
-    console.log(`[Init] Workspace empty. Attempting to seed with "${starterName}"`);
-
-    if (savedPlaylists[starterName]) {
-      selectedPlaylistKey = starterName;
-      await loadNamedPlaylist();
-    } else {
-      console.log("[Init] No starter playlist found. Checking device library as fallback.");
-      const records = db ? await getAllTrackMetadata() : [];
-      if (records.length > 0) {
-        playlist = records.map(r => ({
-          id: r.id,
-          title: r.title,
-          sourceType: "file"
-        }));
-        currentTrackIndex = 0;
-        await loadTrack(0, false, { reason: "init-fallback" });
-        renderPlaylist();
-      } else {
-        console.log("[Init] System truly empty. Landing page will remain in 'Nothing loaded yet' state.");
-      }
-    }
-  }
+  // (startup handled above in the precedence block)
 
   switchView("view-player");
 

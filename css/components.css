@@ -878,6 +878,13 @@ input[type="range"]::-moz-range-thumb {
   width: 100%;
 }
 
+/* Prevent page-scroll from stealing horizontal drag on the seek bar (mobile) */
+.seek-bar {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 /* ═══════════════════════════════════════════
    PLAYER CONTROLS
 ═══════════════════════════════════════════ */
