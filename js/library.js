@@ -361,16 +361,33 @@ async function addSelectedToPlaylist() {
 
   // Navigate to Playlist tab and show the queue — only when tracks were actually added
   if (toAdd.length > 0 && typeof switchView === "function") {
-    // Tell switchView to keep the queue expanded (not collapse it)
-    expandQueueForJumpNavigation = true;
     switchView("view-playlists");
 
-    // After the tab transition settles, scroll the queue header into view
-    setTimeout(() => {
-      const queueHeader = document.getElementById("sidebar-section-queue");
-      if (queueHeader) {
-        queueHeader.scrollIntoView({ behavior: "smooth", block: "start" });
+    // Expand CURRENT QUEUE using the same mechanism as the nowPlaying click handler.
+    // Use requestAnimationFrame to ensure switchView's DOM updates have settled first.
+    requestAnimationFrame(() => {
+      const queueCard = document.getElementById("currentPlaylistCard");
+      const queueBtn  = document.getElementById("currentPlaylistHeaderBtn");
+
+      if (queueCard && queueCard.classList.contains("collapsed")) {
+        if (typeof toggleSection === "function") {
+          toggleSection("currentPlaylistHeaderBtn", "currentPlaylistCard", "playlistCollapseText", "playlistCollapseIcon", true);
+        } else {
+          queueCard.classList.remove("collapsed");
+        }
       }
-    }, 100);
+      if (queueBtn) {
+        queueBtn.textContent = "Hide";
+        queueBtn.setAttribute("aria-expanded", "true");
+      }
+
+      // Scroll the queue header into view
+      setTimeout(() => {
+        const queueHeader = document.getElementById("sidebar-section-queue");
+        if (queueHeader) {
+          queueHeader.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 100);
+    });
   }
 }

@@ -106,37 +106,7 @@ function switchView(targetViewId) {
   }
 
   if (targetViewId === "view-playlists") {
-    if (!expandQueueForJumpNavigation) {
-      const queueCard = document.getElementById("currentPlaylistCard");
-      const queueBtn  = document.getElementById("currentPlaylistHeaderBtn");
-      const queueIsEmpty = !playlist || playlist.length === 0;
-      if (queueIsEmpty && queueCard && !queueCard.classList.contains("collapsed")) {
-        queueCard.classList.remove("expanded");
-        queueCard.classList.add("collapsed");
-        if (queueBtn) {
-          queueBtn.setAttribute("aria-expanded", "false");
-          queueBtn.textContent = "Show";
-        }
-      } else if (!queueIsEmpty && queueCard) {
-        queueCard.classList.remove("collapsed");
-        queueCard.classList.add("expanded");
-        if (queueBtn) {
-          queueBtn.setAttribute("aria-expanded", "true");
-          queueBtn.textContent = "Hide";
-        }
-      }
-    }
     expandQueueForJumpNavigation = false;
-  }
-
-  if (targetViewId === "view-library") {
-    document.querySelectorAll(".library-section-content").forEach(el => {
-      el.style.display = "";
-    });
-    document.querySelectorAll(".library-section-header .sidebar-collapse-toggle").forEach(btn => {
-      btn.textContent = "Hide";
-      btn.setAttribute("aria-expanded", "true");
-    });
   }
 
   document.querySelectorAll(".nav-item").forEach(btn => {
@@ -856,32 +826,45 @@ async function initApp() {
   }
 
   // ── Startup precedence ───────────────────────────────────────────────────
-  // Rule 1: defaultPlaylist is set AND autoloadEnabled is "true" AND playlist exists → auto-load it.
-  // Rule 2: Otherwise → restore last workspace state (existing behavior).
-  // Rule 3: Workspace empty → fall back to device library or empty state.
+  // Priority order:
+  //   1. Explicit valid default  → load it immediately into the Player.
+  //   2. No default (or stale)   → set "Na's Songs Plus" as default if it
+  //                                exists, then load it.
+  //   3. No valid playlist at all → fall back to workspace restore or empty.
 
-  const defaultPlaylistName = localStorage.getItem(STORAGE_KEYS.defaultPlaylist);
-  const autoloadIsEnabled   = localStorage.getItem(STORAGE_KEYS.autoloadEnabled) === "true";
-  const defaultIsValid      = !!(defaultPlaylistName && savedPlaylists[defaultPlaylistName]);
+  const FALLBACK_DEFAULT = "Na's Songs Plus";
+
+  let defaultPlaylistName = localStorage.getItem(STORAGE_KEYS.defaultPlaylist);
+  let defaultIsValid      = !!(defaultPlaylistName && savedPlaylists[defaultPlaylistName]);
 
   if (defaultPlaylistName && !defaultIsValid) {
-    // Default playlist was deleted — clear both keys
+    // Saved default points to a missing playlist — clear it and log
+    console.warn(`[Init] Default playlist "${defaultPlaylistName}" not found. Recovering.`);
     localStorage.removeItem(STORAGE_KEYS.defaultPlaylist);
-    localStorage.removeItem(STORAGE_KEYS.autoloadEnabled);
-    showToast(`Default playlist "${defaultPlaylistName}" not found. Cleared.`);
-    console.warn(`[Init] Default playlist "${defaultPlaylistName}" not found. Cleared.`);
+    defaultPlaylistName = null;
   }
 
-  if (defaultIsValid && autoloadIsEnabled) {
-    // Rule 1: auto-load the chosen default
-    console.log(`[Init] Auto-load enabled. Loading "${defaultPlaylistName}" on startup.`);
+  if (!defaultPlaylistName) {
+    // No valid default set — try to auto-set the fallback
+    if (savedPlaylists[FALLBACK_DEFAULT]) {
+      defaultPlaylistName = FALLBACK_DEFAULT;
+      localStorage.setItem(STORAGE_KEYS.defaultPlaylist, FALLBACK_DEFAULT);
+      defaultIsValid = true;
+      console.log(`[Init] No default set. Auto-selected fallback default: "${FALLBACK_DEFAULT}".`);
+    }
+  }
+
+  if (defaultIsValid && defaultPlaylistName) {
+    // ── Path A: Load the chosen default ────────────────────────────────────
+    console.log(`[Init] Loading default playlist on startup: "${defaultPlaylistName}".`);
     selectedPlaylistKey = defaultPlaylistName;
     await loadNamedPlaylist();
+
     restoreSleepTimer();
     setupMediaSessionActions();
     await renderSidebarLibrary();
   } else {
-    // Rule 2: normal workspace restore
+    // ── Path B: No default available — normal workspace restore ─────────────
     loadPlaylistFromStorage();
     renderPlaylist();
     updatePlayPauseButton();
@@ -897,7 +880,7 @@ async function initApp() {
       console.log("[Init] Restoring active track:", currentTrackIndex);
       await loadTrack(currentTrackIndex, false, { reason: "init-restore" });
     } else if (playlist.length === 0) {
-      // Rule 3: truly empty — try device library
+      // Try device library as last resort
       console.log("[Init] Workspace empty. Checking device library as fallback.");
       const records = db ? await getAllTrackMetadata() : [];
       if (records.length > 0) {
@@ -906,7 +889,7 @@ async function initApp() {
         await loadTrack(0, false, { reason: "init-fallback" });
         renderPlaylist();
       } else {
-        console.log("[Init] System empty. Staying in 'Nothing loaded yet' state.");
+        console.log("[Init] System empty. No playlist available.");
       }
     }
   }
@@ -965,13 +948,10 @@ async function initApp() {
     addLibraryBtn.addEventListener("click", addSelectedToPlaylist);
   }
 
-  // (Auto-load default is now controlled per-card in renderPlaylistsView — no Player-view wiring needed)
-
   await updateBadgeCounts();
   updateQrCode();
   updateBuildInfo();
 
-  // (startup handled above in the precedence block)
 
   switchView("view-player");
 
@@ -1013,6 +993,38 @@ async function initApp() {
       } else if (playlistEl) {
         playlistEl.scrollIntoView({ behavior: "smooth", block: "center" });
       }
+    });
+  }
+
+  // ── Wire the GO TO QUEUE NOW button in the unsaved queue modal ─────────────
+  const goToQueueBtn = document.getElementById("unsavedWarningGoToQueueBtn");
+  if (goToQueueBtn) {
+    goToQueueBtn.addEventListener("click", () => {
+      // Dismiss the modal
+      const modal = document.getElementById("unsavedQueueWarning");
+      const scrim = document.getElementById("unsavedQueueScrim");
+      if (modal) modal.classList.add("hidden");
+      if (scrim) scrim.classList.add("hidden");
+
+      // Switch to playlist tab
+      switchView("view-playlists");
+
+      // Expand CURRENT QUEUE
+      const queueCard = document.getElementById("currentPlaylistCard");
+      const queueBtn2 = document.getElementById("currentPlaylistHeaderBtn");
+      if (queueCard && queueCard.classList.contains("collapsed")) {
+        toggleSection("currentPlaylistHeaderBtn", "playlistContainer", "playlistCollapseText", "playlistCollapseIcon", true);
+      }
+      if (queueBtn2) {
+        queueBtn2.setAttribute("aria-expanded", "true");
+        queueBtn2.textContent = "Hide";
+      }
+
+      // Scroll to queue header
+      setTimeout(() => {
+        const queueHeader = document.getElementById("sidebar-section-queue");
+        if (queueHeader) queueHeader.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
     });
   }
 

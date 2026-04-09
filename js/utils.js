@@ -427,8 +427,8 @@ function normalizeTrack(track) {
 
 function updateNowPlaying(track) {
   if (!track) {
-    trackTitleEl.textContent = "Nothing loaded yet";
-    trackMetaEl.textContent = "Tap the record icon or add a file below";
+    trackTitleEl.textContent = "No track loaded";
+    trackMetaEl.textContent = "Load a playlist or add audio files to get started";
     setCoverArtEmpty();
     setPlayerStatus("Ready when you are.");
     updateMediaSession();

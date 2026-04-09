@@ -61,7 +61,6 @@ function renderPlaylistsView() {
   }
 
   const currentDefault = localStorage.getItem(STORAGE_KEYS.defaultPlaylist) || "";
-  const autoloadOn     = localStorage.getItem(STORAGE_KEYS.autoloadEnabled) === "true";
 
   entries.forEach((name) => {
     const pl = savedPlaylists[name];
@@ -103,24 +102,6 @@ function renderPlaylistsView() {
       badge.style.cssText = "font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #ff9c2b; background: rgba(255,156,43,0.13); padding: 1px 5px; border-radius: 3px; flex-shrink: 0;";
       badge.textContent = "Default";
       metaLine.appendChild(badge);
-
-      // Auto-load toggle pill
-      const autoBtn = document.createElement("button");
-      autoBtn.type = "button";
-      autoBtn.setAttribute("aria-label", autoloadOn ? "Disable startup auto-load" : "Enable startup auto-load");
-      autoBtn.title = autoloadOn ? "Disable startup auto-load" : "Enable startup auto-load";
-      autoBtn.style.cssText = autoloadOn
-        ? "font-size: 10px; font-weight: 800; letter-spacing: 0.03em; padding: 1px 7px; border-radius: 3px; border: none; cursor: pointer; background: #ff9c2b; color: white; white-space: nowrap; flex-shrink: 0;"
-        : "font-size: 10px; font-weight: 800; letter-spacing: 0.03em; padding: 1px 7px; border-radius: 3px; border: 1px solid var(--border); cursor: pointer; background: transparent; color: var(--muted); white-space: nowrap; flex-shrink: 0;";
-      autoBtn.textContent = autoloadOn ? "🔒 Auto-load: On" : "🔓 Auto-load: Off";
-      autoBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const nowOn = localStorage.getItem(STORAGE_KEYS.autoloadEnabled) === "true";
-        localStorage.setItem(STORAGE_KEYS.autoloadEnabled, String(!nowOn));
-        showToast(!nowOn ? `Auto-load ON — "${name}" loads at startup.` : "Auto-load disabled.");
-        renderPlaylistsView();
-      });
-      metaLine.appendChild(autoBtn);
     }
 
     info.appendChild(nameSpan);
@@ -148,15 +129,11 @@ function renderPlaylistsView() {
     radioBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       if (isCurrentDefault) {
-        // Clicking the active default clears it (and disables autoload)
-        localStorage.removeItem(STORAGE_KEYS.defaultPlaylist);
-        localStorage.removeItem(STORAGE_KEYS.autoloadEnabled);
-        showToast("Default playlist cleared.");
-      } else {
-        localStorage.setItem(STORAGE_KEYS.defaultPlaylist, name);
-        // Keep existing autoload state when changing default
-        showToast(`Default set: "${name}".`);
+        // Already the default — clicking it again is a no-op (radio behavior)
+        return;
       }
+      localStorage.setItem(STORAGE_KEYS.defaultPlaylist, name);
+      showToast(`Default set: "${name}".`);
       renderPlaylistsView();
     });
     card.appendChild(radioBtn);
@@ -177,7 +154,6 @@ function renderPlaylistsView() {
           // If deleting the current default, clear default state too
           if (isCurrentDefault) {
             localStorage.removeItem(STORAGE_KEYS.defaultPlaylist);
-            localStorage.removeItem(STORAGE_KEYS.autoloadEnabled);
           }
           selectedPlaylistKey = name;
           deleteNamedPlaylist();

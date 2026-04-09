@@ -113,8 +113,7 @@ const STORAGE_KEYS = {
   currentPlaylistName: "justPlayItCurrentPlaylistName",
   theme: "justPlayItTheme",
   errorLogs: "justPlayItErrorLogs",
-  defaultPlaylist: "justPlayItDefaultPlaylist",
-  autoloadEnabled: "justPlayItAutoloadEnabled"
+  defaultPlaylist: "justPlayItDefaultPlaylist"
 };
 
 

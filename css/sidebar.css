@@ -73,6 +73,7 @@
 .uq-modal-actions {
   display: flex;
   justify-content: flex-end;
+  gap: 8px;
 }
 
 /* Got it button */
@@ -98,6 +99,32 @@
 
 .uq-modal-btn-ok:active {
   background: rgba(255, 255, 255, 0.32);
+  transform: scale(0.97);
+}
+
+/* Go to Queue button — orange accent, draws the eye */
+.uq-modal-btn-go {
+  background: #ff9c2b;
+  border: 1px solid #ffb84d;
+  border-radius: 8px;
+  color: #1a0e00;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+
+.uq-modal-btn-go:hover {
+  background: #ffb040;
+  border-color: #ffc060;
+}
+
+.uq-modal-btn-go:active {
+  background: #e88c20;
   transform: scale(0.97);
 }
 
