@@ -17,7 +17,7 @@ let preloadedTrackSource = null;
 let preloadingTrackPromise = null;
 let playbackStallRecoveryTimer = null;
 
-const AUTO_ADVANCE_CANPLAY_TIMEOUT_MS = 4000;
+const AUTO_ADVANCE_CANPLAY_TIMEOUT_MS = 8000;
 const AUTO_ADVANCE_PLAY_TIMEOUT_MS = 2500;
 const STALL_RECOVERY_DELAY_MS = 3000;
 

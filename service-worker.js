@@ -7,7 +7,7 @@
 // lives in js/version.js.
 // ────────────────────────────────────────────────────────────
 
-const CACHE_VERSION = "V.101-09APR2026-0710";
+const CACHE_VERSION = "V.102-09APR2026-1545";
 const CACHE_NAME = `just-play-it-${CACHE_VERSION}`;
 
 const ASSETS_TO_CACHE = [
@@ -22,6 +22,24 @@ const ASSETS_TO_CACHE = [
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./audio/basketball_court.mp3",
+  // Built-in playlist audio — must be clean filenames (no !, ,, or spaces)
+  "./audio/nas-songs_plus/before-my-eyes.mp3",
+  "./audio/nas-songs_plus/god-is-my-h-o-m-e.mp3",
+  "./audio/nas-songs_plus/god-with-us.mp3",
+  "./audio/nas-songs_plus/in-the-darkest-night.mp3",
+  "./audio/nas-songs_plus/look-up.mp3",
+  "./audio/nas-songs_plus/the-god-who-fights-for-me.mp3",
+  "./audio/nas-songs_plus/when-my-loved-one-is-gone.mp3",
+  "./audio/nas-songs_plus/you-are-loved-so-very-loved.mp3",
+  "./audio/jonahs-songs/song-1-run-to-tarshish.mp3",
+  "./audio/jonahs-songs/song-2-who-is-this-god.mp3",
+  "./audio/jonahs-songs/song-3-a-god-who-relents.mp3",
+  "./audio/jonahs-songs/song-4-who-knows.mp3",
+  "./audio/jonahs-songs/the-jonah-songs.mp3",
+  "./audio/remember-the-lord/part-1-remember-the-lord.mp3",
+  "./audio/remember-the-lord/part-2-remember-the-lord.mp3",
+  "./audio/remember-the-lord/part-3-remember-the-lord.mp3",
+  "./audio/remember-the-lord/part-4-remember-the-lord.mp3",
   // CSS modules
   "./css/tokens.css",
   "./css/base.css",
