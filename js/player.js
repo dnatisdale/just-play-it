@@ -200,6 +200,10 @@ function schedulePreloadUpcomingTrack() {
 
 async function recoverFromPlaybackStall(reason = "stall") {
   clearPlaybackStallRecoveryTimer();
+  
+  if (typeof addErrorLog === "function") {
+      addErrorLog(`[Recovery] running stall recovery. reason: ${reason}, hidden: ${document.hidden}`, "Recovery");
+  }
 
   if (
     userPaused ||
@@ -208,6 +212,7 @@ async function recoverFromPlaybackStall(reason = "stall") {
     currentTrackIndex < 0 ||
     !playlist[currentTrackIndex]
   ) {
+    if (typeof addErrorLog === "function") addErrorLog(`[Recovery] aborted because invalid state or userPaused`, "Recovery");
     return false;
   }
 
@@ -223,11 +228,13 @@ async function recoverFromPlaybackStall(reason = "stall") {
   });
 
   if (recovered) {
+    if (typeof addErrorLog === "function") addErrorLog(`[Recovery] successfully recovered current track`, "Recovery");
     return true;
   }
 
   const canAdvance = shuffleEnabled || repeatMode === "all" || currentTrackIndex < playlist.length - 1;
   if (canAdvance) {
+    if (typeof addErrorLog === "function") addErrorLog(`[Recovery] failed to recover current track. Skipping ahead.`, "Recovery");
     setPlayerStatus("Current track stalled. Skipping ahead...");
     return playNext({ reason: `${reason}-skip` });
   }
@@ -240,6 +247,10 @@ async function recoverFromPlaybackStall(reason = "stall") {
 }
 
 function armPlaybackStallRecovery(reason = "stall") {
+  if (typeof addErrorLog === "function") {
+      addErrorLog(`[Recovery] requested to arm. reason: ${reason}, hidden: ${document.hidden}`, "Recovery");
+  }
+  
   if (
     playbackStallRecoveryTimer ||
     userPaused ||
@@ -248,13 +259,17 @@ function armPlaybackStallRecovery(reason = "stall") {
     isTransitioning ||
     !audio.src
   ) {
+    if (typeof addErrorLog === "function") addErrorLog(`[Recovery] ignored arm request. State prevents recovery.`, "Recovery");
     return;
   }
+
+  if (typeof addErrorLog === "function") addErrorLog(`[Recovery] armed for ${STALL_RECOVERY_DELAY_MS}ms`, "Recovery");
 
   playbackStallRecoveryTimer = setTimeout(() => {
     playbackStallRecoveryTimer = null;
     recoverFromPlaybackStall(reason).catch((error) => {
       console.error("Playback stall recovery failed:", error);
+      if (typeof addErrorLog === "function") addErrorLog(`[Recovery] failed entirely: ${error.message}`, "Recovery");
       setPlayerStatus("Playback stalled. Tap ▶ to continue.");
     });
   }, STALL_RECOVERY_DELAY_MS);
@@ -353,6 +368,7 @@ async function playNext(options = {}) {
       `[playNext] from: ${currentTrackIndex} → to: ${nextIndex} | ` +
       `repeatMode: ${repeatMode}, shuffle: ${shuffleEnabled}, reason: ${reason}`
     );
+    if (typeof addErrorLog === "function") addErrorLog(`[playNext] manual advance to index ${nextIndex}`, "PlaybackFlow");
 
     userPaused = false;
     resumeRetries = 0;
@@ -362,6 +378,7 @@ async function playNext(options = {}) {
   }
 
   autoAdvanceInProgress = true;
+  if (typeof addErrorLog === "function") addErrorLog(`[playNext:auto] starting auto-advance evaluation`, "AutoAdvance");
 
   try {
     const candidates = getAutoAdvanceCandidateIndices();
@@ -369,6 +386,7 @@ async function playNext(options = {}) {
       userPaused = true;
       updatePlayPauseButton();
       setPlayerStatus("Reached the end of the playlist.");
+      if (typeof addErrorLog === "function") addErrorLog(`[playNext:auto] no candidates found`, "AutoAdvance");
       return false;
     }
 
@@ -377,6 +395,7 @@ async function playNext(options = {}) {
         `[playNext:auto] trying ${nextIndex} from ${currentTrackIndex} | ` +
         `repeatMode: ${repeatMode}, shuffle: ${shuffleEnabled}, reason: ${reason}`
       );
+      if (typeof addErrorLog === "function") addErrorLog(`[playNext:auto] trying candidate index: ${nextIndex}`, "AutoAdvance");
 
       userPaused = false;
       resumeRetries = 0;
@@ -390,10 +409,21 @@ async function playNext(options = {}) {
       });
 
       if (started) {
+        if (window.recoveryState) window.recoveryState.incompleteAutoAdvance = false;
         return true;
       }
 
       console.warn(`[playNext:auto] handoff failed for index ${nextIndex}; trying the next enabled track.`);
+      
+      if (document.hidden && reason === "auto-advance") {
+         if (typeof addErrorLog === "function") {
+             addErrorLog(`[playNext:auto] candidate failed while document is hidden. Setting recovery flag to defer.`, "AutoAdvance");
+         }
+         if (window.recoveryState) {
+             window.recoveryState.incompleteAutoAdvance = true;
+         }
+         return false; // Break loop early, wait for visibilitychange
+      }
     }
 
     userPaused = true;

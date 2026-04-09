@@ -1,6 +1,27 @@
 // ── Canonical public app URL (used for sharing and QR generation) ─────────────
 const APP_URL = "https://just-play-it.pages.dev/";
 
+// State for Android sleep/lock recovery
+window.recoveryState = {
+  incompleteAutoAdvance: false,
+};
+
+document.addEventListener("visibilitychange", () => {
+  if (typeof addErrorLog === "function") {
+    addErrorLog(`[Visibility] changed to: ${document.hidden ? "hidden" : "visible"}`, "Visibility");
+  }
+
+  if (!document.hidden && window.recoveryState.incompleteAutoAdvance) {
+    if (typeof addErrorLog === "function") addErrorLog("[Visibility] resuming incomplete auto-advance on wake", "Recovery");
+    window.recoveryState.incompleteAutoAdvance = false;
+    
+    // Safety check: only restart if we are not already playing
+    if (audio.paused && (shuffleEnabled || repeatMode === "all" || currentTrackIndex < playlist.length - 1)) {
+        playNext({ reason: "visibility-resume" }).catch(e => console.error(e));
+    }
+  }
+});
+
 fileInput.addEventListener("change", async (event) => {
   const files = event.target.files;
   if (!files || files.length === 0) return;
@@ -442,6 +463,7 @@ audio.addEventListener("waiting", () => {
 });
 
 audio.addEventListener("ended", async () => {
+  addErrorLog(`[PlaybackFlow] ended event fired. hidden: ${document.hidden}`, "PlaybackFlow");
   clearPlaybackStallRecoveryTimer();
   resumeRetries = 0;
   pendingRestoreTime = null;
@@ -449,6 +471,7 @@ audio.addEventListener("ended", async () => {
 
   if (repeatMode === "one") {
     audio.currentTime = 0;
+    addErrorLog(`[PlaybackFlow] Replaying due to repeatMode: one`, "PlaybackFlow");
     audio.play().catch((error) => console.error("Replay failed:", error));
     return;
   }
@@ -474,16 +497,23 @@ audio.addEventListener("ended", async () => {
       `shuffle: ${shuffleEnabled}, index: ${currentTrackIndex}/${playlist.length - 1}`
     );
     try {
+      addErrorLog(`[PlaybackFlow] triggering playNext reason: auto-advance`, "PlaybackFlow");
       const advanced = await playNext({ reason: "auto-advance" });
       if (!advanced) {
-        addErrorLog("Auto-advance exhausted the queue without starting playback.", "AutoAdvance");
-        setPlayerStatus("Auto-advance stalled. Tap ▶ to continue.");
+        if (window.recoveryState && window.recoveryState.incompleteAutoAdvance) {
+            addErrorLog("[AutoAdvance] paused candidate evaluation due to sleep/background. Will resume on wake.", "AutoAdvance");
+        } else {
+            addErrorLog("Auto-advance exhausted the queue without starting playback.", "AutoAdvance");
+            setPlayerStatus("Auto-advance stalled. Tap ▶ to continue.");
+        }
       }
     } catch (error) {
       const msg = `Auto-advance failed: ${error?.name} — ${error?.message}`;
       console.error("[ended]", msg, error);
       addErrorLog(msg, "AutoAdvance");
-      setPlayerStatus("Auto-advance failed. Tap ▶ to continue.");
+      if (!window.recoveryState || !window.recoveryState.incompleteAutoAdvance) {
+         setPlayerStatus("Auto-advance failed. Tap ▶ to continue.");
+      }
     }
   }
 });

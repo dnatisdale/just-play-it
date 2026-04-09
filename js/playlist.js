@@ -476,15 +476,21 @@ async function loadTrack(index, shouldPlay = false, options = {}) {
 
   currentTrackIndex = index;
   const track = playlist[index];
+  
+  if (typeof addErrorLog === "function") {
+    addErrorLog(`[loadTrack] started for track "${track.title}" (index ${index})`, "PlaybackFlow");
+  }
 
   pendingRestoreTime = preserveTime;
 
+  if (typeof addErrorLog === "function") addErrorLog(`[loadTrack] resolving source...`, "PlaybackFlow");
   let source = await claimPreloadedSourceForTrack(track);
   if (!source) {
     source = await resolveTrackSource(track);
   }
 
   if (!source) {
+    if (typeof addErrorLog === "function") addErrorLog(`[loadTrack] source resolution failed`, "PlaybackFlow");
     isTransitioning = false;
     updateNowPlaying(track);
     renderPlaylist();
@@ -495,6 +501,8 @@ async function loadTrack(index, shouldPlay = false, options = {}) {
     showToast(`Missing stored file: ${track.title}`);
     return false;
   }
+  
+  if (typeof addErrorLog === "function") addErrorLog(`[loadTrack] source resolved. Assigning audio.src`, "PlaybackFlow");
 
   audio.src = source;
   audio.load();
@@ -536,6 +544,9 @@ async function loadTrack(index, shouldPlay = false, options = {}) {
 
         timeoutId = setTimeout(() => {
           cleanup();
+          if (typeof addErrorLog === "function") {
+            addErrorLog(`[loadTrack] canplay timed out (waited ${canplayTimeoutMs}ms). Attempting play anyway.`, "AutoAdvance");
+          }
           console.warn("loadTrack: canplay timed out — attempting play anyway.");
           resolve();
         }, canplayTimeoutMs);
@@ -551,7 +562,9 @@ async function loadTrack(index, shouldPlay = false, options = {}) {
       }
 
       console.log(`[loadTrack] audio.play() attempt for: "${track.title}"`);
+      if (typeof addErrorLog === "function") addErrorLog(`[loadTrack] attempting audio.play()`, "PlaybackFlow");
       await playAudioWithTimeout(playTimeoutMs);
+      if (typeof addErrorLog === "function") addErrorLog(`[loadTrack] audio.play() succeeded`, "PlaybackFlow");
       isTransitioning = false;
       updatePlayPauseButton();
       schedulePreloadUpcomingTrack();
@@ -559,6 +572,9 @@ async function loadTrack(index, shouldPlay = false, options = {}) {
       return true;
     } catch (error) {
       console.warn(`[loadTrack] audio.play() failed (${error.name}): ${error.message}`);
+      if (typeof addErrorLog === "function") {
+        addErrorLog(`[loadTrack] audio.play() failed (${error.name}): ${error.message}`, "PlaybackFlow");
+      }
 
       if (
         error.name === "NotAllowedError" ||
@@ -566,6 +582,7 @@ async function loadTrack(index, shouldPlay = false, options = {}) {
         error.name === "TimeoutError"
       ) {
         console.log(`[loadTrack] ${error.name} — retrying play() in 600ms...`);
+        if (typeof addErrorLog === "function") addErrorLog(`[loadTrack] retrying play in 600ms due to ${error.name}`, "PlaybackFlow");
         await new Promise(resolve => setTimeout(resolve, 600));
 
         try {
@@ -575,10 +592,12 @@ async function loadTrack(index, shouldPlay = false, options = {}) {
           schedulePreloadUpcomingTrack();
           setPlayerStatus(`Playing: ${track.title}`);
           console.log(`[loadTrack] Retry succeeded for: "${track.title}"`);
+          if (typeof addErrorLog === "function") addErrorLog(`[loadTrack] retry play succeeded`, "PlaybackFlow");
           return true;
         } catch (retryError) {
           isTransitioning = false;
           console.warn(`[loadTrack] Retry failed (${retryError.name}):`, retryError.message);
+          if (typeof addErrorLog === "function") addErrorLog(`[loadTrack] retry play failed (${retryError.name})`, "PlaybackFlow");
           updatePlayPauseButton();
           schedulePreloadUpcomingTrack();
           setPlayerStatus(`Could not start: ${track.title}`);
@@ -598,6 +617,7 @@ async function loadTrack(index, shouldPlay = false, options = {}) {
       }
       return false;
     }
+
   }
 
   isTransitioning = false;
