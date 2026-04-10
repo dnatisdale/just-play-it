@@ -29,17 +29,6 @@ async function renderSidebarLibrary() {
     return true;
   });
 
-  if (records.length === 0 && uniqueBuiltins.length === 0) {
-    deviceLibraryList.innerHTML = `
-      <div class="library-empty-state">
-        <div class="empty-icon">${ICONS.record}</div>
-        <p>No tracks imported yet.</p>
-        <span class="empty-hint">Tap the red + button to pick audio files or a folder.</span>
-      </div>
-    `;
-    return;
-  }
-
   deviceLibraryList.innerHTML = "";
 
   // Helper to create a selector button
@@ -65,22 +54,33 @@ async function renderSidebarLibrary() {
   };
 
   // Section 1: Your Tracks (Personal Uploads)
-  if (records.length > 0) {
-    // Collapsible header
-    const yourTracksHeader = document.createElement("div");
-    yourTracksHeader.className = "library-section-header";
-    yourTracksHeader.innerHTML = `
-      <span class="library-section-title-text">MY TRACKS</span>
-      <button class="sidebar-collapse-toggle" type="button" aria-expanded="false" data-section="your-tracks">Show</button>
+  // Collapsible header
+  const yourTracksHeader = document.createElement("div");
+  yourTracksHeader.className = "library-section-header";
+  yourTracksHeader.innerHTML = `
+    <span class="library-section-title-text">MY TRACKS</span>
+    <button class="sidebar-collapse-toggle" type="button" aria-expanded="false" data-section="your-tracks">Show</button>
+  `;
+  deviceLibraryList.appendChild(yourTracksHeader);
+
+  // Collapsible content wrapper — starts collapsed
+  const yourTracksContent = document.createElement("div");
+  yourTracksContent.className = "library-section-content";
+  yourTracksContent.id = "lib-section-your-tracks";
+  yourTracksContent.style.display = "none";
+
+  if (records.length === 0) {
+    const emptyState = document.createElement("div");
+    emptyState.className = "library-empty-state";
+    emptyState.style.minHeight = "auto";
+    emptyState.style.padding = "20px 0";
+    emptyState.innerHTML = `
+      <div class="empty-icon">${ICONS.record}</div>
+      <p>No tracks imported yet.</p>
+      <span class="empty-hint">Tap the red + button to pick audio files or a folder.</span>
     `;
-    deviceLibraryList.appendChild(yourTracksHeader);
-
-    // Collapsible content wrapper — starts collapsed
-    const yourTracksContent = document.createElement("div");
-    yourTracksContent.className = "library-section-content";
-    yourTracksContent.id = "lib-section-your-tracks";
-    yourTracksContent.style.display = "none";
-
+    yourTracksContent.appendChild(emptyState);
+  } else {
     records.forEach((record) => {
       const size = formatBytes(record.size || record.blob?.size || 0);
       const name = record.title || record.id;
@@ -130,18 +130,18 @@ async function renderSidebarLibrary() {
       item.appendChild(createSelector(record.id));
       yourTracksContent.appendChild(item);
     });
-
-    deviceLibraryList.appendChild(yourTracksContent);
-
-    // Wire up toggle
-    const yourTracksToggle = yourTracksHeader.querySelector("button");
-    yourTracksToggle.addEventListener("click", () => {
-      const isExpanded = yourTracksContent.style.display !== "none";
-      yourTracksContent.style.display = isExpanded ? "none" : "";
-      yourTracksToggle.textContent = isExpanded ? "Show" : "Hide";
-      yourTracksToggle.setAttribute("aria-expanded", String(!isExpanded));
-    });
   }
+
+  deviceLibraryList.appendChild(yourTracksContent);
+
+  // Wire up toggle
+  const yourTracksToggle = yourTracksHeader.querySelector("button");
+  yourTracksToggle.addEventListener("click", () => {
+    const isExpanded = yourTracksContent.style.display !== "none";
+    yourTracksContent.style.display = isExpanded ? "none" : "";
+    yourTracksToggle.textContent = isExpanded ? "Show" : "Hide";
+    yourTracksToggle.setAttribute("aria-expanded", String(!isExpanded));
+  });
 
   // Section 2: Tracks Built-In
   if (uniqueBuiltins.length > 0) {

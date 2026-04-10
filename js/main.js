@@ -262,6 +262,22 @@ function switchView(targetViewId) {
 
   if (targetViewId === "view-playlists") {
     expandQueueForJumpNavigation = false;
+    
+    if (typeof playlist !== 'undefined' && playlist && playlist.length > 0) {
+      const queueCard = document.getElementById("currentPlaylistCard");
+      const queueBtn = document.getElementById("currentPlaylistHeaderBtn");
+      if (queueCard && queueCard.classList.contains("collapsed")) {
+        if (typeof toggleSection === "function") {
+          toggleSection("currentPlaylistHeaderBtn", "currentPlaylistCard", "playlistCollapseText", "playlistCollapseIcon", true);
+        } else {
+          queueCard.classList.remove("collapsed");
+        }
+        if (queueBtn) {
+          queueBtn.textContent = "Hide";
+          queueBtn.setAttribute("aria-expanded", "true");
+        }
+      }
+    }
   }
 
   if (targetViewId === "view-settings") {
