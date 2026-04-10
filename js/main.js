@@ -8,16 +8,39 @@ window.recoveryState = {
 
 document.addEventListener("visibilitychange", () => {
   if (typeof addErrorLog === "function") {
-    addErrorLog(`[Visibility] changed to: ${document.hidden ? "hidden" : "visible"}`, "Visibility");
+    const dur = Number.isFinite(audio.duration) ? audio.duration.toFixed(2) : "N/A";
+    addErrorLog(`[Visibility] state: ${document.hidden ? "hidden" : "visible"} | ` +
+      `currentTime: ${audio.currentTime.toFixed(2)} | duration: ${dur} | ` +
+      `paused: ${audio.paused} | ended: ${audio.ended} | ` +
+      `index: ${currentTrackIndex} | repeat: ${repeatMode} | shuffle: ${shuffleEnabled}`, 
+      "Visibility");
   }
 
-  if (!document.hidden && window.recoveryState.incompleteAutoAdvance) {
-    if (typeof addErrorLog === "function") addErrorLog("[Visibility] resuming incomplete auto-advance on wake", "Recovery");
-    window.recoveryState.incompleteAutoAdvance = false;
-    
-    // Safety check: only restart if we are not already playing
-    if (audio.paused && (shuffleEnabled || repeatMode === "all" || currentTrackIndex < playlist.length - 1)) {
+  if (!document.hidden) {
+    let needsWakeRecovery = false;
+
+    if (window.recoveryState.incompleteAutoAdvance) {
+      if (typeof addErrorLog === "function") addErrorLog("[Visibility] resuming flagged incomplete auto-advance on wake", "Recovery");
+      window.recoveryState.incompleteAutoAdvance = false;
+      needsWakeRecovery = true;
+    } 
+    else if (audio.paused && (audio.ended || (Number.isFinite(audio.duration) && audio.duration > 0 && Math.abs(audio.duration - audio.currentTime) < 0.5))) {
+      const canAdvance = shuffleEnabled || repeatMode === "all" || currentTrackIndex < playlist.length - 1;
+      if (canAdvance) {
+        if (typeof addErrorLog === "function") addErrorLog("[Visibility] detected stranded playback at track end. Executing wake-recovery.", "Recovery");
+        needsWakeRecovery = true;
+      } else if (repeatMode === "one") {
+        if (typeof addErrorLog === "function") addErrorLog("[Visibility] detected stranded playback for repeat-one. Replaying.", "Recovery");
+        audio.currentTime = 0;
+        audio.play().catch(e => console.error("Wake replay failed", e));
+        return;
+      }
+    }
+
+    if (needsWakeRecovery) {
+      if (audio.paused && (shuffleEnabled || repeatMode === "all" || currentTrackIndex < playlist.length - 1)) {
         playNext({ reason: "visibility-resume" }).catch(e => console.error(e));
+      }
     }
   }
 });

@@ -43,13 +43,33 @@ function showErrorLog() {
       <h2 style="margin:0;">Technical Error Log</h2>
       <button onclick="this.parentElement.parentElement.remove()" style="background:#cc3300; color:#fff; border:none; padding:8px 16px; border-radius:4px; font-weight:bold; cursor:pointer;">Close</button>
     </div>
-    <button id="copyLogBtn" style="background:#3182ce; color:#fff; border:none; padding:8px 16px; border-radius:4px; font-weight:bold; cursor:pointer; margin-bottom:20px;">Copy to Clipboard</button>
+    <button id="copyLogBtn" style="background:#3182ce; color:#fff; border:none; padding:8px 16px; border-radius:4px; font-weight:bold; cursor:pointer; margin-bottom:20px; transition:all 0.2s ease;">Copy to Clipboard</button>
     <div>${content}</div>
   `;
   document.body.appendChild(overlay);
   
-  document.getElementById("copyLogBtn").onclick = () => {
-    navigator.clipboard.writeText(content).then(() => showToast("Log copied to clipboard"));
+  const copyBtn = document.getElementById("copyLogBtn");
+  copyBtn.onclick = () => {
+    navigator.clipboard.writeText(content).then(() => {
+      const origText = copyBtn.textContent;
+      const origBg = copyBtn.style.background;
+      copyBtn.textContent = "✓ COPIED!";
+      copyBtn.style.background = "#38a169";
+      copyBtn.style.transform = "scale(1.05)";
+      showToast("Log copied to clipboard");
+      
+      setTimeout(() => {
+        if (copyBtn && document.contains(copyBtn)) {
+           copyBtn.textContent = origText;
+           copyBtn.style.background = origBg;
+           copyBtn.style.transform = "scale(1)";
+        }
+      }, 1500);
+    }).catch(err => {
+      copyBtn.textContent = "COPY FAILED";
+      copyBtn.style.background = "#e53e3e";
+      console.error("Copy failed", err);
+    });
   };
 }
 
