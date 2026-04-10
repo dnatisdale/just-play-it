@@ -163,11 +163,10 @@
           </div>
 
           <div class="mode-row">
-            <button id="repeatBtn" class="mode-btn" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="17,1 21,5 17,9"/><path d="M3,11V9a4,4,0,0,1,4-4h14"/><polyline points="7,23 3,19 7,15"/><path d="M21,13v2a4,4,0,0,1-4,4H3"/></svg> Repeat: Off</button>
-            <button id="shuffleBtn" class="mode-btn" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="16,3 21,3 21,8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21,16 21,21 16,21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg> <span id="shuffleBtnLabel">Shuffle: Off</span></button>
+            <button id="repeatBtn" class="mode-btn" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="17,1 21,5 17,9"/><path d="M3,11V9a4,4,0,0,1,4-4h14"/><polyline points="7,23 3,19 7,15"/><path d="M21,13v2a4,4,0,0,1-4,4H3"/></svg> Repeat:<span style="margin-left: 3px;">off</span></button>
+            <button id="shuffleBtn" class="mode-btn" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="16,3 21,3 21,8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21,16 21,21 16,21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg> <span id="shuffleBtnLabel">Shuffle:<span style="margin-left: 3px;">off</span></span></button>
             <button id="sleepTimerBtn" class="mode-btn" type="button">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 
-              Sleep: Off
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Sleep:<span style="margin-left: 3px;">off</span>
             </button>
           </div>
         </section>
@@ -191,7 +190,6 @@
                 <div class="playlist-tools">
                   <button id="jumpToCurrentBtn" class="ghost-btn" type="button">Jump to Current</button>
                   <button id="clearPlaylistBtn" class="ghost-btn" type="button" title="Clear all tracks from current playlist">Clear All</button>
-                  <button id="toggleEditBtn" class="ghost-btn" type="button" title="Show/hide reorder and delete buttons">Edit</button>
                   <div id="queuePlaylistPill" class="queue-playlist-pill hidden" aria-label="Active playlist">
                     <span id="queuePlaylistPillName">Unsaved</span>
                     <span class="counter-badge badge-red" id="queuePlaylistPillBadge">0</span>
@@ -242,7 +240,7 @@
       <section id="view-library" class="view-section">
         <section class="library-card card-pop" id="libraryMainCard" style="margin-bottom: 20px;">
           <div class="section-head standardized-header" id="libraryHeader">
-            <h3>LIBRARY. <span id="libraryBadge" class="counter-badge hidden">0</span></h3>
+            <h3>LIBRARY.</h3>
           </div>
 
           <div id="libraryContainer" class="playlist-container expanded">

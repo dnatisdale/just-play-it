@@ -320,11 +320,6 @@ function renderPlaylist() {
     removeBtn.title = "Remove from playlist";
     removeBtn.addEventListener("click", (e) => { e.stopPropagation(); removeTrack(index); });
 
-    if (isEditMode) {
-      actions.appendChild(dragHandle);
-      actions.appendChild(removeBtn);
-    }
-
     const statusBtn = document.createElement("button");
     statusBtn.type = "button";
     statusBtn.className = `track-status-btn${track.disabled ? " disabled" : ""}`;
@@ -334,8 +329,11 @@ function renderPlaylist() {
       toggleTrackEnabled(index);
     });
 
+    li.appendChild(dragHandle);
     li.appendChild(statusBtn);
     li.appendChild(infoBtn);
+    
+    actions.appendChild(removeBtn);
     li.appendChild(actions);
 
     li.addEventListener("click", () => {

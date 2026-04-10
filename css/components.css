@@ -1711,8 +1711,9 @@ h3 .dot {
 .item-actions {
   display: flex;
   gap: 6px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: flex-end;
+  flex-shrink: 0;
 }
 
 .small-btn {

@@ -131,29 +131,27 @@ async function updateStorageUsage() {
       0,
     );
 
-    let storageHTML = `My saved songs here: ${formatBytes(deviceBytes)} out of 3.33 GB`;
+    let storageHTML = `Total size of MY TRACKS: ${formatBytes(deviceBytes)} max size 3.33 GB`;
 
     if (navigator.storage && navigator.storage.estimate) {
       try {
         const estimate = await navigator.storage.estimate();
-        const quota = estimate.quota || 0;
         const usage = estimate.usage || 0;
-        storageHTML += `<br>All app space used here: ${formatBytes(usage)} out of ${formatBytes(quota)}`;
+        storageHTML += `<br>Total JPi. app size: ${formatBytes(usage)}`;
       } catch (e) {
-         // ignore estimate failure silently, or mark unavailable
-         storageHTML += `<br>All app space used here: unavailable`;
+         storageHTML += `<br>Total JPi. app size: unavailable`;
       }
     } 
     storageUsageText.innerHTML = storageHTML;
 
     if (container) {
-      container.innerHTML = `<p class="sidebar-storage-text" style="padding: 6px 0 2px;">Number of saved songs here: ${count}</p>`;
+      container.innerHTML = "";
     }
   } catch (error) {
     console.error("Could not estimate storage:", error);
-    storageUsageText.innerHTML = "My saved songs here: unavailable<br>All app space used here: unavailable";
+    storageUsageText.innerHTML = "Total size of MY TRACKS: unavailable<br>Total JPi. app size: unavailable";
     if (container) {
-      container.innerHTML = `<p class="sidebar-storage-text" style="padding: 6px 0 2px;">Number of saved songs here: unavailable</p>`;
+      container.innerHTML = "";
     }
   }
 }

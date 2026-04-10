@@ -57,8 +57,9 @@ async function renderSidebarLibrary() {
   // Collapsible header
   const yourTracksHeader = document.createElement("div");
   yourTracksHeader.className = "library-section-header";
+  const myTracksCount = records.length;
   yourTracksHeader.innerHTML = `
-    <span class="library-section-title-text">MY TRACKS</span>
+    <span class="library-section-title-text">MY TRACKS <span id="myTracksBadge" class="counter-badge ${myTracksCount === 0 ? 'hidden' : ''}">${myTracksCount}</span></span>
     <button class="sidebar-collapse-toggle" type="button" aria-expanded="false" data-section="your-tracks">Show</button>
   `;
   deviceLibraryList.appendChild(yourTracksHeader);
@@ -148,8 +149,9 @@ async function renderSidebarLibrary() {
     // Collapsible header
     const builtinsHeader = document.createElement("div");
     builtinsHeader.className = "library-section-header";
+    const builtinsCount = uniqueBuiltins.length;
     builtinsHeader.innerHTML = `
-      <span class="library-section-title-text">BUILT-IN TRACKS</span>
+      <span class="library-section-title-text">BUILT-IN TRACKS <span id="builtInBadge" class="counter-badge ${builtinsCount === 0 ? 'hidden' : ''}">${builtinsCount}</span></span>
       <button class="sidebar-collapse-toggle" type="button" aria-expanded="false" data-section="built-in">Show</button>
     `;
     deviceLibraryList.appendChild(builtinsHeader);
@@ -261,7 +263,7 @@ function updateSelectionBadge() {
 
   if (addLibraryToPlaylistBtn) {
     addLibraryToPlaylistBtn.textContent = count > 0
-      ? `Add ${count} Track${count !== 1 ? "s" : ""} to Current Queue`
+      ? `Add ${count} Track${count !== 1 ? "s" : ""} to the Queue`
       : "Add to Queue";
   }
 }

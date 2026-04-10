@@ -22,7 +22,7 @@ function addErrorLog(message, type = "General") {
     };
     logs.unshift(entry); // Newest first
     logs = cleanupOldErrorLogs(logs);
-    if (logs.length > 50) logs.length = 50; // Keep last 50
+    if (logs.length > 100) logs.length = 100; // Keep last 50
     localStorage.setItem(STORAGE_KEYS.errorLogs, JSON.stringify(logs));
     console.log(`[ErrorLog] [${type}] ${message}`);
   } catch (e) {
@@ -66,7 +66,7 @@ function logAppStartup() {
     logs.unshift(dividerEntry);
     
     logs = cleanupOldErrorLogs(logs);
-    if (logs.length > 50) logs.length = 50;
+    if (logs.length > 100) logs.length = 100;
     localStorage.setItem(STORAGE_KEYS.errorLogs, JSON.stringify(logs));
   } catch (e) {
     if (typeof console !== 'undefined') console.warn("Failed to log startup", e);
@@ -328,22 +328,7 @@ async function updateBadgeCounts() {
   }
 
   // 4. Global Hardware Library badge (Stored + Built-in)
-  if (libraryBadge) {
-    try {
-      // Use short timeout or parallel fetch to avoid blocking UI
-      const records = db ? await getAllTrackMetadata() : [];
-      let builtinTracksCount = 0;
-      Object.values(savedPlaylists).forEach(pl => {
-        if (pl.isBuiltin) builtinTracksCount += (pl.tracks || []).length;
-      });
-      const totalCount = records.length + builtinTracksCount;
-      libraryBadge.textContent = totalCount;
-      libraryBadge.classList.toggle("hidden", totalCount === 0);
-    } catch (err) {
-      console.warn("Library badge update error:", err);
-      libraryBadge.classList.add("hidden");
-    }
-  }
+  // (Removed in favor of dynamic badges inside renderSidebarLibrary headers)
 }
 
 function updateSelectionBadge() {
@@ -607,12 +592,12 @@ function saveModes() {
 
 function updateModeButtons() {
   // Shuffle — sidebar button
-  if (shuffleBtnLabel) shuffleBtnLabel.textContent = `Shuffle: ${shuffleEnabled ? "On" : "Off"}`;
+  if (shuffleBtnLabel) shuffleBtnLabel.innerHTML = `Shuffle:<span style="margin-left: 3px;">${shuffleEnabled ? "on" : "off"}</span>`;
   if (shuffleBtn) shuffleBtn.classList.toggle("active", shuffleEnabled);
 
   // Repeat — main page button (SVG icon + text)
-  const repeatLabels = { off: "Off", all: "All", one: "One" };
-  repeatBtn.innerHTML = `${ICONS.repeat} <span>Repeat: ${repeatLabels[repeatMode] || "Off"}</span>`;
+  const repeatLabels = { off: "off", all: "all", one: "one" };
+  repeatBtn.innerHTML = `${ICONS.repeat} <span>Repeat:<span style="margin-left: 3px;">${repeatLabels[repeatMode] || "off"}</span></span>`;
   repeatBtn.classList.toggle("active", repeatMode !== "off");
 }
 

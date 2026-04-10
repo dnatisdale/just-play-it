@@ -411,15 +411,6 @@ if (clearPlaylistBtn) {
   });
 }
 
-if (toggleEditBtn) {
-  toggleEditBtn.addEventListener("click", () => {
-    isEditMode = !isEditMode;
-    toggleEditBtn.classList.toggle("active", isEditMode);
-    toggleEditBtn.textContent = isEditMode ? "Done" : "Edit";
-    renderPlaylist();
-    showToast(isEditMode ? "Edit mode on. You can reorder or remove tracks." : "Edit mode off.");
-  });
-}
 
 audio.addEventListener("loadedmetadata", () => {
   durationEl.textContent = formatTime(audio.duration);
