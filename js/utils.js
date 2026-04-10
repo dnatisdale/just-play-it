@@ -85,6 +85,13 @@ function formatPacificLocalTime(isoString) {
   }
 }
 
+function isAudioFile(file) {
+  if (file.type && file.type.startsWith("audio/")) return true;
+  const name = file.name ? file.name.toLowerCase() : "";
+  const validExtensions = [".mp3", ".m4a", ".aac", ".ogg", ".oga", ".wav", ".flac", ".opus", ".weba", ".webm", ".caf", ".m3u8"];
+  return validExtensions.some(ext => name.endsWith(ext));
+}
+
 function showErrorLog() {
   const logs = JSON.parse(localStorage.getItem(STORAGE_KEYS.errorLogs) || "[]");
   if (logs.length === 0) {

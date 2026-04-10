@@ -70,7 +70,7 @@ async function renderSidebarLibrary() {
     const yourTracksHeader = document.createElement("div");
     yourTracksHeader.className = "library-section-header";
     yourTracksHeader.innerHTML = `
-      <span class="library-section-title-text">YOUR TRACKS</span>
+      <span class="library-section-title-text">MY TRACKS</span>
       <button class="sidebar-collapse-toggle" type="button" aria-expanded="false" data-section="your-tracks">Show</button>
     `;
     deviceLibraryList.appendChild(yourTracksHeader);
@@ -149,7 +149,7 @@ async function renderSidebarLibrary() {
     const builtinsHeader = document.createElement("div");
     builtinsHeader.className = "library-section-header";
     builtinsHeader.innerHTML = `
-      <span class="library-section-title-text">TRACKS BUILT-IN</span>
+      <span class="library-section-title-text">BUILT-IN TRACKS</span>
       <button class="sidebar-collapse-toggle" type="button" aria-expanded="false" data-section="built-in">Show</button>
     `;
     deviceLibraryList.appendChild(builtinsHeader);

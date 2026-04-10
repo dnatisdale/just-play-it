@@ -248,11 +248,7 @@ function switchView(targetViewId) {
 
   const importFab = document.getElementById("importFab");
   if (importFab) {
-    if (targetViewId === "view-library") {
-      importFab.classList.remove("hidden");
-    } else {
-      importFab.classList.add("hidden");
-    }
+    importFab.classList.remove("hidden");
   }
 
   const cab = document.getElementById("selectionActionBar");
