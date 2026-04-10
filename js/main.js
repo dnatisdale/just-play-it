@@ -4,6 +4,7 @@ const APP_URL = "https://just-play-it.pages.dev/";
 // State for Android sleep/lock recovery
 window.recoveryState = {
   incompleteAutoAdvance: false,
+  hiddenEarlyPause: false,
 };
 
 document.addEventListener("visibilitychange", () => {
@@ -22,13 +23,23 @@ document.addEventListener("visibilitychange", () => {
     if (window.recoveryState.incompleteAutoAdvance) {
       if (typeof addErrorLog === "function") addErrorLog("[Visibility] resuming flagged incomplete auto-advance on wake", "Recovery");
       window.recoveryState.incompleteAutoAdvance = false;
-      needsWakeRecovery = true;
+      needsWakeRecovery = "playNext";
     } 
+    else if (window.recoveryState.hiddenEarlyPause) {
+      if (typeof addErrorLog === "function") addErrorLog("[Visibility] wake detected a hidden early-pause. Evaluating recovery.", "Recovery");
+      window.recoveryState.hiddenEarlyPause = false;
+      if (audio.paused && audio.currentTime > 0 && audio.currentTime < 15 && !userPaused) {
+        if (typeof addErrorLog === "function") addErrorLog("[Recovery] attempting guarded resume of stranded early-paused track.", "Recovery");
+        needsWakeRecovery = "resumeCurrent";
+      } else {
+        if (typeof addErrorLog === "function") addErrorLog("[Recovery] dismissing hidden early-pause state (audio advanced or user paused).", "Recovery");
+      }
+    }
     else if (audio.paused && (audio.ended || (Number.isFinite(audio.duration) && audio.duration > 0 && Math.abs(audio.duration - audio.currentTime) < 0.5))) {
       const canAdvance = shuffleEnabled || repeatMode === "all" || currentTrackIndex < playlist.length - 1;
       if (canAdvance) {
         if (typeof addErrorLog === "function") addErrorLog("[Visibility] detected stranded playback at track end. Executing wake-recovery.", "Recovery");
-        needsWakeRecovery = true;
+        needsWakeRecovery = "playNext";
       } else if (repeatMode === "one") {
         if (typeof addErrorLog === "function") addErrorLog("[Visibility] detected stranded playback for repeat-one. Replaying.", "Recovery");
         audio.currentTime = 0;
@@ -37,10 +48,18 @@ document.addEventListener("visibilitychange", () => {
       }
     }
 
-    if (needsWakeRecovery) {
+    if (needsWakeRecovery === "playNext") {
       if (audio.paused && (shuffleEnabled || repeatMode === "all" || currentTrackIndex < playlist.length - 1)) {
         playNext({ reason: "visibility-resume" }).catch(e => console.error(e));
       }
+    } else if (needsWakeRecovery === "resumeCurrent") {
+      audio.play().catch(e => {
+        console.warn("Wake resume of early pause failed:", e);
+        if (typeof addErrorLog === "function") addErrorLog(`[Recovery] wake resume of early pause natively failed: ${e.message}. Launching full load-resume.`, "Recovery");
+        if (typeof recoverFromPlaybackStall === "function") {
+          recoverFromPlaybackStall("wake-early-pause-recovery");
+        }
+      });
     }
   }
 });
@@ -395,6 +414,11 @@ audio.addEventListener("play", () => {
   updatePlayPauseButton();
   updateMediaSession();
 
+  if (document.hidden) {
+    if (typeof addErrorLog === "function") addErrorLog(`[PlaybackFlow] audio.play() succeeded while hidden`, "BackgroundPause");
+    if (window.recoveryState) window.recoveryState.hiddenEarlyPause = false; // Reset on successful play
+  }
+
   if (playlist[currentTrackIndex]) {
     setPlayerStatus(`Playing: ${playlist[currentTrackIndex].title}`);
   }
@@ -413,6 +437,15 @@ audio.addEventListener("pause", () => {
   if (isTransitioning) {
     resumeRetries = 0;
     return;
+  }
+
+  if (document.hidden && !userPaused && Number.isFinite(audio.currentTime) && audio.currentTime > 0 && audio.currentTime < 15) {
+      if (typeof addErrorLog === "function") {
+          addErrorLog(`[BackgroundPause] OS paused playback early at ${audio.currentTime.toFixed(2)}s while hidden. Flagging for wake-recovery.`, "BackgroundPause");
+      }
+      if (window.recoveryState) window.recoveryState.hiddenEarlyPause = true;
+      // Do not run the 3-retry watchdog since it's an OS background throttle. Wait for wake up instead.
+      return;
   }
 
   const isNearEnd = audio.duration > 0 && (audio.duration - audio.currentTime < 1.0);
@@ -480,7 +513,12 @@ audio.addEventListener("error", (e) => {
 
 audio.addEventListener("stalled", () => {
   if (!audio.paused && !audio.ended) {
-    addErrorLog(`Playback stalled/buffering at ${audio.currentTime.toFixed(2)}s`, "AudioStatus");
+    if (typeof addErrorLog === "function") {
+        addErrorLog(`[PlaybackFlow] stalled/buffering at ${audio.currentTime.toFixed(2)}s (hidden: ${document.hidden})`, "AudioStatus");
+    }
+    if (document.hidden && audio.currentTime < 15) {
+        if (typeof addErrorLog === "function") addErrorLog(`[BackgroundPause] stalled shortly after hidden start.`, "BackgroundPause");
+    }
     setPlayerStatus("Buffering/Stalled...");
     armPlaybackStallRecovery("stalled");
   }
@@ -488,6 +526,12 @@ audio.addEventListener("stalled", () => {
 
 audio.addEventListener("waiting", () => {
   if (!audio.paused && !audio.ended) {
+    if (typeof addErrorLog === "function") {
+        addErrorLog(`[PlaybackFlow] waiting at ${audio.currentTime.toFixed(2)}s (hidden: ${document.hidden})`, "AudioStatus");
+    }
+    if (document.hidden && audio.currentTime < 15) {
+        if (typeof addErrorLog === "function") addErrorLog(`[BackgroundPause] waiting shortly after hidden start.`, "BackgroundPause");
+    }
     setPlayerStatus("Waiting for audio...");
     armPlaybackStallRecovery("waiting");
   }
