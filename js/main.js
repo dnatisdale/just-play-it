@@ -1024,6 +1024,7 @@ function updateBuildInfo() {
 
 async function initApp() {
   initTheme();
+  logAppStartup();
 
   try {
     db = await openDatabase();

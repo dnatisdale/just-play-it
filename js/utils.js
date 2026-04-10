@@ -19,6 +19,65 @@ function addErrorLog(message, type = "General") {
   }
 }
 
+function logAppStartup() {
+  try {
+    const logs = JSON.parse(localStorage.getItem(STORAGE_KEYS.errorLogs) || "[]");
+    const v = typeof APP_VERSION !== "undefined" ? APP_VERSION : "unknown";
+    let buildLabel = typeof BUILD_LABEL !== "undefined" ? BUILD_LABEL : "—";
+    buildLabel = buildLabel.replace(/<[^>]+>/g, ''); // Strip HTML
+    
+    const nowIso = new Date().toISOString();
+    
+    // Check if we just logged this (to prevent double logging if somehow called twice)
+    if (logs.length > 0 && logs[0].message.includes("NEW APP VERSION LOADED")) {
+      return;
+    }
+
+    const dividerEntry = {
+      timestamp: nowIso,
+      type: "System",
+      message: "========= NEW SESSION =========",
+      version: v,
+      url: window.location.href,
+      userAgent: navigator.userAgent
+    };
+    
+    // We don't pre-format the timestamp in the object itself because showErrorLog 
+    // applies the PST format during display. But the user asked for "Loaded at: [Pacific local time]" 
+    // inside the message text as well.
+    const pstTime = formatPacificLocalTime(nowIso);
+    
+    const initEntry = {
+      timestamp: nowIso,
+      type: "System",
+      message: `NEW APP VERSION LOADED\nVersion: ${v}\nBuild label: ${buildLabel}\nLoaded at: ${pstTime}`,
+      version: v,
+      url: window.location.href,
+      userAgent: navigator.userAgent
+    };
+    
+    logs.unshift(initEntry);
+    logs.unshift(dividerEntry);
+    
+    if (logs.length > 50) logs.length = 50;
+    localStorage.setItem(STORAGE_KEYS.errorLogs, JSON.stringify(logs));
+  } catch (e) {
+    if (typeof console !== 'undefined') console.warn("Failed to log startup", e);
+  }
+}
+
+function formatPacificLocalTime(isoString) {
+  try {
+    const d = new Date(isoString);
+    if (isNaN(d.getTime())) return isoString;
+    const datePart = d.toLocaleDateString("en-CA", { timeZone: "America/Los_Angeles" });
+    const timePart = d.toLocaleTimeString("en-US", { timeZone: "America/Los_Angeles", timeZoneName: "short" });
+    return `[${datePart} ${timePart}]`;
+  } catch (e) {
+    return `[${isoString}]`;
+  }
+}
+
 function showErrorLog() {
   const logs = JSON.parse(localStorage.getItem(STORAGE_KEYS.errorLogs) || "[]");
   if (logs.length === 0) {
@@ -28,7 +87,8 @@ function showErrorLog() {
   
   let content = "--- JUST PLAY IT. ERROR LOG ---\n\n";
   logs.forEach(log => {
-    content += `[${log.timestamp}] [${log.type}]\n${log.message}\n\n`;
+    const ptTime = formatPacificLocalTime(log.timestamp);
+    content += `${ptTime} [${log.type}]\n${log.message}\n\n`;
   });
   
   // Use a simple prompt/alert to show the log for now, 

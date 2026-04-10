@@ -120,23 +120,39 @@ function deleteTrackBlob(id) {
 }
 
 async function updateStorageUsage() {
+  const container = document.getElementById("storedTracksListContainer");
+  if (!storageUsageText) return;
+
   try {
     const records = await getAllTrackMetadata();
+    const count = records.length;
     const deviceBytes = records.reduce(
       (sum, item) => sum + (item.size || 0),
       0,
     );
 
+    let storageString = `Track storage: ${formatBytes(deviceBytes)}`;
+
     if (navigator.storage && navigator.storage.estimate) {
-      const estimate = await navigator.storage.estimate();
-      const quota = estimate.quota || 0;
-      const usage = estimate.usage || 0;
-      storageUsageText.textContent = `Offline storage: ${formatBytes(deviceBytes)}. Browser usage: ${formatBytes(usage)} of ${formatBytes(quota)}.`;
-    } else {
-      storageUsageText.textContent = `Offline storage: ${formatBytes(deviceBytes)}.`;
+      try {
+        const estimate = await navigator.storage.estimate();
+        const quota = estimate.quota || 0;
+        const usage = estimate.usage || 0;
+        storageString += ` (App total: ${formatBytes(usage)} / ${formatBytes(quota)})`;
+      } catch (e) {
+         // ignore estimate failure
+      }
+    } 
+    storageUsageText.textContent = storageString;
+
+    if (container) {
+      container.innerHTML = `<p class="sidebar-storage-text" style="padding: 6px 0 2px;">Saved tracks: ${count}</p>`;
     }
   } catch (error) {
     console.error("Could not estimate storage:", error);
-    storageUsageText.textContent = "Storage usage unavailable in this browser.";
+    storageUsageText.textContent = "Track storage: could not be calculated";
+    if (container) {
+      container.innerHTML = `<p class="sidebar-storage-text" style="padding: 6px 0 2px;">Saved tracks: unavailable</p>`;
+    }
   }
 }
