@@ -268,6 +268,12 @@ function switchView(targetViewId) {
     expandQueueForJumpNavigation = false;
   }
 
+  if (targetViewId === "view-settings") {
+    if (typeof updateStorageUsage === "function") {
+      updateStorageUsage().catch(err => console.warn("Storage update failed", err));
+    }
+  }
+
   document.querySelectorAll(".nav-item").forEach(btn => {
     if (btn.dataset.target === targetViewId) {
       btn.classList.add("active");
