@@ -131,28 +131,29 @@ async function updateStorageUsage() {
       0,
     );
 
-    let storageString = `Track storage: ${formatBytes(deviceBytes)}`;
+    let storageHTML = `Saved audio on this device: ${formatBytes(deviceBytes)}`;
 
     if (navigator.storage && navigator.storage.estimate) {
       try {
         const estimate = await navigator.storage.estimate();
         const quota = estimate.quota || 0;
         const usage = estimate.usage || 0;
-        storageString += ` (App total: ${formatBytes(usage)} / ${formatBytes(quota)})`;
+        storageHTML += `<br>Total app storage used: ${formatBytes(usage)} of ${formatBytes(quota)}`;
       } catch (e) {
-         // ignore estimate failure
+         // ignore estimate failure silently, or mark unavailable
+         storageHTML += `<br>Total app storage used: unavailable`;
       }
     } 
-    storageUsageText.textContent = storageString;
+    storageUsageText.innerHTML = storageHTML;
 
     if (container) {
-      container.innerHTML = `<p class="sidebar-storage-text" style="padding: 6px 0 2px;">Saved tracks: ${count}</p>`;
+      container.innerHTML = `<p class="sidebar-storage-text" style="padding: 6px 0 2px;">Saved tracks on this device: ${count}</p>`;
     }
   } catch (error) {
     console.error("Could not estimate storage:", error);
-    storageUsageText.textContent = "Track storage: could not be calculated";
+    storageUsageText.innerHTML = "Saved audio on this device: unavailable<br>Total app storage used: unavailable";
     if (container) {
-      container.innerHTML = `<p class="sidebar-storage-text" style="padding: 6px 0 2px;">Saved tracks: unavailable</p>`;
+      container.innerHTML = `<p class="sidebar-storage-text" style="padding: 6px 0 2px;">Saved tracks on this device: unavailable</p>`;
     }
   }
 }

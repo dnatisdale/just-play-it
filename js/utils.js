@@ -1,7 +1,17 @@
 // ── Error Logging ─────────────────────────────────────
+function cleanupOldErrorLogs(logs) {
+  if (!Array.isArray(logs)) return [];
+  const tenDaysMs = 10 * 24 * 60 * 60 * 1000;
+  const now = Date.now();
+  return logs.filter(log => {
+    const logTime = new Date(log.timestamp).getTime();
+    return !isNaN(logTime) && (now - logTime <= tenDaysMs);
+  });
+}
+
 function addErrorLog(message, type = "General") {
   try {
-    const logs = JSON.parse(localStorage.getItem(STORAGE_KEYS.errorLogs) || "[]");
+    let logs = JSON.parse(localStorage.getItem(STORAGE_KEYS.errorLogs) || "[]");
     const entry = {
       timestamp: new Date().toISOString(),
       type,
@@ -11,7 +21,8 @@ function addErrorLog(message, type = "General") {
       userAgent: navigator.userAgent
     };
     logs.unshift(entry); // Newest first
-    if (logs.length > 50) logs.pop(); // Keep last 50
+    logs = cleanupOldErrorLogs(logs);
+    if (logs.length > 50) logs.length = 50; // Keep last 50
     localStorage.setItem(STORAGE_KEYS.errorLogs, JSON.stringify(logs));
     console.log(`[ErrorLog] [${type}] ${message}`);
   } catch (e) {
@@ -21,17 +32,12 @@ function addErrorLog(message, type = "General") {
 
 function logAppStartup() {
   try {
-    const logs = JSON.parse(localStorage.getItem(STORAGE_KEYS.errorLogs) || "[]");
+    let logs = JSON.parse(localStorage.getItem(STORAGE_KEYS.errorLogs) || "[]");
     const v = typeof APP_VERSION !== "undefined" ? APP_VERSION : "unknown";
     let buildLabel = typeof BUILD_LABEL !== "undefined" ? BUILD_LABEL : "—";
     buildLabel = buildLabel.replace(/<[^>]+>/g, ''); // Strip HTML
     
     const nowIso = new Date().toISOString();
-    
-    // Check if we just logged this (to prevent double logging if somehow called twice)
-    if (logs.length > 0 && logs[0].message.includes("NEW APP VERSION LOADED")) {
-      return;
-    }
 
     const dividerEntry = {
       timestamp: nowIso,
@@ -59,6 +65,7 @@ function logAppStartup() {
     logs.unshift(initEntry);
     logs.unshift(dividerEntry);
     
+    logs = cleanupOldErrorLogs(logs);
     if (logs.length > 50) logs.length = 50;
     localStorage.setItem(STORAGE_KEYS.errorLogs, JSON.stringify(logs));
   } catch (e) {
