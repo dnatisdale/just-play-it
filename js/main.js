@@ -170,6 +170,14 @@ document.querySelectorAll(".nav-item").forEach(btn => {
   });
 });
 
+const brandWrap = document.querySelector(".brand-wrap");
+if (brandWrap) {
+  brandWrap.style.cursor = "pointer";
+  brandWrap.addEventListener("click", () => {
+    switchView("view-player");
+  });
+}
+
 const importFab = document.getElementById("importFab");
 const importBottomSheet = document.getElementById("importBottomSheet");
 const fabOverlay = document.getElementById("fabOverlay");
