@@ -131,7 +131,7 @@ async function updateStorageUsage() {
       0,
     );
 
-    let storageHTML = `Saved audio on this device: ${formatBytes(deviceBytes)}`;
+    let storageHTML = `Saved audio on this device: ${formatBytes(deviceBytes)} of 3.33 GB`;
 
     if (navigator.storage && navigator.storage.estimate) {
       try {

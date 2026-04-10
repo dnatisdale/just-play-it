@@ -642,6 +642,9 @@ async function addFileTracks(files) {
   const newTracks = [];
   const skipped = [];
   const forced = [];
+  
+  const MAX_SAVED_AUDIO_BYTES = Math.floor(3.33 * 1024 * 1024 * 1024);
+  let filesSkippedDueToLimit = 0;
 
   let libraryRecords = [];
   try {
@@ -649,6 +652,8 @@ async function addFileTracks(files) {
   } catch (e) {
     console.warn("Could not load library for duplicate check", e);
   }
+  
+  let currentBytes = libraryRecords.reduce((sum, item) => sum + (item.size || 0), 0);
 
   for (const file of fileArray) {
     const duplicate = libraryRecords.find(r =>
@@ -666,10 +671,16 @@ async function addFileTracks(files) {
       forced.push(file.name);
     }
 
+    if (currentBytes + file.size > MAX_SAVED_AUDIO_BYTES) {
+      filesSkippedDueToLimit++;
+      continue;
+    }
+
     const id = crypto.randomUUID();
     const duration = await getAudioDuration(file);
 
     await saveTrackBlob(id, file, duration);
+    currentBytes += file.size;
 
     newTracks.push({
       id,
@@ -680,7 +691,13 @@ async function addFileTracks(files) {
     });
   }
 
-  if (skipped.length > 0) {
+  if (filesSkippedDueToLimit > 0) {
+    if (newTracks.length === 0) {
+      showToast("Saved-audio limit reached (3.33 GB). Remove saved music to add more.", 5000);
+    } else {
+      showToast(`Added ${newTracks.length} files. ${filesSkippedDueToLimit} skipped because the 3.33 GB saved-audio limit was reached.`, 5000);
+    }
+  } else if (skipped.length > 0) {
     showToast(`Skipped ${skipped.length} existing files.`);
   }
 
