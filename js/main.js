@@ -5,61 +5,157 @@ const APP_URL = "https://just-play-it.pages.dev/";
 window.recoveryState = {
   incompleteAutoAdvance: false,
   hiddenEarlyPause: false,
+  // Tracks the most recent hidden auto-advance that successfully called audio.play().
+  // Used on wake to detect Android's silent-pause pattern without relying on the
+  // pause event firing (which Android Chrome can suppress while backgrounded).
+  hiddenAutoAdvance: null,
+  // { trackIndex, startedAt (ms), playSucceeded }
 };
 
 document.addEventListener("visibilitychange", () => {
+  const dur = Number.isFinite(audio.duration) ? audio.duration.toFixed(2) : "N/A";
+  const ct  = audio.currentTime.toFixed(2);
+
   if (typeof addErrorLog === "function") {
-    const dur = Number.isFinite(audio.duration) ? audio.duration.toFixed(2) : "N/A";
-    addErrorLog(`[Visibility] state: ${document.hidden ? "hidden" : "visible"} | ` +
-      `currentTime: ${audio.currentTime.toFixed(2)} | duration: ${dur} | ` +
+    addErrorLog(
+      `[Visibility] state: ${document.hidden ? "hidden" : "visible"} | ` +
+      `currentTime: ${ct} | duration: ${dur} | ` +
       `paused: ${audio.paused} | ended: ${audio.ended} | ` +
-      `index: ${currentTrackIndex} | repeat: ${repeatMode} | shuffle: ${shuffleEnabled}`, 
-      "Visibility");
+      `index: ${currentTrackIndex} | repeat: ${repeatMode} | shuffle: ${shuffleEnabled}`,
+      "Visibility"
+    );
   }
 
   if (!document.hidden) {
-    let needsWakeRecovery = false;
-
+    // ── Wake-side diagnosis ──────────────────────────────────────────────────
+    // Priority 1: Incomplete auto-advance (handoff failed while hidden)
     if (window.recoveryState.incompleteAutoAdvance) {
-      if (typeof addErrorLog === "function") addErrorLog("[Visibility] resuming flagged incomplete auto-advance on wake", "Recovery");
-      window.recoveryState.incompleteAutoAdvance = false;
-      needsWakeRecovery = "playNext";
-    } 
-    else if (window.recoveryState.hiddenEarlyPause) {
-      if (typeof addErrorLog === "function") addErrorLog("[Visibility] wake detected a hidden early-pause. Evaluating recovery.", "Recovery");
-      window.recoveryState.hiddenEarlyPause = false;
-      if (audio.paused && audio.currentTime > 0 && audio.currentTime < 15 && !userPaused) {
-        if (typeof addErrorLog === "function") addErrorLog("[Recovery] attempting guarded resume of stranded early-paused track.", "Recovery");
-        needsWakeRecovery = "resumeCurrent";
-      } else {
-        if (typeof addErrorLog === "function") addErrorLog("[Recovery] dismissing hidden early-pause state (audio advanced or user paused).", "Recovery");
+      if (typeof addErrorLog === "function") {
+        addErrorLog("[Visibility] resuming flagged incomplete auto-advance on wake", "Recovery");
       }
+      window.recoveryState.incompleteAutoAdvance = false;
+      if (audio.paused && (shuffleEnabled || repeatMode === "all" || currentTrackIndex < playlist.length - 1)) {
+        playNext({ reason: "visibility-resume" }).catch(e => console.error(e));
+      }
+      return;
     }
-    else if (audio.paused && (audio.ended || (Number.isFinite(audio.duration) && audio.duration > 0 && Math.abs(audio.duration - audio.currentTime) < 0.5))) {
-      const canAdvance = shuffleEnabled || repeatMode === "all" || currentTrackIndex < playlist.length - 1;
+
+    // Priority 2: Android silent-pause detection.
+    // Android Chrome can pause a newly started hidden track without reliably
+    // firing the pause event — so hiddenEarlyPause may never have been set.
+    // We detect this pattern directly on wake using the hiddenAutoAdvance record.
+    const haa = window.recoveryState.hiddenAutoAdvance;
+    if (
+      haa &&
+      haa.playSucceeded &&
+      haa.trackIndex === currentTrackIndex &&
+      audio.paused &&
+      !audio.ended &&
+      !userPaused &&
+      audio.currentTime < 5
+    ) {
+      const elapsedSec = (Date.now() - haa.startedAt) / 1000;
+      if (typeof addErrorLog === "function") {
+        addErrorLog(
+          `[BackgroundPause] wake found hidden-started track paused near start. ` +
+          `index: ${haa.trackIndex} | currentTime: ${ct} | ` +
+          `elapsedSincStart: ${elapsedSec.toFixed(1)}s | ` +
+          `duration: ${dur} | userPaused: ${userPaused}`,
+          "BackgroundPause"
+        );
+      }
+      // Clear the record regardless so we don't retry on next wake
+      window.recoveryState.hiddenAutoAdvance = null;
+      window.recoveryState.hiddenEarlyPause  = false;
+
+      if (typeof addErrorLog === "function") {
+        addErrorLog("[Recovery] guarded wake resume attempted (android silent-pause)", "Recovery");
+      }
+      audio.play().then(() => {
+        if (typeof addErrorLog === "function") {
+          addErrorLog("[Recovery] guarded wake resume succeeded", "Recovery");
+        }
+      }).catch(e => {
+        console.warn("[Recovery] guarded wake resume failed:", e);
+        if (typeof addErrorLog === "function") {
+          addErrorLog(
+            `[Recovery] guarded wake resume failed (${e.name}: ${e.message}) → fallback recovery`,
+            "Recovery"
+          );
+        }
+        if (typeof recoverFromPlaybackStall === "function") {
+          recoverFromPlaybackStall("wake-android-silent-pause");
+        }
+      });
+      return;
+    }
+
+    // Priority 3: hiddenEarlyPause flag — set by the pause event handler when
+    // Android DID fire the pause event while hidden.
+    if (window.recoveryState.hiddenEarlyPause) {
+      if (typeof addErrorLog === "function") {
+        addErrorLog("[Visibility] wake detected a hidden early-pause flag. Evaluating recovery.", "Recovery");
+      }
+      window.recoveryState.hiddenEarlyPause  = false;
+      window.recoveryState.hiddenAutoAdvance = null;
+      if (audio.paused && audio.currentTime >= 0 && audio.currentTime < 15 && !userPaused) {
+        if (typeof addErrorLog === "function") {
+          addErrorLog("[Recovery] attempting guarded resume of stranded early-paused track.", "Recovery");
+        }
+        audio.play().catch(e => {
+          console.warn("Wake resume of early pause failed:", e);
+          if (typeof addErrorLog === "function") {
+            addErrorLog(
+              `[Recovery] wake resume of early pause natively failed: ${e.message}. Launching full load-resume.`,
+              "Recovery"
+            );
+          }
+          if (typeof recoverFromPlaybackStall === "function") {
+            recoverFromPlaybackStall("wake-early-pause-recovery");
+          }
+        });
+      } else {
+        if (typeof addErrorLog === "function") {
+          addErrorLog("[Recovery] dismissing hidden early-pause flag (audio advanced or user paused).", "Recovery");
+        }
+      }
+      return;
+    }
+
+    // Priority 4: Stranded at track end (ended / near-end while hidden)
+    if (
+      audio.paused &&
+      (audio.ended ||
+        (Number.isFinite(audio.duration) && audio.duration > 0 &&
+          Math.abs(audio.duration - audio.currentTime) < 0.5))
+    ) {
+      const canAdvance =
+        shuffleEnabled || repeatMode === "all" || currentTrackIndex < playlist.length - 1;
       if (canAdvance) {
-        if (typeof addErrorLog === "function") addErrorLog("[Visibility] detected stranded playback at track end. Executing wake-recovery.", "Recovery");
-        needsWakeRecovery = "playNext";
+        if (typeof addErrorLog === "function") {
+          addErrorLog("[Visibility] detected stranded playback at track end. Executing wake-recovery.", "Recovery");
+        }
+        playNext({ reason: "visibility-resume" }).catch(e => console.error(e));
+        return;
       } else if (repeatMode === "one") {
-        if (typeof addErrorLog === "function") addErrorLog("[Visibility] detected stranded playback for repeat-one. Replaying.", "Recovery");
+        if (typeof addErrorLog === "function") {
+          addErrorLog("[Visibility] detected stranded playback for repeat-one. Replaying.", "Recovery");
+        }
         audio.currentTime = 0;
-        audio.play().catch(e => console.error("Wake replay failed", e));
+        audio.play().catch(e => console.error("Wake repeat-one replay failed", e));
         return;
       }
     }
 
-    if (needsWakeRecovery === "playNext") {
-      if (audio.paused && (shuffleEnabled || repeatMode === "all" || currentTrackIndex < playlist.length - 1)) {
-        playNext({ reason: "visibility-resume" }).catch(e => console.error(e));
+    // No recovery needed — clear the hidden auto-advance record on clean wake
+    if (window.recoveryState.hiddenAutoAdvance) {
+      if (typeof addErrorLog === "function") {
+        addErrorLog(
+          `[Visibility] clean wake — cleared hiddenAutoAdvance record (track was playing fine)`,
+          "Visibility"
+        );
       }
-    } else if (needsWakeRecovery === "resumeCurrent") {
-      audio.play().catch(e => {
-        console.warn("Wake resume of early pause failed:", e);
-        if (typeof addErrorLog === "function") addErrorLog(`[Recovery] wake resume of early pause natively failed: ${e.message}. Launching full load-resume.`, "Recovery");
-        if (typeof recoverFromPlaybackStall === "function") {
-          recoverFromPlaybackStall("wake-early-pause-recovery");
-        }
-      });
+      window.recoveryState.hiddenAutoAdvance = null;
     }
   }
 });
@@ -415,8 +511,17 @@ audio.addEventListener("play", () => {
   updateMediaSession();
 
   if (document.hidden) {
-    if (typeof addErrorLog === "function") addErrorLog(`[PlaybackFlow] audio.play() succeeded while hidden`, "BackgroundPause");
-    if (window.recoveryState) window.recoveryState.hiddenEarlyPause = false; // Reset on successful play
+    if (typeof addErrorLog === "function") {
+      addErrorLog(
+        `[PlaybackFlow] audio.play() succeeded while hidden | ` +
+        `index: ${currentTrackIndex} | currentTime: ${audio.currentTime.toFixed(2)}`,
+        "BackgroundPause"
+      );
+    }
+    // Reset early-pause flag; the hiddenAutoAdvance record is written by
+    // playNext (after loadTrack returns true) — not here — so we don't
+    // overwrite it from a mid-track resume.
+    if (window.recoveryState) window.recoveryState.hiddenEarlyPause = false;
   }
 
   if (playlist[currentTrackIndex]) {
@@ -439,13 +544,18 @@ audio.addEventListener("pause", () => {
     return;
   }
 
-  if (document.hidden && !userPaused && Number.isFinite(audio.currentTime) && audio.currentTime > 0 && audio.currentTime < 15) {
-      if (typeof addErrorLog === "function") {
-          addErrorLog(`[BackgroundPause] OS paused playback early at ${audio.currentTime.toFixed(2)}s while hidden. Flagging for wake-recovery.`, "BackgroundPause");
-      }
-      if (window.recoveryState) window.recoveryState.hiddenEarlyPause = true;
-      // Do not run the 3-retry watchdog since it's an OS background throttle. Wait for wake up instead.
-      return;
+  if (document.hidden && !userPaused && Number.isFinite(audio.currentTime) && audio.currentTime >= 0 && audio.currentTime < 15) {
+    if (typeof addErrorLog === "function") {
+      addErrorLog(
+        `[BackgroundPause] pause event fired while hidden, early in track. ` +
+        `currentTime: ${audio.currentTime.toFixed(2)}s — flagging for wake-recovery.`,
+        "BackgroundPause"
+      );
+    }
+    if (window.recoveryState) window.recoveryState.hiddenEarlyPause = true;
+    // Do not run the 3-retry watchdog — this is an OS background throttle.
+    // Wake-side logic will handle recovery.
+    return;
   }
 
   const isNearEnd = audio.duration > 0 && (audio.duration - audio.currentTime < 1.0);

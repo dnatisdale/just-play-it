@@ -581,30 +581,41 @@ async function loadTrack(index, shouldPlay = false, options = {}) {
         error.name === "AbortError" ||
         error.name === "TimeoutError"
       ) {
-        console.log(`[loadTrack] ${error.name} — retrying play() in 600ms...`);
-        if (typeof addErrorLog === "function") addErrorLog(`[loadTrack] retrying play in 600ms due to ${error.name}`, "PlaybackFlow");
-        await new Promise(resolve => setTimeout(resolve, 600));
+        const isAutoAdvanceRetry = opts.suppressManualResumeToast || (opts.reason && opts.reason.includes("auto-advance"));
+        const maxRetries = isAutoAdvanceRetry ? 3 : 1;
+        let retryDelay = 600;
 
-        try {
-          await playAudioWithTimeout(playTimeoutMs);
-          isTransitioning = false;
-          updatePlayPauseButton();
-          schedulePreloadUpcomingTrack();
-          setPlayerStatus(`Playing: ${track.title}`);
-          console.log(`[loadTrack] Retry succeeded for: "${track.title}"`);
-          if (typeof addErrorLog === "function") addErrorLog(`[loadTrack] retry play succeeded`, "PlaybackFlow");
-          return true;
-        } catch (retryError) {
-          isTransitioning = false;
-          console.warn(`[loadTrack] Retry failed (${retryError.name}):`, retryError.message);
-          if (typeof addErrorLog === "function") addErrorLog(`[loadTrack] retry play failed (${retryError.name})`, "PlaybackFlow");
-          updatePlayPauseButton();
-          schedulePreloadUpcomingTrack();
-          setPlayerStatus(`Could not start: ${track.title}`);
-          if (!suppressManualResumeToast && !document.hidden) {
-            showToast("Tap ▶ to resume playback.");
+        for (let i = 1; i <= maxRetries; i++) {
+          console.log(`[loadTrack] ${error.name} — retrying play() in ${retryDelay}ms... (Attempt ${i}/${maxRetries})`);
+          if (typeof addErrorLog === "function") addErrorLog(`[loadTrack] retrying play in ${retryDelay}ms due to ${error.name} (Attempt ${i}/${maxRetries})`, "PlaybackFlow");
+          await new Promise(resolve => setTimeout(resolve, retryDelay));
+
+          try {
+            await playAudioWithTimeout(playTimeoutMs);
+            isTransitioning = false;
+            updatePlayPauseButton();
+            schedulePreloadUpcomingTrack();
+            setPlayerStatus(`Playing: ${track.title}`);
+            console.log(`[loadTrack] Retry ${i} succeeded for: "${track.title}"`);
+            if (typeof addErrorLog === "function") addErrorLog(`[loadTrack] retry play succeeded on attempt ${i}`, "PlaybackFlow");
+            return true;
+          } catch (retryError) {
+            console.warn(`[loadTrack] Retry ${i} failed (${retryError.name}):`, retryError.message);
+            if (typeof addErrorLog === "function") addErrorLog(`[loadTrack] retry play failed on attempt ${i} (${retryError.name})`, "PlaybackFlow");
+            
+            if (i < maxRetries) {
+              retryDelay = Math.min(retryDelay * 2, 2000);
+            } else {
+              isTransitioning = false;
+              updatePlayPauseButton();
+              schedulePreloadUpcomingTrack();
+              setPlayerStatus(`Could not start: ${track.title}`);
+              if (!suppressManualResumeToast && !document.hidden) {
+                showToast("Tap ▶ to resume playback.");
+              }
+              return false;
+            }
           }
-          return false;
         }
       }
 

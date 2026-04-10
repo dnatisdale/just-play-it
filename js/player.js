@@ -17,8 +17,8 @@ let preloadedTrackSource = null;
 let preloadingTrackPromise = null;
 let playbackStallRecoveryTimer = null;
 
-const AUTO_ADVANCE_CANPLAY_TIMEOUT_MS = 8000;
-const AUTO_ADVANCE_PLAY_TIMEOUT_MS = 2500;
+const AUTO_ADVANCE_CANPLAY_TIMEOUT_MS = 15000;
+const AUTO_ADVANCE_PLAY_TIMEOUT_MS = 5000;
 const STALL_RECOVERY_DELAY_MS = 3000;
 
 function clearPreloadedTrackSource() {
@@ -409,7 +409,28 @@ async function playNext(options = {}) {
       });
 
       if (started) {
-        if (window.recoveryState) window.recoveryState.incompleteAutoAdvance = false;
+        if (window.recoveryState) {
+          window.recoveryState.incompleteAutoAdvance = false;
+          // Record a successful hidden auto-advance so the wake-side detector
+          // can identify Android's silent-pause pattern (track paused near zero
+          // on wake with no pause event having fired while backgrounded).
+          if (document.hidden) {
+            window.recoveryState.hiddenAutoAdvance = {
+              trackIndex: nextIndex,
+              startedAt: Date.now(),
+              playSucceeded: true,
+            };
+            if (typeof addErrorLog === "function") {
+              addErrorLog(
+                `[AutoAdvance] hidden auto-advance succeeded for track index ${nextIndex} at ${new Date().toISOString()}`,
+                "AutoAdvance"
+              );
+            }
+          } else {
+            // Clear any stale record from a previous hidden advance
+            window.recoveryState.hiddenAutoAdvance = null;
+          }
+        }
         return true;
       }
 
