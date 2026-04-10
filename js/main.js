@@ -553,6 +553,37 @@ audio.addEventListener("pause", () => {
       );
     }
     if (window.recoveryState) window.recoveryState.hiddenEarlyPause = true;
+
+    const haa = window.recoveryState ? window.recoveryState.hiddenAutoAdvance : null;
+    if (
+      haa &&
+      haa.playSucceeded &&
+      haa.trackIndex === currentTrackIndex &&
+      audio.currentTime < 2.0 &&
+      !audio.ended &&
+      audio.src &&
+      !haa.hiddenResumeAttempted
+    ) {
+      haa.hiddenResumeAttempted = true;
+      
+      if (typeof addErrorLog === "function") {
+        addErrorLog(`[Recovery] hidden early-pause detected. hidden guarded resume attempted`, "Recovery");
+      }
+
+      audio.play().then(() => {
+        if (typeof addErrorLog === "function") {
+          addErrorLog(`[Recovery] hidden guarded resume succeeded`, "Recovery");
+        }
+        if (window.recoveryState) window.recoveryState.hiddenEarlyPause = false;
+      }).catch(e => {
+        console.warn("Hidden guarded resume failed:", e);
+        if (typeof addErrorLog === "function") {
+          addErrorLog(`[Recovery] hidden guarded resume failed: ${e.name} - ${e.message}`, "Recovery");
+        }
+      });
+      return;
+    }
+
     // Do not run the 3-retry watchdog — this is an OS background throttle.
     // Wake-side logic will handle recovery.
     return;
