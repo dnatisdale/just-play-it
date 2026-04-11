@@ -29,6 +29,9 @@ async function renderSidebarLibrary() {
     return true;
   });
 
+  const wasYourTracksOpen = document.getElementById("lib-section-your-tracks")?.style.display !== "none";
+  const wasBuiltinOpen = document.getElementById("lib-section-built-in")?.style.display !== "none";
+
   deviceLibraryList.innerHTML = "";
 
   // Helper to create a selector button
@@ -54,21 +57,41 @@ async function renderSidebarLibrary() {
   };
 
   // Section 1: Your Tracks (Personal Uploads)
+  const sortModes = ["A–Z", "Z–A", "Newest", "Oldest"];
+  let currentSort = localStorage.getItem("myTracksSort") || "A–Z";
+  if (!sortModes.includes(currentSort)) currentSort = "A–Z";
+
+  records.sort((a, b) => {
+    const aName = cleanTrackName(a.title || "").toLowerCase();
+    const bName = cleanTrackName(b.title || "").toLowerCase();
+    const aTime = a.updatedAt || a.lastModified || 0;
+    const bTime = b.updatedAt || b.lastModified || 0;
+
+    if (currentSort === "A–Z") return aName.localeCompare(bName);
+    if (currentSort === "Z–A") return bName.localeCompare(aName);
+    if (currentSort === "Newest") return bTime - aTime;
+    if (currentSort === "Oldest") return aTime - bTime;
+    return 0;
+  });
+
   // Collapsible header
   const yourTracksHeader = document.createElement("div");
   yourTracksHeader.className = "library-section-header";
   const myTracksCount = records.length;
   yourTracksHeader.innerHTML = `
     <span class="library-section-title-text">MY TRACKS <span id="myTracksBadge" class="counter-badge ${myTracksCount === 0 ? 'hidden' : ''}">${myTracksCount}</span></span>
-    <button class="sidebar-collapse-toggle" type="button" aria-expanded="false" data-section="your-tracks">Show</button>
+    <div style="display: flex; gap: 8px; align-items: center;">
+      ${myTracksCount > 0 ? `<button id="myTracksSortBtn" class="sidebar-collapse-toggle" type="button" title="Sort Order">Sort: ${currentSort}</button>` : ""}
+      <button id="myTracksToggleBtn" class="sidebar-collapse-toggle" type="button" aria-expanded="${wasYourTracksOpen}">${wasYourTracksOpen ? "Hide" : "Show"}</button>
+    </div>
   `;
   deviceLibraryList.appendChild(yourTracksHeader);
 
-  // Collapsible content wrapper — starts collapsed
+  // Collapsible content wrapper
   const yourTracksContent = document.createElement("div");
   yourTracksContent.className = "library-section-content";
   yourTracksContent.id = "lib-section-your-tracks";
-  yourTracksContent.style.display = "none";
+  yourTracksContent.style.display = wasYourTracksOpen ? "" : "none";
 
   if (records.length === 0) {
     const emptyState = document.createElement("div");
@@ -136,13 +159,22 @@ async function renderSidebarLibrary() {
   deviceLibraryList.appendChild(yourTracksContent);
 
   // Wire up toggle
-  const yourTracksToggle = yourTracksHeader.querySelector("button");
+  const yourTracksToggle = yourTracksHeader.querySelector("#myTracksToggleBtn");
   yourTracksToggle.addEventListener("click", () => {
     const isExpanded = yourTracksContent.style.display !== "none";
     yourTracksContent.style.display = isExpanded ? "none" : "";
     yourTracksToggle.textContent = isExpanded ? "Show" : "Hide";
     yourTracksToggle.setAttribute("aria-expanded", String(!isExpanded));
   });
+
+  if (myTracksCount > 0) {
+    const sortBtn = yourTracksHeader.querySelector("#myTracksSortBtn");
+    sortBtn.addEventListener("click", () => {
+      const nextIdx = (sortModes.indexOf(currentSort) + 1) % sortModes.length;
+      localStorage.setItem("myTracksSort", sortModes[nextIdx]);
+      renderSidebarLibrary();
+    });
+  }
 
   // Section 2: Tracks Built-In
   if (uniqueBuiltins.length > 0) {
@@ -152,15 +184,15 @@ async function renderSidebarLibrary() {
     const builtinsCount = uniqueBuiltins.length;
     builtinsHeader.innerHTML = `
       <span class="library-section-title-text">BUILT-IN TRACKS <span id="builtInBadge" class="counter-badge ${builtinsCount === 0 ? 'hidden' : ''}">${builtinsCount}</span></span>
-      <button class="sidebar-collapse-toggle" type="button" aria-expanded="false" data-section="built-in">Show</button>
+      <button class="sidebar-collapse-toggle" type="button" aria-expanded="${wasBuiltinOpen}">${wasBuiltinOpen ? "Hide" : "Show"}</button>
     `;
     deviceLibraryList.appendChild(builtinsHeader);
 
-    // Collapsible content wrapper — starts collapsed
+    // Collapsible content wrapper
     const builtinsContent = document.createElement("div");
     builtinsContent.className = "library-section-content";
     builtinsContent.id = "lib-section-built-in";
-    builtinsContent.style.display = "none";
+    builtinsContent.style.display = wasBuiltinOpen ? "" : "none";
 
     uniqueBuiltins.forEach((track) => {
       const durationStr = track.duration ? formatTime(track.duration) : "";
@@ -304,9 +336,16 @@ async function addSelectedToPlaylist() {
   const skipped = [];
 
   for (const id of selectedLibraryTracks) {
+    let recordName = "Track";
+    if (recordMap.has(id)) recordName = recordMap.get(id).title;
+    else if (builtinMap.has(id)) recordName = builtinMap.get(id).title;
+
     if (existingIds.has(id)) { 
-      skipped.push(id); 
-      continue; 
+      const choice = confirm(`This exact file is already in the current queue.\n\nAdd it again anyway?`);
+      if (!choice) {
+        skipped.push(id); 
+        continue; 
+      }
     }
     
     if (recordMap.has(id)) {

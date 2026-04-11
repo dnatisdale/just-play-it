@@ -5,9 +5,9 @@
 //   All other files (service-worker, UI labels) derive from here.
 // ────────────────────────────────────────────────────────────
 
-const APP_VERSION = "V. 2.7.3";
-const APP_BUILD_DATE = "10APR2026";
-const APP_BUILD_TIME = "19:43";
+const APP_VERSION = "V. 2.7.4";
+const APP_BUILD_DATE = "11APR2026";
+const APP_BUILD_TIME = "04:21";
 
 // Derived composite string used in the UI
 // Format: "BUILD V.92 — 03APR2026 — 20:47"

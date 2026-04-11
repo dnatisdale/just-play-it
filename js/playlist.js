@@ -659,34 +659,52 @@ async function addFileTracks(files) {
   let currentBytes = libraryRecords.reduce((sum, item) => sum + (item.size || 0), 0);
 
   for (const file of fileArray) {
-    const duplicate = libraryRecords.find(r =>
+    const duplicateLibRec = libraryRecords.find(r =>
       r.title === file.name &&
       r.size === file.size &&
       (r.lastModified === file.lastModified)
     );
 
-    if (duplicate) {
-      skipped.push(file.name);
-      continue;
+    let idToAdd;
+    let durationToAdd;
+
+    if (duplicateLibRec) {
+      const inQueue = playlist.some(t => t.id === duplicateLibRec.id);
+      if (inQueue) {
+        const choice = confirm(`This exact file is already in the current queue.\n\nAdd it again anyway?`);
+        if (!choice) {
+          skipped.push(file.name);
+          continue;
+        }
+      }
+      idToAdd = duplicateLibRec.id;
+      durationToAdd = duplicateLibRec.duration;
+    } else {
+      if (currentBytes + file.size > MAX_SAVED_AUDIO_BYTES) {
+        filesSkippedDueToLimit++;
+        continue;
+      }
+      idToAdd = crypto.randomUUID();
+      durationToAdd = await getAudioDuration(file);
+      await saveTrackBlob(idToAdd, file, durationToAdd);
+      currentBytes += file.size;
+
+      // add to library records for subsequent loop iterations
+      libraryRecords.push({
+        id: idToAdd,
+        title: file.name,
+        size: file.size,
+        lastModified: file.lastModified,
+        duration: durationToAdd
+      });
     }
-
-    if (currentBytes + file.size > MAX_SAVED_AUDIO_BYTES) {
-      filesSkippedDueToLimit++;
-      continue;
-    }
-
-    const id = crypto.randomUUID();
-    const duration = await getAudioDuration(file);
-
-    await saveTrackBlob(id, file, duration);
-    currentBytes += file.size;
 
     newTracks.push({
-      id,
+      id: idToAdd,
       title: cleanTrackName(file.name),
       rawFilename: file.name,
       sourceType: "file",
-      duration: duration
+      duration: durationToAdd
     });
   }
 
