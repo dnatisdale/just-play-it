@@ -1289,6 +1289,15 @@ input[type="range"]::-moz-range-thumb {
   color: var(--text);
 }
 
+.drag-handle {
+  cursor: grab;
+  color: var(--muted);
+  opacity: 0.6;
+  padding: 0 4px; /* Slightly more hitbox */
+  margin-left: -4px; /* Offset the padding visually */
+  flex-shrink: 0;
+}
+
 input::placeholder {
   color: var(--muted);
   opacity: 0.7;
@@ -1525,6 +1534,7 @@ h3 .dot {
     border-color var(--transition),
     transform var(--transition);
   cursor: pointer;
+  min-width: 0;
 }
 
 .playlist-item:hover {
@@ -1662,6 +1672,7 @@ h3 .dot {
   padding: 0;
   cursor: pointer;
   min-width: 0;
+  overflow: hidden;
   transition: color var(--transition);
 }
 
@@ -1704,6 +1715,9 @@ h3 .dot {
   color: var(--muted);
   font-size: 0.78rem;
   line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .playlist-item.active .track-name {
