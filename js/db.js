@@ -41,6 +41,7 @@ function saveTrackBlob(id, file, duration = 0) {
       title: file.name,
       type: file.type || "audio/*",
       size: file.size || 0,
+      lastModified: file.lastModified || 0,
       duration: duration,
       updatedAt: Date.now(),
     });

@@ -126,9 +126,9 @@ async function renderSidebarLibrary() {
         }
       });
 
+      item.appendChild(createSelector(record.id));
       item.appendChild(info);
       item.appendChild(deleteBtn);
-      item.appendChild(createSelector(record.id));
       yourTracksContent.appendChild(item);
     });
   }
@@ -173,10 +173,8 @@ async function renderSidebarLibrary() {
           <span class="library-item-size">${metaText}</span>
         </div>
       `;
-      // Spacer for grid consistency
-      const spacer = document.createElement("div");
-      item.appendChild(spacer);
       item.appendChild(createSelector(track.id));
+      item.appendChild(item.querySelector('.library-item-info'));
       builtinsContent.appendChild(item);
     });
 

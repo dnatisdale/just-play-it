@@ -76,18 +76,11 @@
     flex-shrink: 0;
   }
   
-  /* Hide text buttons on mobile to save space */
+  /* Adjusted for new trash SVG icon on mobile */
   .item-actions .small-btn.remove {
     padding: 6px;
     min-width: 26px;
     min-height: 26px;
-    font-size: 0; /* Hide text */
-  }
-  
-  .item-actions .small-btn.remove::after {
-    content: "✕";
-    font-size: 14px;
-    margin-left: 0;
   }
 
   .url-row,

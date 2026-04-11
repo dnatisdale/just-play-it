@@ -291,7 +291,6 @@ function renderPlaylist() {
     infoBtn.innerHTML = `
       <div class="track-info-row">
         <span class="track-name" title="${escapeHtml(track.title)}">${escapeHtml(track.title)}</span>
-        <span class="track-duration">${duration}</span>
       </div>
       ${label ? `<span class="track-source">${label}</span>` : ""}
     `;
@@ -316,7 +315,7 @@ function renderPlaylist() {
     const removeBtn = document.createElement("button");
     removeBtn.type = "button";
     removeBtn.className = "small-btn remove";
-    removeBtn.textContent = "✕";
+    removeBtn.innerHTML = ICONS.trash;
     removeBtn.title = "Remove from playlist";
     removeBtn.addEventListener("click", (e) => { e.stopPropagation(); removeTrack(index); });
 
@@ -333,6 +332,13 @@ function renderPlaylist() {
     li.appendChild(statusBtn);
     li.appendChild(infoBtn);
     
+    if (duration) {
+      const durationSpan = document.createElement("span");
+      durationSpan.className = "track-duration";
+      durationSpan.textContent = duration;
+      durationSpan.style.marginRight = "6px";
+      actions.appendChild(durationSpan);
+    }
     actions.appendChild(removeBtn);
     li.appendChild(actions);
 
@@ -639,7 +645,6 @@ async function addFileTracks(files) {
   const fileArray = Array.from(files);
   const newTracks = [];
   const skipped = [];
-  const forced = [];
   
   const MAX_SAVED_AUDIO_BYTES = Math.floor(3.33 * 1024 * 1024 * 1024);
   let filesSkippedDueToLimit = 0;
@@ -657,16 +662,12 @@ async function addFileTracks(files) {
     const duplicate = libraryRecords.find(r =>
       r.title === file.name &&
       r.size === file.size &&
-      (!file.lastModified || r.lastModified === file.lastModified)
+      (r.lastModified === file.lastModified)
     );
 
     if (duplicate) {
-      const choice = confirm(`"${file.name}" is already in your library.\n\nImport it anyway as a new copy?`);
-      if (!choice) {
-        skipped.push(file.name);
-        continue;
-      }
-      forced.push(file.name);
+      skipped.push(file.name);
+      continue;
     }
 
     if (currentBytes + file.size > MAX_SAVED_AUDIO_BYTES) {
@@ -696,7 +697,7 @@ async function addFileTracks(files) {
       showToast(`Added ${newTracks.length} files. ${filesSkippedDueToLimit} skipped because the 3.33 GB saved-audio limit was reached.`, 5000);
     }
   } else if (skipped.length > 0) {
-    showToast(`Skipped ${skipped.length} existing files.`);
+    showToast(`${skipped.length} duplicate files skipped.`);
   }
 
   if (newTracks.length === 0) return;

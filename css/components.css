@@ -1715,6 +1715,7 @@ h3 .dot {
   gap: 6px;
   flex-wrap: nowrap;
   justify-content: flex-end;
+  align-items: center;
   flex-shrink: 0;
 }
 
