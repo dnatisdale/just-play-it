@@ -67,8 +67,8 @@ async function renderSidebarLibrary() {
     const aTime = a.updatedAt || a.lastModified || 0;
     const bTime = b.updatedAt || b.lastModified || 0;
 
-    if (currentSort === "A–Z") return aName.localeCompare(bName);
-    if (currentSort === "Z–A") return bName.localeCompare(aName);
+    if (currentSort === "A–Z") return aName.localeCompare(bName, undefined, { numeric: true, sensitivity: 'base' });
+    if (currentSort === "Z–A") return bName.localeCompare(aName, undefined, { numeric: true, sensitivity: 'base' });
     if (currentSort === "Newest") return bTime - aTime;
     if (currentSort === "Oldest") return aTime - bTime;
     return 0;

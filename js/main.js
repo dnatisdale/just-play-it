@@ -372,6 +372,31 @@ if (folderInput) {
 savePlaylistBtn.addEventListener("click", saveNamedPlaylist);
 if (updatePlaylistBtn) updatePlaylistBtn.addEventListener("click", updateActivePlaylist);
 
+if (playlistNameInput) {
+  playlistNameInput.addEventListener("input", (e) => {
+    if (e.target.value.trim().length > 0) {
+      savePlaylistBtn.style.background = "var(--accent)";
+      savePlaylistBtn.style.borderColor = "var(--accent)";
+      savePlaylistBtn.style.color = "#fff";
+    } else {
+      savePlaylistBtn.style.background = "";
+      savePlaylistBtn.style.borderColor = "";
+      savePlaylistBtn.style.color = "";
+    }
+  });
+}
+
+const currentPlaylistCard = document.getElementById("currentPlaylistCard");
+if (currentPlaylistCard) {
+  currentPlaylistCard.addEventListener("click", (e) => {
+    // Only bounce to Library if we didn't click a control
+    const isControl = e.target.closest("button, .playlist-item, .queue-playlist-pill, .interactive-header, input, a");
+    if (!isControl) {
+      document.querySelector('.nav-item[data-target="view-library"]')?.click();
+    }
+  });
+}
+
 let clearConfirmTimeout = null;
 clearDeviceLibraryBtn.addEventListener("click", async () => {
   if (clearDeviceLibraryBtn.classList.contains("confirming")) {
@@ -401,7 +426,7 @@ if (importPlaylistsInput) {
   });
 }
 
-jumpToCurrentBtn.addEventListener("click", jumpToCurrentTrack);
+
 if (clearPlaylistBtn) {
   clearPlaylistBtn.addEventListener("click", () => {
     if (confirm("Clear your current playlist workspace? (This will not delete your files from the device).")) {

@@ -186,8 +186,7 @@
             <div id="playlistContainer" class="playlist-container expanded">
               <div class="inner-collapse">
                 <div class="playlist-tools">
-                  <button id="jumpToCurrentBtn" class="ghost-btn" type="button">Jump to Current</button>
-                  <button id="clearPlaylistBtn" class="ghost-btn" type="button" title="Clear all tracks from current playlist">Clear All</button>
+                  <button id="clearPlaylistBtn" class="ghost-btn" type="button" title="Clear all tracks from current playlist">CLEAR</button>
                   <div id="queuePlaylistPill" class="queue-playlist-pill hidden" aria-label="Active playlist">
                     <span id="queuePlaylistPillName">Unsaved</span>
                     <span class="counter-badge badge-red" id="queuePlaylistPillBadge">0</span>
@@ -220,7 +219,7 @@
                 <span id="activePlaylistPillName">—</span>
                 <span class="counter-badge badge-red" id="activePlaylistPillBadge">0</span>
               </div>
-              <button id="updatePlaylistBtn" type="button" style="margin-left: auto; padding: 0 14px; background: var(--accent); border: none; color: #fff; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 6px; height: 30px; cursor: pointer; white-space: nowrap; flex-shrink: 0;">SAVE CHANGES</button>
+              <button id="updatePlaylistBtn" type="button" style="margin-left: auto; padding: 0 14px; background: var(--accent); border: none; color: #fff; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 999px; height: 28px; cursor: pointer; white-space: nowrap; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">SAVE</button>
             </div>
 
 
@@ -355,7 +354,7 @@
               </div>
 
               <!-- Stored tracks list — populated by JS -->
-              <div id="storedTracksListContainer" style="margin-top: 10px;">
+              <div id="storedTracksListContainer" style="margin-top: 4px;">
                 <p class="sidebar-storage-text" style="padding: 6px 0 2px; font-style: italic;">Loading stored tracks…</p>
               </div>
 

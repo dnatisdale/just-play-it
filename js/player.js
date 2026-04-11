@@ -574,6 +574,9 @@ function saveNamedPlaylist() {
   setPlayerStatus(`Created "${name}". Add tracks via the Library or Pick Folder.`);
   showToast(`Created empty playlist "${name}".`);
   refreshUpdateRow();
+
+  // Switch to Library view after successful creation
+  document.querySelector('.nav-item[data-target="view-library"]')?.click();
 }
 
 function refreshUpdateRow() {

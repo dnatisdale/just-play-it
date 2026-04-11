@@ -132,15 +132,15 @@ async function updateStorageUsage() {
       0,
     );
 
-    let storageHTML = `Total size of MY TRACKS: ${formatBytes(deviceBytes)} max size 3.33 GB`;
+    let storageHTML = `My Tracks: ${formatBytes(deviceBytes)} of 3.33 GB`;
 
     if (navigator.storage && navigator.storage.estimate) {
       try {
         const estimate = await navigator.storage.estimate();
         const usage = estimate.usage || 0;
-        storageHTML += `<br>Total JPi. app size: ${formatBytes(usage)}`;
+        storageHTML += `<br><br>Current app size: ${formatBytes(usage)}`;
       } catch (e) {
-         storageHTML += `<br>Total JPi. app size: unavailable`;
+         storageHTML += `<br><br>Current app size: unavailable`;
       }
     } 
     storageUsageText.innerHTML = storageHTML;
@@ -150,7 +150,7 @@ async function updateStorageUsage() {
     }
   } catch (error) {
     console.error("Could not estimate storage:", error);
-    storageUsageText.innerHTML = "Total size of MY TRACKS: unavailable<br>Total JPi. app size: unavailable";
+    storageUsageText.innerHTML = "My Tracks: unavailable of 3.33 GB<br><br>Current app size: unavailable";
     if (container) {
       container.innerHTML = "";
     }

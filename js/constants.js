@@ -37,7 +37,7 @@ const clearDeviceLibraryBtn = document.getElementById("clearDeviceLibraryBtn");
 const exportPlaylistsBtn = document.getElementById("exportPlaylistsBtn");
 const importPlaylistsInput = document.getElementById("importPlaylistsInput");
 const savedPlaylistStatus = document.getElementById("savedPlaylistStatus");
-const jumpToCurrentBtn = document.getElementById("jumpToCurrentBtn");
+
 const toggleEditBtn = document.getElementById("toggleEditBtn");
 const selectionActionBar = document.getElementById("selectionActionBar");
 const clearSelectionBtn = document.getElementById("clearSelectionBtn");

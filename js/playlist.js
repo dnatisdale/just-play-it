@@ -114,8 +114,6 @@ function renderPlaylistsView() {
       document.querySelector('.nav-item[href="#view-player"]')?.click();
     });
 
-    card.appendChild(info);
-
     // ── Default radio indicator ───────────────────────────────────────
     const radioBtn = document.createElement("button");
     radioBtn.type = "button";
@@ -136,7 +134,9 @@ function renderPlaylistsView() {
       showToast(`Default set: "${name}".`);
       renderPlaylistsView();
     });
+
     card.appendChild(radioBtn);
+    card.appendChild(info);
 
     // ── Delete button (user playlists only) ────────────────────────────
     if (!isBuiltin) {
