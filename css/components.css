@@ -1677,6 +1677,7 @@ h3 .dot {
   font-weight: 600;
   font-size: 0.95rem;
   line-height: 1.3;
+  min-width: 0;
 }
 
 .track-info-row {
@@ -1685,6 +1686,7 @@ h3 .dot {
   align-items: baseline;
   gap: 12px;
   width: 100%;
+  min-width: 0;
 }
 
 .track-duration {
@@ -1959,12 +1961,13 @@ h3 .dot {
 }
 
 /* Inside section headers, don't overlap */
-h3 .counter-badge {
+h3 .counter-badge,
+.library-section-title-text .counter-badge {
   position: relative;
   display: inline-flex;
-  top: -4px;
+  top: auto;
   right: auto;
-  margin-left: 4px;
+  margin-left: 8px;
   vertical-align: middle;
   border: none;
   box-shadow: 0 2px 6px var(--accent-glow);

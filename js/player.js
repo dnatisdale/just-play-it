@@ -776,7 +776,7 @@ function setSleepTimer(minutes) {
     if (sleepTimerStatus) sleepTimerStatus.textContent = "No sleep timer set.";
     localStorage.removeItem(STORAGE_KEYS.sleepTimerEnd);
     if (sleepTimerBtn) {
-      sleepTimerBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Sleep:<span style="margin-left: 3px;">off</span>`;
+      sleepTimerBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Sleep: off`;
     }
     showToast("Sleep timer off.");
     return;
@@ -786,7 +786,7 @@ function setSleepTimer(minutes) {
   localStorage.setItem(STORAGE_KEYS.sleepTimerEnd, String(endTime));
 
   if (sleepTimerBtn) {
-    sleepTimerBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Sleep:<span style="margin-left: 3px;">${minutes} min</span>`;
+    sleepTimerBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Sleep: ${minutes} min`;
   }
 
   sleepTimerTimeout = window.setTimeout(
@@ -836,7 +836,7 @@ function updateSleepTimerStatus() {
     }
     sleepTimerMinutes = 0;
     if (sleepTimerBtn) {
-      sleepTimerBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Sleep:<span style="margin-left: 3px;">off</span>`;
+      sleepTimerBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Sleep: off`;
     }
     return;
   }
@@ -876,7 +876,7 @@ function restoreSleepTimer() {
   sleepTimerInterval = window.setInterval(updateSleepTimerStatus, 1000);
   sleepTimerMinutes = approxMinutes;
   if (sleepTimerBtn) {
-    sleepTimerBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Sleep:<span style="margin-left: 3px;">${approxMinutes}m</span>`;
+    sleepTimerBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Sleep: ${approxMinutes}m`;
   }
   updateSleepTimerStatus();
 }

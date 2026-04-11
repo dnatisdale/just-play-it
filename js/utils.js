@@ -592,12 +592,12 @@ function saveModes() {
 
 function updateModeButtons() {
   // Shuffle — sidebar button
-  if (shuffleBtnLabel) shuffleBtnLabel.innerHTML = `Shuffle:<span style="margin-left: 3px;">${shuffleEnabled ? "on" : "off"}</span>`;
+  if (shuffleBtnLabel) shuffleBtnLabel.innerHTML = `Shuffle: ${shuffleEnabled ? "on" : "off"}`;
   if (shuffleBtn) shuffleBtn.classList.toggle("active", shuffleEnabled);
 
   // Repeat — main page button (SVG icon + text)
   const repeatLabels = { off: "off", all: "all", one: "one" };
-  repeatBtn.innerHTML = `${ICONS.repeat} <span>Repeat:<span style="margin-left: 3px;">${repeatLabels[repeatMode] || "off"}</span></span>`;
+  repeatBtn.innerHTML = `${ICONS.repeat} <span>Repeat: ${repeatLabels[repeatMode] || "off"}</span>`;
   repeatBtn.classList.toggle("active", repeatMode !== "off");
 }
 
